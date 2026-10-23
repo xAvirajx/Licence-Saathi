@@ -1,175 +1,235 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { ArrowLeft, Calendar, Clock, MapPin, CheckCircle, FileText, AlertCircle } from 'lucide-react';
+import { useState, useContext, useEffect } from 'react';
+import { AppContext } from '../App';
+import { rtos } from '../data/rtos';
 import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  Calendar, Clock, MapPin, CheckCircle2, ShieldCheck, 
+  FileText, Car, AlertTriangle, ArrowRight 
+} from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export default function PermanentLicence() {
+  const { lang } = useContext(AppContext);
   const [llDate, setLlDate] = useState('');
-  const [bookingState, setBookingState] = useState('initial'); // 'initial', 'booking', 'confirmed'
+  const [dateStatus, setDateStatus] = useState(null); // 'waiting', 'eligible', 'expired'
+  const [calculatedDates, setCalculatedDates] = useState(null);
+  const [bookingStep, setBookingStep] = useState(1);
+  
+  // Booking Form State
+  const [selectedRto, setSelectedRto] = useState('');
+  const [selectedDate, setSelectedDate] = useState('');
+  const [selectedTime, setSelectedTime] = useState('');
 
-  // Mock RTOs (Simulating src/data/rtos.js)
-  const rtos = [
-    { id: "jk02", name: "JK02 - Jammu" },
-    { id: "dl01", name: "DL01 - Delhi North" },
-    { id: "mh01", name: "MH01 - Mumbai South" }
-  ];
+  // Calculate Dates whenever llDate changes
+  useEffect(() => {
+    if (!llDate) return;
 
-  // Calculate Dates
-  let applyDate = "";
-  let expireDate = "";
-  let isEligibleToday = false;
+    const issue = new Date(llDate);
+    const today = new Date();
+    today.setHours(0,0,0,0);
 
-  if (llDate) {
-    const ll = new Date(llDate);
-    
-    // Eligible after 30 days
-    const apply = new Date(ll);
+    // Can apply after 30 days
+    const apply = new Date(issue);
     apply.setDate(apply.getDate() + 30);
-    applyDate = apply.toLocaleDateString('en-GB');
 
     // Expires after 6 months
-    const expire = new Date(ll);
-    expire.setMonth(expire.getMonth() + 6);
-    expireDate = expire.toLocaleDateString('en-GB');
+    const expiry = new Date(issue);
+    expiry.setMonth(expiry.getMonth() + 6);
 
-    // Check if today is past the 30-day mark
-    isEligibleToday = new Date() >= apply;
-  }
+    const timeToApply = apply.getTime() - today.getTime();
+    const daysToApply = Math.ceil(timeToApply / (1000 * 3600 * 24));
 
-  const handleBookClick = () => {
-    setBookingState('booking');
-  };
+    const timeToExpire = expiry.getTime() - today.getTime();
+    const daysToExpire = Math.ceil(timeToExpire / (1000 * 3600 * 24));
 
-  const handleConfirm = (e) => {
+    let status = 'eligible';
+    if (daysToApply > 0) status = 'waiting';
+    if (daysToExpire < 0) status = 'expired';
+
+    setDateStatus(status);
+    setCalculatedDates({
+      apply: apply.toLocaleDateString(lang === 'en' ? 'en-IN' : 'hi-IN', { day: 'numeric', month: 'long', year: 'numeric' }),
+      expiry: expiry.toLocaleDateString(lang === 'en' ? 'en-IN' : 'hi-IN', { day: 'numeric', month: 'long', year: 'numeric' }),
+      daysToApply,
+      daysToExpire
+    });
+
+  }, [llDate, lang]);
+
+  const handleBookSlot = (e) => {
     e.preventDefault();
-    setBookingState('confirmed');
+    setBookingStep(2);
+    // Update Journey Map progress
+    localStorage.setItem('licenceJourneyStage', '4');
   };
+
+  const checklist = [
+    { en: "Original Learner's Licence", hi: "मूल लर्नर लाइसेंस" },
+    { en: "Application Form & Fee Receipt", hi: "आवेदन पत्र और शुल्क रसीद" },
+    { en: "Vehicle with Valid RC, Insurance & PUC", hi: "वैध आरसी, बीमा और पीयूसी के साथ वाहन" },
+    { en: "ISI-Mark Helmet (If testing for Two-Wheeler)", hi: "ISI-मार्क हेलमेट (यदि दोपहिया वाहन का परीक्षण कर रहे हैं)" },
+    { en: "Seatbelt functional (If testing for Car)", hi: "सीटबेल्ट कार्यात्मक (यदि कार का परीक्षण कर रहे हैं)" }
+  ];
 
   return (
-    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6 mt-2">
-      <div className="flex items-center gap-3 mb-6">
-        <Link to="/" className="p-2 bg-white rounded-full shadow-sm hover:bg-gray-100 text-brand-600 transition-colors">
-          <ArrowLeft size={20} />
-        </Link>
-        <h1 className="text-xl font-bold text-gray-900">Permanent Licence</h1>
-      </div>
-
-      {/* Step 1: Enter Date */}
-      {bookingState === 'initial' && (
-        <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 space-y-4">
-          <h2 className="font-bold text-gray-800 flex items-center gap-2">
-            <Calendar size={20} className="text-brand-500"/> When was your LL issued?
-          </h2>
-          <input 
-            type="date" 
-            value={llDate}
-            onChange={(e) => setLlDate(e.target.value)}
-            className="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-brand-500 outline-none"
-          />
-        </div>
-      )}
-
-      {/* Date Calculations & Button */}
-      {llDate && bookingState === 'initial' && (
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-blue-50 border border-blue-200 p-5 rounded-2xl">
-          <div className="flex items-start gap-3">
-            <Clock className="text-blue-600 mt-1 shrink-0" size={24} />
-            <div className="w-full">
-              <h3 className="font-bold text-blue-900 text-lg">Timeline Calculator</h3>
-              <div className="mt-3 space-y-2 bg-white p-3 rounded-xl border border-blue-100 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Eligible from:</span>
-                  <span className="font-bold text-gray-900">{applyDate}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Expires on:</span>
-                  <span className="font-bold text-red-600">{expireDate}</span>
-                </div>
-              </div>
-              
-              <button 
-                onClick={handleBookClick}
-                className="mt-4 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl shadow-sm transition-colors"
-              >
-                Book Test Slot (Simulated)
-              </button>
-            </div>
-          </div>
-        </motion.div>
-      )}
-
-      {/* Step 2: Booking Form */}
-      <AnimatePresence>
-        {bookingState === 'booking' && (
-          <motion.form 
-            initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} 
-            onSubmit={handleConfirm}
-            className="bg-white p-5 rounded-2xl shadow-sm border border-brand-200 space-y-5"
-          >
-            <h2 className="font-bold text-brand-700 text-lg flex items-center gap-2">
-              <MapPin size={20}/> Select Test Slot
-            </h2>
-            
-            <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">RTO Office</label>
-              <select className="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-brand-500 outline-none bg-white">
-                {rtos.map(rto => <option key={rto.id} value={rto.id}>{rto.name}</option>)}
-              </select>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">Date</label>
-                <input type="date" required className="w-full p-3 border-2 border-gray-200 rounded-xl outline-none" />
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">Time</label>
-                <select className="w-full p-3 border-2 border-gray-200 rounded-xl outline-none bg-white">
-                  <option>10:00 AM</option>
-                  <option>11:30 AM</option>
-                  <option>02:00 PM</option>
-                </select>
-              </div>
-            </div>
-
-            <button type="submit" className="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-3.5 rounded-xl shadow-sm">
-              Confirm Booking
-            </button>
-          </motion.form>
-        )}
-      </AnimatePresence>
-
-      {/* Step 3: Success & Checklist */}
-      {bookingState === 'confirmed' && (
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-          <div className="bg-green-50 border border-green-200 p-5 rounded-2xl text-center">
-            <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-3">
-              <CheckCircle size={32} />
-            </div>
-            <h2 className="text-xl font-bold text-green-900 mb-1">Slot Confirmed!</h2>
-            <p className="text-green-800 text-sm">Your driving test is booked successfully.</p>
-          </div>
-
-          <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
-            <h2 className="font-bold text-gray-900 flex items-center gap-2 mb-4">
-              <FileText size={20} className="text-brand-500" /> Test-Day Checklist
-            </h2>
-            <ul className="space-y-3 text-sm text-gray-700">
-              <li className="flex gap-2"><CheckCircle size={18} className="text-gray-400 shrink-0"/> Original Learner's Licence</li>
-              <li className="flex gap-2"><CheckCircle size={18} className="text-gray-400 shrink-0"/> Application forms and fees receipt</li>
-              <li className="flex gap-2"><CheckCircle size={18} className="text-gray-400 shrink-0"/> Vehicle with valid RC, Insurance, and PUC</li>
-              <li className="flex gap-2"><CheckCircle size={18} className="text-gray-400 shrink-0"/> Helmet (mandatory for two-wheelers)</li>
-              <li className="flex gap-2"><CheckCircle size={18} className="text-gray-400 shrink-0"/> Appropriate footwear (no sandals/chappals)</li>
-            </ul>
-          </div>
-        </motion.div>
-      )}
-
-      {/* Explainer Link (Always visible) */}
-      <Link to="/driving-test" className="w-full flex items-center justify-center gap-2 bg-white border-2 border-brand-600 text-brand-600 font-bold p-4 rounded-xl mt-6 hover:bg-brand-50 transition-colors">
-        View Driving Test Track Guide
-      </Link>
+    <div className="relative min-h-screen bg-slate-950 text-slate-50 py-12 px-6 flex flex-col font-sans overflow-hidden">
+      {/* Mesh Gradients */}
+      <div className="absolute top-[20%] left-[-10%] w-[500px] h-[500px] bg-blue-600/20 rounded-full blur-[120px] pointer-events-none"></div>
       
-    </motion.div>
+      <div className="max-w-2xl mx-auto w-full relative z-10">
+        
+        <div className="text-center mb-10">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-slate-900 border border-slate-700 rounded-2xl mb-6 shadow-lg">
+            <Car className="text-blue-400" size={32} />
+          </div>
+          <h1 className="text-3xl md:text-4xl font-extrabold text-white tracking-tight mb-4">
+            {lang === 'en' ? 'Permanent Licence' : 'स्थायी लाइसेंस'}
+          </h1>
+          <p className="text-slate-400">
+            {lang === 'en' ? 'Check your dates and book your driving test slot.' : 'अपनी तिथियों की जांच करें और अपना ड्राइविंग टेस्ट स्लॉट बुक करें।'}
+          </p>
+        </div>
+
+        <AnimatePresence mode="wait">
+          {bookingStep === 1 && (
+            <motion.div key="step1" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              
+              {/* Date Input Card */}
+              <div className="bg-slate-900/50 backdrop-blur-md border border-slate-800 rounded-3xl p-6 shadow-xl mb-6">
+                <label className="block text-sm font-medium text-slate-300 mb-2 flex items-center gap-2">
+                  <Calendar size={16} className="text-indigo-400"/> 
+                  {lang === 'en' ? 'When was your Learner\'s Licence issued?' : 'आपका लर्नर लाइसेंस कब जारी किया गया था?'}
+                </label>
+                <input 
+                  type="date" 
+                  value={llDate}
+                  onChange={(e) => setLlDate(e.target.value)}
+                  className="w-full bg-slate-950 border border-slate-700 text-white rounded-xl p-4 focus:outline-none focus:border-blue-500 transition-colors"
+                />
+              </div>
+
+              {/* Status & Countdown Card */}
+              {calculatedDates && (
+                <motion.div 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className={`p-6 rounded-3xl border text-center shadow-xl mb-8 ${
+                    dateStatus === 'eligible' ? 'bg-emerald-950/30 border-emerald-900/50' : 
+                    dateStatus === 'waiting' ? 'bg-blue-950/30 border-blue-900/50' : 
+                    'bg-red-950/30 border-red-900/50'
+                  }`}
+                >
+                  {dateStatus === 'waiting' && (
+                    <>
+                      <Clock className="mx-auto text-blue-400 mb-2" size={32} />
+                      <h3 className="text-xl font-bold text-white mb-2">{lang === 'en' ? 'Please Wait' : 'कृपया प्रतीक्षा करें'}</h3>
+                      <p className="text-slate-300 mb-4">
+                        {lang === 'en' ? `You must wait ${calculatedDates.daysToApply} more days.` : `आपको ${calculatedDates.daysToApply} और दिन प्रतीक्षा करनी होगी।`}
+                      </p>
+                      <p className="text-sm text-slate-400">{lang === 'en' ? 'You can apply on:' : 'आप आवेदन कर सकते हैं:'} <strong className="text-blue-400">{calculatedDates.apply}</strong></p>
+                    </>
+                  )}
+
+                  {dateStatus === 'expired' && (
+                    <>
+                      <AlertTriangle className="mx-auto text-red-400 mb-2" size={32} />
+                      <h3 className="text-xl font-bold text-white mb-2">{lang === 'en' ? 'Licence Expired' : 'लाइसेंस समाप्त'}</h3>
+                      <p className="text-slate-300">
+                        {lang === 'en' ? 'Your 6-month window has closed. You must apply for a new Learner\'s Licence.' : 'आपकी 6 महीने की विंडो बंद हो गई है। आपको नए लर्नर लाइसेंस के लिए आवेदन करना होगा।'}
+                      </p>
+                    </>
+                  )}
+
+                  {dateStatus === 'eligible' && (
+                    <>
+                      <CheckCircle2 className="mx-auto text-emerald-400 mb-2" size={32} />
+                      <h3 className="text-xl font-bold text-white mb-2">{lang === 'en' ? 'You are Eligible!' : 'आप योग्य हैं!'}</h3>
+                      <p className="text-emerald-300 font-bold text-2xl mb-4">
+                        {calculatedDates.daysToExpire} {lang === 'en' ? 'days left to apply' : 'आवेदन करने के लिए दिन शेष'}
+                      </p>
+                      <p className="text-sm text-slate-400 mb-6">
+                        {lang === 'en' ? 'Expires on:' : 'को समाप्त हो रहा है:'} <strong className="text-emerald-400">{calculatedDates.expiry}</strong>
+                      </p>
+                      
+                      {/* Slot Booking Simulator Form */}
+                      <form onSubmit={handleBookSlot} className="text-left bg-slate-900/50 p-6 rounded-2xl border border-slate-800">
+                        <h4 className="font-bold text-white mb-4">{lang === 'en' ? 'Simulate Slot Booking' : 'स्लॉट बुकिंग का अनुकरण करें'}</h4>
+                        
+                        <div className="space-y-4 mb-6">
+                          <div>
+                            <label className="block text-xs font-medium text-slate-400 mb-1">{lang === 'en' ? 'Select RTO' : 'आरटीओ चुनें'}</label>
+                            <select required value={selectedRto} onChange={(e) => setSelectedRto(e.target.value)} className="w-full bg-slate-950 border border-slate-700 text-white rounded-lg p-3 outline-none">
+                              <option value="">{lang === 'en' ? 'Choose RTO...' : 'आरटीओ चुनें...'}</option>
+                              {rtos.map(rto => <option key={rto.id} value={rto.name[lang]}>{rto.name[lang]}</option>)}
+                            </select>
+                          </div>
+                          <div className="flex gap-4">
+                            <div className="flex-1">
+                              <label className="block text-xs font-medium text-slate-400 mb-1">{lang === 'en' ? 'Date' : 'तारीख'}</label>
+                              <input type="date" required value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} className="w-full bg-slate-950 border border-slate-700 text-white rounded-lg p-3 outline-none" />
+                            </div>
+                            <div className="flex-1">
+                              <label className="block text-xs font-medium text-slate-400 mb-1">{lang === 'en' ? 'Time' : 'समय'}</label>
+                              <select required value={selectedTime} onChange={(e) => setSelectedTime(e.target.value)} className="w-full bg-slate-950 border border-slate-700 text-white rounded-lg p-3 outline-none">
+                                <option value="">...</option>
+                                <option value="10:00 AM">10:00 AM</option>
+                                <option value="12:30 PM">12:30 PM</option>
+                                <option value="03:00 PM">03:00 PM</option>
+                              </select>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <button type="submit" className="w-full bg-blue-600 hover:bg-blue-500 text-white p-3 rounded-xl font-bold transition shadow-lg">
+                          {lang === 'en' ? 'Book Test Slot' : 'टेस्ट स्लॉट बुक करें'}
+                        </button>
+                      </form>
+                    </>
+                  )}
+                </motion.div>
+              )}
+            </motion.div>
+          )}
+
+          {bookingStep === 2 && (
+            <motion.div key="step2" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="text-center">
+              
+              <div className="bg-emerald-950/20 border border-emerald-900/50 rounded-3xl p-8 mb-8 shadow-xl">
+                <CheckCircle2 className="mx-auto text-emerald-500 mb-4" size={48} />
+                <h2 className="text-3xl font-bold text-white mb-2">{lang === 'en' ? 'Slot Confirmed!' : 'स्लॉट की पुष्टि हुई!'}</h2>
+                <div className="bg-slate-900 rounded-xl p-4 my-6 text-left border border-slate-800">
+                  <p className="text-slate-400 text-sm mb-1">{lang === 'en' ? 'Location:' : 'स्थान:'} <strong className="text-white">{selectedRto}</strong></p>
+                  <p className="text-slate-400 text-sm mb-1">{lang === 'en' ? 'Date:' : 'तारीख:'} <strong className="text-white">{selectedDate}</strong></p>
+                  <p className="text-slate-400 text-sm">{lang === 'en' ? 'Time:' : 'समय:'} <strong className="text-white">{selectedTime}</strong></p>
+                </div>
+              </div>
+
+              {/* TEST DAY CHECKLIST */}
+              <div className="bg-slate-900/50 backdrop-blur-md border border-slate-800 rounded-3xl p-6 text-left shadow-xl mb-8">
+                <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                  <FileText className="text-blue-400" /> {lang === 'en' ? 'Test Day Checklist' : 'टेस्ट डे चेकलिस्ट'}
+                </h3>
+                <ul className="space-y-3">
+                  {checklist.map((item, idx) => (
+                    <li key={idx} className="flex gap-3 items-start bg-slate-950/50 p-3 rounded-lg border border-slate-800/50">
+                      <div className="w-5 h-5 rounded border border-slate-600 shrink-0 mt-0.5"></div>
+                      <span className="text-sm text-slate-300">{item[lang]}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="flex gap-4">
+                <Link to="/driving-test" className="flex-1 bg-blue-600 hover:bg-blue-500 text-white p-4 rounded-xl font-bold flex items-center justify-center gap-2 transition shadow-[0_0_15px_rgba(37,99,235,0.4)]">
+                  {lang === 'en' ? 'Prepare for Driving Test' : 'ड्राइविंग टेस्ट की तैयारी करें'} <ArrowRight size={20} />
+                </Link>
+              </div>
+
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+      </div>
+    </div>
   );
 }
