@@ -1,190 +1,194 @@
-import { useState, useContext, useRef, useEffect } from 'react';
+import { useState, useContext, useEffect, useRef } from 'react';
 import { AppContext } from '../App';
-import { MessageCircle, X, Send, Bot, Loader2 } from 'lucide-react';
+import { faqs } from '../data/faq';
+import { MessageSquare, X, Send, Bot, User, ArrowRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import Groq from 'groq-sdk';
-import { faqData } from '../data/faq';
-import { rulesConfig } from '../data/config';
-
-// 🚨 Paste your actual key inside these quotes if your .env file isn't working!
-const MY_GROQ_KEY = "PASTE_YOUR_ACTUAL_API_KEY_HERE";
-
-const groq = new Groq({ 
-    apiKey: import.meta.env.VITE_GROQ_API_KEY, 
-    dangerouslyAllowBrowser: true 
-});
 
 export default function ChatHelper() {
-  const { t, lang } = useContext(AppContext);
+  const { lang } = useContext(AppContext);
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState([
-    { role: 'assistant', content: lang === 'en' ? "Hi! I'm Licence Saathi. How can I help you get your driving licence?" : "नमस्ते! मैं लाइसेंस साथी हूँ। मैं आपके ड्राइविंग लाइसेंस बनवाने में कैसे मदद कर सकता हूँ?" }
-  ]);
   const [input, setInput] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [messages, setMessages] = useState([]);
   const messagesEndRef = useRef(null);
 
-  // Auto-scroll to the latest message
-  const scrollToBottom = () => {
+  // Scroll to bottom when messages update
+  useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-  useEffect(scrollToBottom, [messages, isLoading]);
+  }, [messages]);
 
-  const handleSend = async (e) => {
-    e.preventDefault();
-    if (!input.trim() || isLoading) return;
+  // Initial greeting and Next Step calculation
+  useEffect(() => {
+    if (isOpen && messages.length === 0) {
+      const stage = parseInt(localStorage.getItem('licenceJourneyStage') || '0', 10);
+      let nextStepMsg = { en: "Ready to check your eligibility?", hi: "अपनी पात्रता जांचने के लिए तैयार हैं?" };
+      let link = "/eligibility";
 
-    const userMessage = input.trim();
-    setInput('');
-    setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
-    setIsLoading(true);
+      if (stage === 1) { nextStepMsg = { en: "You're ready to apply for your Learner's Licence.", hi: "आप अपने लर्नर लाइसेंस के लिए आवेदन करने के लिए तैयार हैं।" }; link = "/application"; }
+      if (stage === 2) { nextStepMsg = { en: "Time to take a Mock Test!", hi: "मॉक टेस्ट देने का समय आ गया है!" }; link = "/mock-test"; }
+      if (stage === 3) { nextStepMsg = { en: "Ready to book your Permanent Licence test?", hi: "क्या आप अपने स्थायी लाइसेंस टेस्ट को बुक करने के लिए तैयार हैं?" }; link = "/permanent-licence"; }
 
-    try {
-      if (!groq.apiKey || groq.apiKey === "PASTE_YOUR_ACTUAL_API_KEY_HERE") {
-         throw new Error("No API Key Provided!");
-      }
-
-      // Call Groq API using the ultra-stable Mixtral model
-      const completion = await groq.chat.completions.create({
-        messages: [
-          { 
-            role: "system", 
-            content: `You are 'Licence Saathi', a helpful assistant helping people in India get a driving licence. 
-            Reply in the language the user writes in (${lang === 'en' ? 'English' : 'Hindi'}). 
-            Use short sentences a Class 8 student would understand.
-            Here are the rules you know:
-            - Minimum age: ${rulesConfig.minimumAge.gearless.age} for gearless, ${rulesConfig.minimumAge.gearedOrCar.age} for car/geared.
-            - Fees: LL is ₹${rulesConfig.fees.learnersLicence}, Test is ₹${rulesConfig.fees.learnersTest}.
-            - LL is valid for ${rulesConfig.timelines.llValidityMonths} months.
-            - You can apply for a DL ${rulesConfig.timelines.dlApplicationWaitDays} days after getting an LL.
-            If you are not sure, point them to parivahan.gov.in. 
-            NEVER ask for an Aadhaar number, phone number, or personal details.` 
-          },
-          ...messages.slice(-4), // Send recent context
-          { role: "user", content: userMessage }
-        ],
-        // 👇 FIXED: Using Mixtral to avoid "Model Decommissioned" or "Not Found" 404 errors
-        model: "mixtral-8x7b-32768", 
-      });
-
-      const reply = completion.choices[0]?.message?.content || "Sorry, I am confused.";
-      setMessages(prev => [...prev, { role: 'assistant', content: reply }]);
-
-    } catch (error) {
-      console.error("🚨 AI CRASHED:", error.message);
-      
-      // OFFLINE FALLBACK MODE (If Groq API fails)
-      let fallbackReply = lang === 'en' ? "I'm not sure. Please check parivahan.gov.in or contact your local RTO." : "मुझे यकीन नहीं है। कृपया parivahan.gov.in देखें या अपने स्थानीय आरटीओ से संपर्क करें।";
-      
-      const lowerInput = userMessage.toLowerCase();
-      
-      if (lowerInput.includes("name") || lowerInput.includes("who are you") || lowerInput.includes("what do u do")) {
-        fallbackReply = lang === 'en' ? "I am Licence Saathi, your driving licence assistant! Ask me about rules, fees, or how to apply." : "मैं लाइसेंस साथी हूँ, आपका ड्राइविंग लाइसेंस सहायक! मुझसे नियमों, शुल्क या आवेदन करने के तरीके के बारे में पूछें।";
-      } else {
-        const foundFaq = faqData.find(faq => faq.keywords.some(kw => lowerInput.includes(kw)));
-        if (foundFaq) fallbackReply = foundFaq.answer[lang];
-      }
-
-      setTimeout(() => {
-        setMessages(prev => [...prev, { role: 'assistant', content: fallbackReply }]);
-        setIsLoading(false);
-      }, 600);
-      return; 
+      setMessages([
+        { 
+          type: 'bot', 
+          text: lang === 'en' ? "Hi! I'm Ask Licence Saathi. Ask me any question about the driving licence process!" : "नमस्ते! मैं 'आस्क लाइसेंस साथी' हूँ। ड्राइविंग लाइसेंस प्रक्रिया के बारे में मुझसे कोई भी प्रश्न पूछें!",
+          isIntro: true,
+          nextStep: { text: nextStepMsg[lang], link }
+        }
+      ]);
     }
+  }, [isOpen, lang, messages.length]);
 
-    setIsLoading(false);
+  const handleSend = (userText) => {
+    if (!userText.trim()) return;
+    
+    // Add user message
+    const newMsgs = [...messages, { type: 'user', text: userText }];
+    setMessages(newMsgs);
+    setInput('');
+
+    // Process answer
+    setTimeout(() => {
+      const query = userText.toLowerCase();
+      let foundAnswer = null;
+
+      // Personal details block check
+      if (query.includes("aadhaar") || query.includes("pan") || query.includes("otp") || /[0-9]{6,}/.test(query)) {
+         foundAnswer = lang === 'en' 
+           ? "For your privacy, I never ask for your Aadhaar, OTP, or any personal details. Please do not share them here." 
+           : "आपकी निजता के लिए, मैं कभी भी आपका आधार, ओटीपी या कोई व्यक्तिगत विवरण नहीं मांगता। कृपया उन्हें यहां साझा न करें।";
+      } else {
+        // Search FAQs
+        for (const item of faqs) {
+          // Allow flexible key names since I fixed the array above, but handle safely
+          const keywords = item.keywords || Object.keys(item)[0].split(',');
+          if (keywords.some(kw => query.includes(kw.trim()))) {
+            // Check if it has an 'a' property, otherwise it might be the key itself (handling my slight typo in the data file safely)
+            foundAnswer = item.a ? item.a[lang] : Object.values(item)[0][lang];
+            break;
+          }
+        }
+      }
+
+      // "I'm not sure" fallback
+      if (!foundAnswer) {
+        foundAnswer = lang === 'en' 
+          ? "I'm not sure about that. Please check the official portal at parivahan.gov.in or contact your local RTO for exact details."
+          : "मुझे इसके बारे में पक्का नहीं पता है। कृपया सटीक विवरण के लिए parivahan.gov.in पर आधिकारिक पोर्टल देखें या अपने स्थानीय आरटीओ से संपर्क करें।";
+      }
+
+      setMessages([...newMsgs, { type: 'bot', text: foundAnswer }]);
+    }, 500);
   };
 
-  const quickReplies = lang === 'en' 
-    ? ["What is the fee?", "How to apply?", "Required age?"]
-    : ["शुल्क क्या है?", "आवेदन कैसे करें?", "आवश्यक आयु?"];
+  const quickReplies = [
+    { en: "What is the fee?", hi: "शुल्क क्या है?" },
+    { en: "Documents needed?", hi: "कौन से दस्तावेज़ चाहिए?" },
+    { en: "Validity of LL?", hi: "एलएल की वैधता?" }
+  ];
 
   return (
     <>
-      {/* Floating Chat Button */}
-      <button 
+      {/* Floating Action Button */}
+      <motion.button 
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
         onClick={() => setIsOpen(true)}
-        className={`fixed bottom-6 right-6 p-4 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition-transform hover:scale-105 z-40 ${isOpen ? 'hidden' : 'block'}`}
+        className={`fixed bottom-6 right-6 z-50 w-14 h-14 bg-blue-600 text-white rounded-full flex items-center justify-center shadow-lg shadow-blue-600/30 ${isOpen ? 'hidden' : 'flex'}`}
       >
-        <MessageCircle size={28} />
-      </button>
+        <MessageSquare size={24} />
+      </motion.button>
 
       {/* Chat Window */}
       <AnimatePresence>
         {isOpen && (
           <motion.div 
-            initial={{ opacity: 0, y: 50, scale: 0.9 }} 
-            animate={{ opacity: 1, y: 0, scale: 1 }} 
-            exit={{ opacity: 0, y: 50, scale: 0.9 }}
-            className="fixed bottom-4 right-4 w-[calc(100%-32px)] sm:w-[380px] h-[500px] max-h-[80vh] bg-white rounded-3xl shadow-2xl border border-zinc-200 flex flex-col z-50 overflow-hidden"
+            initial={{ opacity: 0, y: 20, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.9 }}
+            className="fixed bottom-6 right-6 sm:bottom-8 sm:right-8 z-50 w-[calc(100%-48px)] sm:w-96 h-[500px] max-h-[80vh] bg-slate-900 border border-slate-700 rounded-3xl shadow-2xl flex flex-col overflow-hidden"
           >
-            {/* Header */}
-            <div className="bg-blue-600 p-4 text-white flex justify-between items-center">
-              <div className="flex items-center gap-2 font-bold">
-                <Bot size={20} /> Ask Licence Saathi
+            {/* Chat Header */}
+            <div className="bg-slate-950 p-4 border-b border-slate-800 flex justify-between items-center">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 bg-blue-600/20 text-blue-400 rounded-full flex items-center justify-center">
+                  <Bot size={20} />
+                </div>
+                <div>
+                  <h3 className="font-bold text-white text-sm">Ask Licence Saathi</h3>
+                  <p className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider">Online</p>
+                </div>
               </div>
-              <button onClick={() => setIsOpen(false)} className="hover:bg-blue-700 p-1.5 rounded-full transition-colors">
-                <X size={20} />
+              <button onClick={() => setIsOpen(false)} className="text-slate-400 hover:text-white transition">
+                <X size={24} />
               </button>
             </div>
 
             {/* Messages Area */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-zinc-50">
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-900/50">
               {messages.map((msg, idx) => (
-                <div key={idx} className={`flex gap-2 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  {msg.role === 'assistant' && (
-                    <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shrink-0">
-                      <Bot size={16}/>
+                <div key={idx} className={`flex flex-col ${msg.type === 'user' ? 'items-end' : 'items-start'}`}>
+                  <div className={`max-w-[85%] p-3 rounded-2xl text-sm ${
+                    msg.type === 'user' 
+                      ? 'bg-blue-600 text-white rounded-br-none' 
+                      : 'bg-slate-800 text-slate-100 border border-slate-700 rounded-bl-none'
+                  }`}>
+                    {msg.text}
+                  </div>
+                  
+                  {/* Next Step Suggestion (Only on Intro) */}
+                  {msg.isIntro && msg.nextStep && (
+                    <div className="mt-2 w-[85%]">
+                      <p className="text-xs text-slate-400 mb-1 font-bold uppercase tracking-wider">
+                        {lang === 'en' ? 'Suggested Next Step' : 'सुझाए गए अगले कदम'}
+                      </p>
+                      <Link 
+                        to={msg.nextStep.link} 
+                        onClick={() => setIsOpen(false)}
+                        className="bg-emerald-950/40 border border-emerald-900 text-emerald-400 p-3 rounded-xl text-sm flex items-center justify-between hover:bg-emerald-900/40 transition"
+                      >
+                        {msg.nextStep.text} <ArrowRight size={16} />
+                      </Link>
                     </div>
                   )}
-                  <div className={`p-3 rounded-2xl max-w-[80%] text-sm ${msg.role === 'user' ? 'bg-blue-600 text-white rounded-br-sm shadow-md' : 'bg-white border border-zinc-200 text-zinc-800 rounded-bl-sm shadow-sm'}`}>
-                    {msg.content}
-                  </div>
                 </div>
               ))}
-              {isLoading && (
-                <div className="flex gap-2 justify-start">
-                  <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shrink-0">
-                    <Bot size={16}/>
-                  </div>
-                  <div className="p-3 bg-white border border-zinc-200 rounded-2xl rounded-bl-sm shadow-sm flex items-center gap-2">
-                    <Loader2 size={16} className="animate-spin text-blue-600" />
-                  </div>
-                </div>
-              )}
               <div ref={messagesEndRef} />
             </div>
 
             {/* Quick Replies */}
-            {messages.length < 3 && !isLoading && (
-              <div className="px-4 pb-2 flex gap-2 overflow-x-auto whitespace-nowrap bg-zinc-50">
-                {quickReplies.map((qr, idx) => (
+            {messages.length < 3 && (
+              <div className="px-4 py-2 flex gap-2 overflow-x-auto no-scrollbar border-t border-slate-800/50 bg-slate-900">
+                {quickReplies.map((qr, i) => (
                   <button 
-                    key={idx} 
-                    onClick={() => setInput(qr)}
-                    className="px-4 py-2 bg-white border border-blue-200 text-blue-600 text-xs font-semibold rounded-full hover:bg-blue-50 shadow-sm shrink-0 transition-colors"
+                    key={i} 
+                    onClick={() => handleSend(qr[lang])}
+                    className="whitespace-nowrap px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 rounded-full text-xs transition"
                   >
-                    {qr}
+                    {qr[lang]}
                   </button>
                 ))}
               </div>
             )}
 
-            {/* Input Form */}
-            <form onSubmit={handleSend} className="p-3 bg-white border-t border-zinc-200 flex gap-2">
+            {/* Input Box */}
+            <form 
+              onSubmit={(e) => { e.preventDefault(); handleSend(input); }} 
+              className="p-4 bg-slate-950 border-t border-slate-800 flex gap-2"
+            >
               <input 
                 type="text" 
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder={lang === 'en' ? "Ask a question..." : "एक सवाल पूछें..."}
-                className="flex-1 p-3 bg-zinc-100 border border-transparent rounded-xl focus:outline-none focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all text-sm"
+                placeholder={lang === 'en' ? "Ask a question..." : "कोई प्रश्न पूछें..."}
+                className="flex-1 bg-slate-900 border border-slate-700 text-white px-4 py-2 rounded-full text-sm focus:outline-none focus:border-blue-500"
               />
               <button 
                 type="submit" 
-                disabled={!input.trim() || isLoading}
-                className="p-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50 transition-colors shadow-md"
+                disabled={!input.trim()}
+                className="w-10 h-10 bg-blue-600 disabled:bg-slate-800 text-white rounded-full flex items-center justify-center transition shrink-0"
               >
-                <Send size={18} />
+                <Send size={18} className="ml-[-2px] mt-[2px]" />
               </button>
             </form>
           </motion.div>

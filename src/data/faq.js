@@ -1,30 +1,39 @@
-export const faqData = [
-  {
-    keywords: ["fee", "cost", "price", "money", "rupees", "शुल्क", "पैसा", "फीस", "खर्च"],
-    answer: {
-      en: "A Learner's Licence costs ₹150 per vehicle class, and the LL test is ₹50. A Permanent Driving Test is ₹300, and issuing the licence is ₹200.",
-      hi: "लर्नर लाइसेंस की फीस प्रति वाहन श्रेणी ₹150 है, और LL टेस्ट ₹50 है। स्थायी ड्राइविंग टेस्ट ₹300 है, और लाइसेंस जारी करने की फीस ₹200 है।"
-    }
-  },
-  {
-    keywords: ["age", "old", "years", "आयु", "उम्र", "साल"],
-    answer: {
-      en: "You must be 16 for a gearless two-wheeler (up to 50cc, with parent's consent), 18 for a motorcycle with gear or a car, and 20 for commercial vehicles.",
-      hi: "बिना गियर वाले दोपहिया वाहन के लिए आपकी आयु 16 वर्ष (माता-पिता की सहमति के साथ), गियर वाली मोटरसाइकिल या कार के लिए 18 वर्ष, और व्यावसायिक वाहनों के लिए 20 वर्ष होनी चाहिए।"
-    }
-  },
-  {
-    keywords: ["valid", "expire", "time", "months", "वैध", "समाप्त", "समय", "महीने"],
-    answer: {
-      en: "A Learner's Licence is valid for 6 months. You can apply for a Permanent Licence 30 days after your LL is issued.",
-      hi: "लर्नर लाइसेंस 6 महीने के लिए वैध है। आप अपना LL जारी होने के 30 दिन बाद स्थायी लाइसेंस के लिए आवेदन कर सकते हैं।"
-    }
-  },
-  {
-    keywords: ["apply", "process", "steps", "how", "आवेदन", "कैसे", "प्रक्रिया"],
-    answer: {
-      en: "To apply, first check your eligibility, then fill out the Learner's Licence form, pay the fee, and pass the online mock test. You can do all of this right here in the app by clicking 'Just starting' on the home screen!",
-      hi: "आवेदन करने के लिए, पहले अपनी पात्रता जांचें, फिर लर्नर लाइसेंस फॉर्म भरें, शुल्क का भुगतान करें और ऑनलाइन मॉक टेस्ट पास करें। आप होम स्क्रीन पर 'अभी शुरुआत कर रहे हैं' पर क्लिक करके यह सब कर सकते हैं!"
-    }
-  }
+export const faqs = [
+  // Learner's Licence (LL)
+  { keywords: ["validity", "expire", "how long", "ll validity", "valid"], a: { en: "A Learner's Licence is valid for exactly 6 months from the date of issue.", hi: "लर्नर लाइसेंस जारी होने की तारीख से ठीक 6 महीने के लिए वैध होता है।" } },
+  { keywords: ["age", "how old", "minimum age"], a: { en: "You must be 16 for a gearless 50cc scooter (with parent consent), 18 for geared bikes/cars, and 20 for commercial vehicles.", hi: "गियरलेस 50cc स्कूटर के लिए आपकी उम्र 16 वर्ष (माता-पिता की सहमति के साथ), गियर वाली बाइक/कार के लिए 18 वर्ष और वाणिज्यिक वाहनों के लिए 20 वर्ष होनी चाहिए।" } },
+  { keywords: ["fee", "cost", "how much", "price"], a: { en: "The LL fee is usually ₹150 per vehicle class, plus ₹50 for the test. A permanent DL is ₹200 plus ₹300 for the driving test.", hi: "एलएल शुल्क आमतौर पर प्रति वाहन वर्ग ₹150 है, साथ ही टेस्ट के लिए ₹50। स्थायी डीएल ₹200 है और ड्राइविंग टेस्ट के लिए ₹300 है।" } },
+  { keywords: ["documents", "proof", "what to bring"], a: { en: "You need Proof of Age, Proof of Address, a passport photo, your signature, and Form 1A (Medical Certificate) if you are over 40.", hi: "आपको आयु प्रमाण, पता प्रमाण, एक पासपोर्ट फोटो, आपके हस्ताक्षर, और यदि आप 40 से अधिक हैं तो फॉर्म 1A (चिकित्सा प्रमाण पत्र) की आवश्यकता है।" } },
+  { keywords: ["test format", "how many questions", "pass mark", "passing"], a: { en: "The LL test has 15 questions. You get 30 seconds per question and must answer 9 correctly to pass.", hi: "एलएल टेस्ट में 15 प्रश्न होते हैं। आपको प्रति प्रश्न 30 सेकंड मिलते हैं और पास होने के लिए 9 सही उत्तर देने होंगे।" } },
+  
+  // Permanent Licence (DL)
+  { keywords: ["when", "apply for permanent", "dl time"], a: { en: "You can apply for a Permanent Driving Licence 30 days after your Learner's Licence is issued.", hi: "आप अपना लर्नर लाइसेंस जारी होने के 30 दिन बाद स्थायी ड्राइविंग लाइसेंस के लिए आवेदन कर सकते हैं।" } },
+  { keywords: ["l board", "l sign", "red l"], a: { en: "While holding an LL, you must display a red 'L' on a white background on the front and rear of your vehicle.", hi: "एलएल रखते समय, आपको अपने वाहन के आगे और पीछे सफेद पृष्ठभूमि पर एक लाल 'एल' प्रदर्शित करना होगा।" } },
+  { keywords: ["companion", "alone", "can i drive"], a: { en: "With an LL, you cannot drive alone. You must be accompanied by a person holding a valid Permanent DL.", hi: "एलएल के साथ, आप अकेले ड्राइव नहीं कर सकते। आपके साथ एक वैध स्थायी डीएल धारक व्यक्ति होना चाहिए।" } },
+  { keywords: ["vehicle", "whose car", "own car"], a: { en: "You must bring your own vehicle for the driving test, and it must have a valid RC, Insurance, and PUC.", hi: "आपको ड्राइविंग टेस्ट के लिए अपना वाहन लाना होगा, और इसमें एक वैध आरसी, बीमा और पीयूसी होना चाहिए।" } },
+  { keywords: ["fail driving test", "retake dl test"], a: { en: "If you fail the driving test, you can re-apply after 7 days by paying the test fee again.", hi: "यदि आप ड्राइविंग टेस्ट में फेल हो जाते हैं, तो आप फिर से टेस्ट शुल्क देकर 7 दिनों के बाद फिर से आवेदन कर सकते हैं।" } },
+
+  // Renewals & Changes
+  { keywords: ["renew", "expired dl", "renewal"], a: { en: "You can renew your DL up to 1 year before its expiry or within 1 year after expiry without a penalty.", hi: "आप बिना किसी जुर्माने के अपने डीएल को इसकी समाप्ति से 1 वर्ष पहले या समाप्ति के 1 वर्ष के भीतर नवीनीकृत कर सकते हैं।" } },
+  { keywords: ["address", "change address", "shift"], a: { en: "To change your address, apply online via mParivahan with your new address proof and pay the update fee.", hi: "अपना पता बदलने के लिए, अपने नए पते के प्रमाण के साथ mParivahan के माध्यम से ऑनलाइन आवेदन करें और अपडेट शुल्क का भुगतान करें।" } },
+  { keywords: ["lost", "duplicate", "stolen"], a: { en: "For a lost licence, file an FIR/NCR with the police, then apply for a Duplicate DL on Parivahan.", hi: "खोए हुए लाइसेंस के लिए, पुलिस में FIR/NCR दर्ज करें, फिर परिवहन पर डुप्लीकेट DL के लिए आवेदन करें।" } },
+  { keywords: ["medical certificate", "form 1a", "doctor"], a: { en: "Form 1A is a medical fitness certificate required for all transport vehicles and for anyone aged 40 or above.", hi: "फॉर्म 1A एक मेडिकल फिटनेस सर्टिफिकेट है जो सभी परिवहन वाहनों और 40 वर्ष या उससे अधिक उम्र के किसी भी व्यक्ति के लिए आवश्यक है।" } },
+  { keywords: ["smart card", "rc book", "physical copy"], a: { en: "Your DL will be printed on a smart card and sent to your registered address via Speed Post.", hi: "आपका डीएल एक स्मार्ट कार्ड पर प्रिंट किया जाएगा और स्पीड पोस्ट के माध्यम से आपके पंजीकृत पते पर भेजा जाएगा।" } },
+
+  // Traffic Rules
+  { keywords: ["drunk", "alcohol", "drink"], a: { en: "Drunk driving is strictly prohibited. The BAC limit is 30mg per 100ml of blood. Penalties include heavy fines or jail.", hi: "शराब पीकर गाड़ी चलाना सख्त मना है। BAC की सीमा 30mg प्रति 100ml रक्त है। जुर्माने में भारी जुर्माना या जेल शामिल है।" } },
+  { keywords: ["helmet", "pillion", "two wheeler"], a: { en: "Both the rider and the pillion passenger must wear ISI-marked helmets.", hi: "सवार और पीछे बैठने वाले दोनों को ISI-चिह्नित हेलमेट पहनना अनिवार्य है।" } },
+  { keywords: ["seatbelt", "car rules", "belt"], a: { en: "All passengers in a car, including those in the rear seats, must wear seatbelts.", hi: "कार में सभी यात्रियों को, जिनमें पीछे की सीटों वाले भी शामिल हैं, सीटबेल्ट पहननी चाहिए।" } },
+  { keywords: ["phone", "mobile", "talking"], a: { en: "Using a mobile phone while driving is illegal and dangerous, even with a hands-free device.", hi: "ड्राइविंग करते समय मोबाइल फोन का उपयोग करना अवैध और खतरनाक है, हैंड्स-फ्री डिवाइस के साथ भी।" } },
+  { keywords: ["ambulance", "fire engine", "emergency"], a: { en: "You must always pull over to the left and give free passage to emergency vehicles.", hi: "आपको हमेशा बाईं ओर खींचना चाहिए और आपातकालीन वाहनों को मुफ्त मार्ग देना चाहिए।" } },
+
+  // mParivahan & Tech
+  { keywords: ["payment failed", "money deducted", "transaction error"], a: { en: "If payment fails but money is deducted, wait 24-48 hours. Check the 'Verify Payment Status' link on Parivahan.", hi: "यदि भुगतान विफल हो जाता है लेकिन पैसे कट जाते हैं, तो 24-48 घंटे प्रतीक्षा करें। परिवहन पर 'भुगतान स्थिति सत्यापित करें' लिंक देखें।" } },
+  { keywords: ["slot booking", "no slots", "test date"], a: { en: "RTO slots open randomly. If none are available, check back early in the morning or select a nearby RTO.", hi: "आरटीओ स्लॉट बेतरतीब ढंग से खुलते हैं। यदि कोई उपलब्ध नहीं है, तो सुबह जल्दी वापस देखें या पास के आरटीओ का चयन करें।" } },
+  { keywords: ["photo upload", "signature size", "error uploading"], a: { en: "Ensure your photo and signature are in JPEG format and the file size is under 50KB.", hi: "सुनिश्चित करें कि आपकी तस्वीर और हस्ताक्षर JPEG प्रारूप में हैं और फ़ाइल का आकार 50KB से कम है।" } },
+  { keywords: ["rejected", "cancelled", "why fail"], a: { en: "Applications are usually rejected if your Aadhaar name does not exactly match your other documents.", hi: "यदि आपका आधार नाम आपके अन्य दस्तावेजों से बिल्कुल मेल नहीं खाता है तो आवेदन आमतौर पर अस्वीकार कर दिए जाते हैं।" } },
+  { keywords: ["track", "status", "where is my dl"], a: { en: "Use the 'Track Application' feature on our site or Parivahan with your Application Number and DOB.", hi: "अपने आवेदन संख्या और जन्म तिथि के साथ हमारी साइट या परिवहन पर 'ट्रैक एप्लीकेशन' सुविधा का उपयोग करें।" } },
+  
+  // Custom Hackathon Fallback
+  { keywords: ["aadhaar number", "pan number", "personal", "otp", "password", "aadhaar"], a: { en: "For your privacy, I never ask for your Aadhaar, OTP, or any personal details. Please do not share them here.", hi: "आपकी निजता के लिए, मैं कभी भी आपका आधार, ओटीपी या कोई व्यक्तिगत विवरण नहीं मांगता। कृपया उन्हें यहां साझा न करें।" } }
 ];
