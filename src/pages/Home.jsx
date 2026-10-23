@@ -1,170 +1,234 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { FileText, BookOpen, Clock, Bot, ChevronDown, Compass } from 'lucide-react';
+import { 
+  ShieldCheck, 
+  FileCheck, 
+  CheckCircle2, 
+  Navigation, 
+  MessageSquare, 
+  Map, 
+  Clock,
+  Menu,
+  X
+} from 'lucide-react';
 
 export default function Home() {
   const [scrolled, setScrolled] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 50);
+    const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchQuery.toLowerCase().includes("mock") || searchQuery.toLowerCase().includes("test")) {
+      navigate('/mock-test');
+    } else {
+      navigate('/eligibility');
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-zinc-950 font-sans text-zinc-50 font-sans selection:bg-blue-500/30">
+    <div className="min-h-screen bg-slate-50 font-sans text-slate-900 selection:bg-blue-100">
       
       {/* NAVIGATION */}
-      <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${scrolled ? 'bg-zinc-950/80 backdrop-blur-md border-b border-white/10 py-4' : 'bg-transparent py-6'}`}>
+      <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${scrolled ? 'bg-white/90 backdrop-blur-md shadow-sm py-4' : 'bg-transparent py-6'}`}>
         <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <Compass className="text-blue-500" size={28} />
-            <span className="text-xl font-bold tracking-tight text-white">Licence Saathi</span>
-          </div>
+          <Link to="/" className="flex items-center gap-2">
+            <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-blue-200 shadow-lg">
+              <ShieldCheck className="text-white" size={24} />
+            </div>
+            <span className="text-xl font-bold tracking-tight text-slate-800">Licence Saathi</span>
+          </Link>
           
-          <div className="hidden md:flex items-center gap-8 text-sm font-medium text-zinc-300">
-            <button className="flex items-center gap-1 hover:text-white transition">Services <ChevronDown size={14}/></button>
-            <Link to="/mock-test" className="hover:text-white transition">Mock Tests</Link>
-            <Link to="/learn" className="hover:text-white transition">Road Safety</Link>
-            <Link to="/documents" className="hover:text-white transition">Resources</Link>
+          {/* Desktop Nav */}
+          <div className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-600">
+            <a href="#how-it-works" className="hover:text-blue-600 transition">How it Works</a>
+            <Link to="/mock-test" className="hover:text-blue-600 transition">Mock Tests</Link>
+            <Link to="/learn" className="hover:text-blue-600 transition">Road Signs</Link>
+            <Link to="/documents" className="hover:text-blue-600 transition">FAQs</Link>
           </div>
 
-          <div className="flex items-center gap-6">
-            <button className="text-sm font-medium text-zinc-300 hover:text-white hidden md:block">Log in</button>
-            <Link to="/eligibility" className="bg-white text-zinc-950 px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-zinc-200 transition">
+          <div className="hidden md:flex items-center gap-4">
+            <Link to="/eligibility" className="bg-blue-600 text-white px-6 py-2.5 rounded-full text-sm font-semibold hover:bg-blue-700 shadow-md shadow-blue-200 transition-all active:scale-95">
               Get Started
             </Link>
           </div>
+
+          {/* Mobile Menu Toggle */}
+          <button className="md:hidden text-slate-600" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+            {mobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
+          </button>
         </div>
+
+        {/* Mobile Dropdown */}
+        {mobileMenuOpen && (
+          <div className="md:hidden absolute top-full left-0 w-full bg-white shadow-xl border-t border-slate-100 flex flex-col p-6 gap-4">
+            <a href="#how-it-works" onClick={() => setMobileMenuOpen(false)} className="font-medium text-slate-600">How it Works</a>
+            <Link to="/mock-test" onClick={() => setMobileMenuOpen(false)} className="font-medium text-slate-600">Mock Tests</Link>
+            <Link to="/learn" onClick={() => setMobileMenuOpen(false)} className="font-medium text-slate-600">Road Signs</Link>
+            <Link to="/eligibility" onClick={() => setMobileMenuOpen(false)} className="bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold text-center mt-2">Get Started</Link>
+          </div>
+        )}
       </nav>
 
       {/* HERO SECTION */}
-      <section className="relative h-screen flex flex-col justify-center items-center text-center px-4 pt-20 overflow-hidden">
-        {/* Cinematic Background Image */}
-        <div className="absolute inset-0 z-0">
-          <img 
-            src="https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=2021&auto=format&fit=crop" 
-            alt="Misty winding road" 
-            className="w-full h-full object-cover opacity-60"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-zinc-950/40 via-zinc-950/60 to-zinc-950"></div>
-        </div>
-
+      <section className="relative pt-32 pb-20 px-6 overflow-hidden">
+        {/* Soft Background Blobs */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-blue-100/50 rounded-full blur-3xl -z-10 pointer-events-none"></div>
+        
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="relative z-10 max-w-4xl mx-auto"
+          transition={{ duration: 0.6 }}
+          className="max-w-4xl mx-auto text-center"
         >
-          <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-white leading-[1.1] mb-6">
-            A radically simpler way to <br className="hidden md:block" /> get your driving licence.
+          <div className="inline-block mb-4 px-4 py-1.5 bg-emerald-50 text-emerald-700 font-medium text-sm rounded-full border border-emerald-200">
+            ✨ Stress-free mParivahan assistance
+          </div>
+          <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight text-slate-900 leading-[1.15] mb-6">
+            Getting your driving licence <br className="hidden md:block" />
+            <span className="text-blue-600">shouldn’t feel like a test.</span>
           </h1>
-          <p className="text-lg md:text-xl text-zinc-300 mb-10 max-w-2xl mx-auto font-light leading-relaxed">
-            Apply online, learn road rules, and pass your tests with step-by-step guidance—without the confusion.
+          <p className="text-lg md:text-xl text-slate-600 mb-10 max-w-2xl mx-auto font-normal leading-relaxed">
+            Step-by-step guidance, simple mock tests, and instant answers for your mParivahan journey.
           </p>
 
-          {/* Integrated Input / CTA */}
-          <div className="relative max-w-md mx-auto flex items-center bg-white/10 backdrop-blur-md border border-white/20 rounded-full p-1.5 shadow-2xl transition-all focus-within:bg-white/20 focus-within:border-white/40">
+          {/* Interactive Search/Action Box */}
+          <form onSubmit={handleSearch} className="relative max-w-xl mx-auto flex items-center bg-white border border-slate-200 rounded-full p-2 shadow-xl shadow-slate-200/50 focus-within:ring-4 focus-within:ring-blue-100 transition-all">
             <input 
-              type="tel" 
-              placeholder="Enter your mobile number" 
-              className="flex-1 bg-transparent px-6 text-white focus:outline-none placeholder-zinc-400 text-sm md:text-base"
+              type="text" 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="e.g. How to apply for Learner's Licence?" 
+              className="flex-1 bg-transparent px-6 text-slate-800 focus:outline-none placeholder-slate-400 text-sm md:text-base"
             />
-            <Link to="/eligibility" className="bg-blue-600 text-white px-6 py-3 rounded-full font-semibold hover:bg-blue-500 transition-colors shadow-lg">
-              Start Journey
-            </Link>
-          </div>
+            <button type="submit" className="bg-blue-600 text-white px-8 py-3 rounded-full font-semibold hover:bg-blue-700 transition-colors shadow-md shadow-blue-200">
+              Start Now
+            </button>
+          </form>
         </motion.div>
       </section>
 
-      {/* FEATURES SECTION (Deep Dark Mode) */}
-      <section className="bg-zinc-950 py-32 px-6">
+      {/* 3-STEP JOURNEY SECTION */}
+      <section id="how-it-works" className="py-20 px-6 bg-white">
         <div className="max-w-7xl mx-auto">
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="mb-20 text-center md:text-left"
-          >
-            <h2 className="text-3xl md:text-5xl font-bold tracking-tight text-white mb-4">
-              Everything you need to hit the <br className="hidden md:block"/> road safely. All in one place.
-            </h2>
-          </motion.div>
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">Your journey, simplified.</h2>
+            <p className="text-slate-600 text-lg">Three easy steps to get you on the road safely.</p>
+          </div>
 
-          {/* Bento Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            
-            <motion.Link to="/application" whileHover={{ y: -5 }} className="group block bg-zinc-900 border border-white/5 rounded-[2rem] p-10 hover:border-white/10 hover:bg-zinc-800/80 transition-all duration-300">
-              <div className="w-12 h-12 bg-blue-500/10 rounded-full flex items-center justify-center mb-6">
-                <FileText className="text-blue-500" size={24} />
-              </div>
-              <h3 className="text-2xl font-bold text-white mb-3 tracking-tight">Guided Applications</h3>
-              <p className="text-zinc-400 leading-relaxed font-light">Step-by-step help for Learner’s and Permanent Licences. We cut through the red tape so you don't have to.</p>
-            </motion.Link>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
+            {/* Connecting Line (Desktop only) */}
+            <div className="hidden md:block absolute top-12 left-1/6 right-1/6 h-0.5 bg-slate-100 z-0 border-t-2 border-dashed border-slate-200"></div>
 
-            <motion.Link to="/learn" whileHover={{ y: -5 }} className="group block bg-zinc-900 border border-white/5 rounded-[2rem] p-10 hover:border-white/10 hover:bg-zinc-800/80 transition-all duration-300">
-              <div className="w-12 h-12 bg-emerald-500/10 rounded-full flex items-center justify-center mb-6">
-                <BookOpen className="text-emerald-500" size={24} />
+            <motion.div whileHover={{ y: -5 }} className="relative z-10 bg-slate-50 p-8 rounded-3xl border border-slate-100 text-center">
+              <div className="w-20 h-20 mx-auto bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mb-6 shadow-inner">
+                <FileCheck size={40} />
               </div>
-              <h3 className="text-2xl font-bold text-white mb-3 tracking-tight">Master the Rules</h3>
-              <p className="text-zinc-400 leading-relaxed font-light">Traffic signs and road safety concepts made easy. Interactive flashcards and text-to-speech built in.</p>
-            </motion.Link>
-
-            <motion.Link to="/mock-test" whileHover={{ y: -5 }} className="group block bg-zinc-900 border border-white/5 rounded-[2rem] p-10 hover:border-white/10 hover:bg-zinc-800/80 transition-all duration-300">
-              <div className="w-12 h-12 bg-purple-500/10 rounded-full flex items-center justify-center mb-6">
-                <Clock className="text-purple-500" size={24} />
-              </div>
-              <h3 className="text-2xl font-bold text-white mb-3 tracking-tight">Mock Tests</h3>
-              <p className="text-zinc-400 leading-relaxed font-light">Prepare for your online learner's test with instant feedback. Real RTO formats to build your confidence.</p>
-            </motion.Link>
-
-            <motion.div whileHover={{ y: -5 }} className="group block bg-zinc-900 border border-white/5 rounded-[2rem] p-10 hover:border-white/10 hover:bg-zinc-800/80 transition-all duration-300">
-              <div className="w-12 h-12 bg-amber-500/10 rounded-full flex items-center justify-center mb-6">
-                <Bot className="text-amber-500" size={24} />
-              </div>
-              <h3 className="text-2xl font-bold text-white mb-3 tracking-tight">24/7 Saathi Support</h3>
-              <p className="text-zinc-400 leading-relaxed font-light">Conversational guide to answer your procedural questions instantly. Your personal AI driving consultant.</p>
+              <div className="inline-block px-3 py-1 bg-white text-slate-500 text-xs font-bold rounded-full mb-4 shadow-sm border border-slate-100">Step 1</div>
+              <h3 className="text-xl font-bold text-slate-900 mb-2">Check Eligibility</h3>
+              <p className="text-slate-600 text-sm leading-relaxed">Find out exactly what documents you need and if you qualify, without reading long government PDFs.</p>
             </motion.div>
+
+            <motion.div whileHover={{ y: -5 }} className="relative z-10 bg-slate-50 p-8 rounded-3xl border border-slate-100 text-center">
+              <div className="w-20 h-20 mx-auto bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center mb-6 shadow-inner">
+                <CheckCircle2 size={40} />
+              </div>
+              <div className="inline-block px-3 py-1 bg-white text-slate-500 text-xs font-bold rounded-full mb-4 shadow-sm border border-slate-100">Step 2</div>
+              <h3 className="text-xl font-bold text-slate-900 mb-2">Practice Easy Tests</h3>
+              <p className="text-slate-600 text-sm leading-relaxed">Take stress-free mock exams that look and feel exactly like the real RTO online test.</p>
+            </motion.div>
+
+            <motion.div whileHover={{ y: -5 }} className="relative z-10 bg-slate-50 p-8 rounded-3xl border border-slate-100 text-center">
+              <div className="w-20 h-20 mx-auto bg-amber-100 text-amber-600 rounded-2xl flex items-center justify-center mb-6 shadow-inner">
+                <Navigation size={40} />
+              </div>
+              <div className="inline-block px-3 py-1 bg-white text-slate-500 text-xs font-bold rounded-full mb-4 shadow-sm border border-slate-100">Step 3</div>
+              <h3 className="text-xl font-bold text-slate-900 mb-2">Apply with Confidence</h3>
+              <p className="text-slate-600 text-sm leading-relaxed">Navigate the mParivahan portal knowing exactly what to click, upload, and expect next.</p>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* FEATURE HIGHLIGHTS */}
+      <section className="py-24 px-6 bg-slate-50">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            
+            <Link to="/mock-test" className="group block bg-white p-8 rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-300">
+              <div className="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <Clock className="text-indigo-600" size={28} />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-3">Stress-Free Mock Exams</h3>
+              <p className="text-slate-600 leading-relaxed font-light">Practice tests that mirror the actual learner's test format. Build your confidence before the real thing.</p>
+            </Link>
+
+            <Link to="/learn" className="group block bg-white p-8 rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-300">
+              <div className="w-14 h-14 bg-emerald-50 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <Map className="text-emerald-600" size={28} />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-3">Visual Traffic Signs</h3>
+              <p className="text-slate-600 leading-relaxed font-light">Interactive flashcards with visual aids and audio reading to help you learn road safety concepts fast.</p>
+            </Link>
+
+            <div className="group block bg-white p-8 rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-300">
+              <div className="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <MessageSquare className="text-blue-600" size={28} />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-3">AI Saathi Assistant</h3>
+              <p className="text-slate-600 leading-relaxed font-light">Ask any procedural question in plain language. Our smart assistant speaks both English and Hindi seamlessly.</p>
+            </div>
 
           </div>
         </div>
       </section>
 
-      {/* FOOTER */}
-      <footer className="bg-zinc-950 border-t border-white/10 pt-20 pb-10 px-6">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
-          <div className="md:col-span-2">
-            <div className="flex items-center gap-2 mb-6">
-              <Compass className="text-blue-500" size={24} />
-              <span className="text-lg font-bold text-white">Licence Saathi</span>
+      {/* CLEAN FOOTER */}
+      <footer className="bg-white border-t border-slate-200 pt-16 pb-8 px-6">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center md:items-start gap-8 mb-12">
+          <div className="text-center md:text-left">
+            <div className="flex items-center justify-center md:justify-start gap-2 mb-4">
+              <ShieldCheck className="text-blue-600" size={28} />
+              <span className="text-xl font-bold text-slate-900">Licence Saathi</span>
             </div>
-            <p className="text-zinc-500 text-sm max-w-xs leading-relaxed">
-              Empowering Indian citizens with a stress-free, transparent pathway to hitting the road safely.
+            <p className="text-slate-500 text-sm max-w-xs">
+              Making Indian roads safer by making the licensing process simpler and more accessible for everyone.
             </p>
           </div>
           
-          <div>
-            <h4 className="text-white font-semibold mb-6 tracking-tight">Products</h4>
-            <ul className="space-y-4 text-sm text-zinc-500">
-              <li><Link to="/eligibility" className="hover:text-white transition">Eligibility Checker</Link></li>
-              <li><Link to="/mock-test" className="hover:text-white transition">Mock Testing Engine</Link></li>
-              <li><Link to="/learn" className="hover:text-white transition">Sign Glossary</Link></li>
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="text-white font-semibold mb-6 tracking-tight">Legal</h4>
-            <ul className="space-y-4 text-sm text-zinc-500">
-              <li><a href="#" className="hover:text-white transition">Privacy Policy</a></li>
-              <li><a href="#" className="hover:text-white transition">Terms of Service</a></li>
-            </ul>
+          <div className="flex gap-12 text-center md:text-left">
+            <div>
+              <h4 className="font-semibold text-slate-900 mb-4">Quick Links</h4>
+              <ul className="space-y-3 text-sm text-slate-500">
+                <li><Link to="/eligibility" className="hover:text-blue-600">Check Eligibility</Link></li>
+                <li><Link to="/mock-test" className="hover:text-blue-600">Take a Mock Test</Link></li>
+                <li><Link to="/learn" className="hover:text-blue-600">Learn Road Signs</Link></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold text-slate-900 mb-4">Support</h4>
+              <ul className="space-y-3 text-sm text-slate-500">
+                <li><Link to="/documents" className="hover:text-blue-600">Required Documents</Link></li>
+                <li><a href="#" className="hover:text-blue-600">Privacy Policy</a></li>
+                <li><a href="#" className="hover:text-blue-600">Terms of Use</a></li>
+              </ul>
+            </div>
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto pt-8 border-t border-white/10 text-xs text-zinc-600 font-light text-center md:text-left">
+        <div className="max-w-7xl mx-auto pt-8 border-t border-slate-100 text-xs text-slate-400 text-center md:text-left flex flex-col md:flex-row justify-between items-center gap-4">
           <p>© 2026 Licence Saathi. All rights reserved.</p>
-          <p className="mt-2">Disclaimer: Licence Saathi is an independent helper tool designed to simplify driving licence preparation. It is not affiliated with the official mParivahan portal or the Ministry of Road Transport & Highways.</p>
+          <p className="max-w-xl text-center md:text-right">
+            Disclaimer: Licence Saathi is an independent educational tool. We are not affiliated with the Ministry of Road Transport & Highways or the official Parivahan Sewa portal.
+          </p>
         </div>
       </footer>
     </div>
