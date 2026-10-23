@@ -20,9 +20,12 @@ export default function Home() {
     localStorage.setItem('licenceJourneyStage', activeStage.toString());
   }, [activeStage]);
 
-  const handleComingSoon = (e) => {
+  // NEW: Function to open the Chat Helper
+  const openFaqChat = (e) => {
     e.preventDefault();
-    alert("This page is being finalized for the hackathon!");
+    setMobileMenuOpen(false);
+    // Dispatch a custom event that the ChatHelper component will listen for
+    window.dispatchEvent(new CustomEvent('open-chat-helper'));
   };
 
   const journeyOptions = [
@@ -49,7 +52,7 @@ export default function Home() {
       <div className="absolute top-[20%] right-[-5%] w-[400px] h-[400px] bg-emerald-500/15 rounded-full blur-[100px] pointer-events-none"></div>
       <div className="absolute bottom-[-10%] left-[20%] w-[600px] h-[600px] bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none"></div>
 
-      {/* FIXED NAVIGATION: High z-index and solid background for mobile menu */}
+      {/* FIXED NAVIGATION */}
       <nav className="relative z-50 w-full py-6">
         <div className="max-w-7xl mx-auto px-6 flex justify-between items-center relative z-50 bg-slate-950/0">
           <Link to="/" className="flex items-center gap-3">
@@ -63,7 +66,7 @@ export default function Home() {
           <div className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-300">
             <Link to="/mock-test" className="hover:text-white transition-colors">Mock Tests</Link>
             <Link to="/learn" className="hover:text-white transition-colors">Road Signs</Link>
-            <a href="#faqs" onClick={handleComingSoon} className="hover:text-white transition-colors">FAQs</a>
+            <a href="#faqs" onClick={openFaqChat} className="hover:text-white transition-colors cursor-pointer">FAQs</a>
           </div>
 
           {/* Mobile Menu Toggle */}
@@ -72,12 +75,12 @@ export default function Home() {
           </button>
         </div>
 
-        {/* Mobile Dropdown (Fixed Overlap) */}
+        {/* Mobile Dropdown */}
         {mobileMenuOpen && (
           <div className="md:hidden absolute top-full left-0 w-full bg-slate-950 border-b border-slate-800 flex flex-col p-6 gap-6 shadow-2xl z-50">
             <Link to="/mock-test" onClick={() => setMobileMenuOpen(false)} className="font-medium text-slate-300 text-lg">Mock Tests</Link>
             <Link to="/learn" onClick={() => setMobileMenuOpen(false)} className="font-medium text-slate-300 text-lg">Road Signs</Link>
-            <a href="#faqs" onClick={(e) => { setMobileMenuOpen(false); handleComingSoon(e); }} className="font-medium text-slate-300 text-lg">FAQs</a>
+            <a href="#faqs" onClick={openFaqChat} className="font-medium text-slate-300 text-lg cursor-pointer">FAQs</a>
           </div>
         )}
       </nav>
@@ -192,13 +195,14 @@ export default function Home() {
               <p className="text-slate-400 text-sm leading-relaxed font-light">Interactive flashcards with visual aids and audio reading to help you learn road safety concepts fast.</p>
             </Link>
 
-            <div className="group block bg-slate-900/50 backdrop-blur-sm p-8 rounded-3xl border border-slate-800/80 hover:border-slate-700 transition-all duration-300">
+            {/* Changed from div to button to trigger ChatHelper */}
+            <button onClick={openFaqChat} className="text-left group block bg-slate-900/50 backdrop-blur-sm p-8 rounded-3xl border border-slate-800/80 hover:border-slate-700 transition-all duration-300">
               <div className="w-12 h-12 bg-slate-800 rounded-xl border border-slate-700 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                 <MessageSquare className="text-blue-400" size={24} />
               </div>
               <h3 className="text-xl font-bold text-white mb-3">AI Saathi Assistant</h3>
               <p className="text-slate-400 text-sm leading-relaxed font-light">Ask any procedural question in plain language. Our smart assistant speaks both English and Hindi seamlessly.</p>
-            </div>
+            </button>
 
           </div>
         </div>
@@ -230,8 +234,8 @@ export default function Home() {
               <h4 className="font-semibold text-white mb-4">Support</h4>
               <ul className="space-y-3 text-sm text-slate-400">
                 <li><Link to="/documents" className="hover:text-blue-400 transition-colors">Required Documents</Link></li>
-                <li><a href="#" onClick={handleComingSoon} className="hover:text-blue-400 transition-colors">Privacy Policy</a></li>
-                <li><a href="#" onClick={handleComingSoon} className="hover:text-blue-400 transition-colors">Terms of Use</a></li>
+                {/* Fixed the footer FAQ link too */}
+                <li><a href="#faqs" onClick={openFaqChat} className="hover:text-blue-400 transition-colors cursor-pointer">FAQs</a></li>
               </ul>
             </div>
           </div>

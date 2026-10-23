@@ -39,6 +39,13 @@ export default function ChatHelper() {
     }
   }, [isOpen, lang, messages.length]);
 
+  // Listen for external open commands (like the navbar/footer FAQ links)
+  useEffect(() => {
+    const handleOpenChat = () => setIsOpen(true);
+    window.addEventListener('open-chat-helper', handleOpenChat);
+    return () => window.removeEventListener('open-chat-helper', handleOpenChat);
+  }, []);
+
   const handleSend = (userText) => {
     if (!userText.trim()) return;
     
@@ -60,10 +67,8 @@ export default function ChatHelper() {
       } else {
         // Search FAQs
         for (const item of faqs) {
-          // Allow flexible key names since I fixed the array above, but handle safely
           const keywords = item.keywords || Object.keys(item)[0].split(',');
           if (keywords.some(kw => query.includes(kw.trim()))) {
-            // Check if it has an 'a' property, otherwise it might be the key itself (handling my slight typo in the data file safely)
             foundAnswer = item.a ? item.a[lang] : Object.values(item)[0][lang];
             break;
           }
