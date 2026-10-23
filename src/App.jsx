@@ -12,6 +12,7 @@ import PermanentLicence from './pages/PermanentLicence';
 import Learn from './pages/Learn';
 import DrivingTest from './pages/DrivingTest';
 import Settings from './pages/Settings';
+import TestDay from './pages/TestDay';
 
 // Components
 import ChatHelper from './components/ChatHelper';
@@ -46,6 +47,7 @@ export default function App() {
             <Route path="/learn" element={<Learn />} />
             <Route path="/driving-test" element={<DrivingTest />} />
             <Route path="/settings" element={<Settings />} />
+            <Route path="/test-day" element={<TestDay />} />
           </Routes>
         </main>
         
