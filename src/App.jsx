@@ -1,8 +1,7 @@
-import { Routes, Route } from 'react-router-dom';
-import { useState, createContext, useEffect } from 'react';
-import { en } from './i18n/en';
-import { hi } from './i18n/hi';
-import Navbar from './components/Navbar';
+import { useState, createContext } from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+
+// Pages
 import Home from './pages/Home';
 import Eligibility from './pages/Eligibility';
 import Documents from './pages/Documents';
@@ -12,49 +11,55 @@ import TrackApp from './pages/TrackApp';
 import PermanentLicence from './pages/PermanentLicence';
 import Learn from './pages/Learn';
 import DrivingTest from './pages/DrivingTest';
-import ChatHelper from './components/ChatHelper';
 import Settings from './pages/Settings';
 
-// Create a global context for language and user progress
+// Components
+import ChatHelper from './components/ChatHelper';
+
 export const AppContext = createContext();
 
-function App() {
-  // Load language from localStorage so it persists on reload
-  const [lang, setLang] = useState(() => localStorage.getItem('saathi_lang') || 'en');
-  const t = lang === 'en' ? en : hi;
+export default function App() {
+  const [lang, setLang] = useState('en');
 
-  useEffect(() => {
-    localStorage.setItem('saathi_lang', lang);
-  }, [lang]);
+  // Basic global translations (can be expanded later)
+  const t = {
+    en: { appName: "Licence Saathi" },
+    hi: { appName: "लाइसेंस साथी" }
+  };
 
   return (
     <AppContext.Provider value={{ lang, setLang, t }}>
-      {/* Mobile-first layout constraint: Centers on desktop, full width on mobile */}
-      <div className="min-h-screen flex flex-col bg-gray-50 max-w-[480px] mx-auto shadow-2xl relative overflow-hidden sm:border-x sm:border-gray-200">
-        <Navbar />
+      <Router>
         
-        <main className="flex-1 overflow-y-auto p-4 pb-12">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/eligibility" element={<Eligibility />} />
-            <Route path="/documents" element={<Documents />} />
-            <Route path="/application" element={<LlApplication />} />
-            <Route path="/mock-test" element={<MockTest />} />
-            <Route path="/track-app" element={<TrackApp />} />
-            <Route path="/permanent-licence" element={<PermanentLicence />} />
-            <Route path="/learn" element={<Learn />} />
-            <Route path="/driving-test" element={<DrivingTest />} />
-            <Route path="/settings" element={<Settings />} />
-          </Routes>
-          <ChatHelper />
-        </main>
+        {/* 1. DESKTOP BACKGROUND: Soft gray so the "phone" stands out */}
+        <div className="min-h-screen bg-slate-200 flex items-center justify-center">
+          
+          {/* 2. PHONE SIMULATOR: Acts like a phone frame on desktop, full-screen on mobile */}
+          <div className="w-full sm:max-w-[420px] bg-slate-950 min-h-screen sm:min-h-0 sm:h-[90vh] sm:rounded-[2.5rem] sm:shadow-2xl sm:border-[10px] sm:border-slate-800 relative flex flex-col overflow-hidden">
+            
+            {/* 3. MAIN CONTENT: Fixed the white border & padding issue here! */}
+            <main className="flex-1 overflow-y-auto relative bg-slate-950 sm:rounded-[1.8rem]">
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/eligibility" element={<Eligibility />} />
+                <Route path="/documents" element={<Documents />} />
+                <Route path="/application" element={<LlApplication />} />
+                <Route path="/mock-test" element={<MockTest />} />
+                <Route path="/track-app" element={<TrackApp />} />
+                <Route path="/permanent-licence" element={<PermanentLicence />} />
+                <Route path="/learn" element={<Learn />} />
+                <Route path="/driving-test" element={<DrivingTest />} />
+                <Route path="/settings" element={<Settings />} />
+              </Routes>
+              
+              {/* Floating AI Chatbot */}
+              <ChatHelper />
+            </main>
 
-        <footer className="bg-gray-100 text-center p-3 text-xs text-gray-500 border-t border-gray-200 font-medium">
-          {t.common.prototypeWarning}
-        </footer>
-      </div>
+          </div>
+        </div>
+
+      </Router>
     </AppContext.Provider>
   );
 }
-
-export default App;
