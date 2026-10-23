@@ -1,6 +1,6 @@
-import { useContext } from 'react';
+import { useContext, useState, useEffect } from 'react';
 import { AppContext } from '../App';
-import { Settings as SettingsIcon, Type, Languages, Eye, Volume2, ArrowLeft } from 'lucide-react';
+import { Settings as SettingsIcon, Type, Languages, Eye, Volume2, ArrowLeft, Download } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
@@ -12,14 +12,41 @@ export default function Settings() {
     readAloud, setReadAloud 
   } = useContext(AppContext);
 
+  const [installPrompt, setInstallPrompt] = useState(null);
+  const [isInstalled, setIsInstalled] = useState(false);
+
+  useEffect(() => {
+    const handleBeforeInstall = (e) => {
+      e.preventDefault();
+      setInstallPrompt(e);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstall);
+
+    // Check if already running in standalone PWA mode
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+      setIsInstalled(true);
+    }
+
+    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (!installPrompt) return;
+    installPrompt.prompt();
+    const result = await installPrompt.userChoice;
+    if (result.outcome === 'accepted') {
+      setInstallPrompt(null);
+      setIsInstalled(true);
+    }
+  };
+
   return (
     <div className="relative min-h-screen bg-slate-950 text-slate-50 py-12 px-6 flex flex-col font-sans overflow-hidden">
-      {/* Mesh Gradients */}
       <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none"></div>
       
       <div className="max-w-2xl mx-auto w-full relative z-10">
         
-        {/* Header */}
         <div className="flex items-center gap-4 mb-10">
           <Link to="/" className="w-12 h-12 bg-slate-900 border border-slate-800 rounded-full flex items-center justify-center hover:bg-slate-800 transition">
             <ArrowLeft size={24} />
@@ -30,13 +57,40 @@ export default function Settings() {
               {lang === 'en' ? 'App Settings' : 'ऐप सेटिंग्स'}
             </h1>
             <p className="text-slate-400 mt-1">
-              {lang === 'en' ? 'Customize your experience.' : 'अपने अनुभव को अनुकूलित करें।'}
+              {lang === 'en' ? 'Customize your experience and offline options.' : 'अपने अनुभव और ऑफ़लाइन विकल्पों को अनुकूलित करें।'}
             </p>
           </div>
         </div>
 
         <div className="space-y-6">
           
+          {/* PWA Install Button (Appears only when available) */}
+          {(installPrompt || isInstalled) && (
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-blue-950/40 border border-blue-900/60 rounded-3xl p-6 shadow-xl flex items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-blue-500/10 text-blue-400 rounded-2xl flex items-center justify-center">
+                  <Download size={24} />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-white">{lang === 'en' ? 'Install App' : 'ऐप इंस्टॉल करें'}</h3>
+                  <p className="text-sm text-slate-300">
+                    {isInstalled 
+                      ? (lang === 'en' ? 'App is installed on your device.' : 'ऐप आपके डिवाइस पर इंस्टॉल है।')
+                      : (lang === 'en' ? 'Install Licence Saathi for fast offline access.' : 'तेज़ ऑफ़लाइन एक्सेस के लिए लाइसेंस साथी इंस्टॉल करें।')}
+                  </p>
+                </div>
+              </div>
+              {!isInstalled && installPrompt && (
+                <button 
+                  onClick={handleInstallClick}
+                  className="bg-blue-600 hover:bg-blue-500 text-white font-bold px-5 py-3 rounded-xl transition shadow-lg shrink-0"
+                >
+                  {lang === 'en' ? 'Install' : 'इंस्टॉल'}
+                </button>
+              )}
+            </motion.div>
+          )}
+
           {/* 1. Language Toggle */}
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-slate-900/50 backdrop-blur-md border border-slate-800 rounded-3xl p-6 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex items-center gap-4">
