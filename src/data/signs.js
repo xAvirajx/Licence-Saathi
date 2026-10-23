@@ -1,4 +1,4 @@
-export const signs = [
+export const signsData = [
   // MANDATORY SIGNS (Must Obey)
   {
     id: 1,
