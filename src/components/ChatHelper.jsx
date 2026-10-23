@@ -1,7 +1,8 @@
 import { useState, useContext, useEffect, useRef } from 'react';
 import { AppContext } from '../App';
 import { faqs } from '../data/faq';
-import { MessageSquare, X, Send, Bot, User, ArrowRight } from 'lucide-react';
+import { rulesConfig } from '../data/config';
+import { MessageSquare, X, Send, Bot, User, ArrowRight, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -10,14 +11,13 @@ export default function ChatHelper() {
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([]);
+  const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef(null);
 
-  // Scroll to bottom when messages update
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages, isTyping]);
 
-  // Initial greeting and Next Step calculation
   useEffect(() => {
     if (isOpen && messages.length === 0) {
       const stage = parseInt(localStorage.getItem('licenceJourneyStage') || '0', 10);
@@ -39,51 +39,72 @@ export default function ChatHelper() {
     }
   }, [isOpen, lang, messages.length]);
 
-  // Listen for external open commands (like the navbar/footer FAQ links)
   useEffect(() => {
     const handleOpenChat = () => setIsOpen(true);
     window.addEventListener('open-chat-helper', handleOpenChat);
     return () => window.removeEventListener('open-chat-helper', handleOpenChat);
   }, []);
 
-  const handleSend = (userText) => {
+  // Fallback keyword matcher
+  const getKeywordFallback = (query) => {
+    if (query.includes("aadhaar") || query.includes("pan") || query.includes("otp") || /[0-9]{6,}/.test(query)) {
+      return lang === 'en' 
+        ? "For your privacy, I never ask for your Aadhaar, OTP, or any personal details. Please do not share them here." 
+        : "आपकी निजता के लिए, मैं कभी भी आपका आधार, ओटीपी या कोई व्यक्तिगत विवरण नहीं मांगता। कृपया उन्हें यहां साझा न करें।";
+    }
+    for (const item of faqs) {
+      const keywords = item.keywords || Object.keys(item)[0].split(',');
+      if (keywords.some(kw => query.includes(kw.trim()))) {
+        return item.a ? item.a[lang] : Object.values(item)[0][lang];
+      }
+    }
+    return lang === 'en' 
+      ? "I'm not sure about that. Please check the official portal at parivahan.gov.in or contact your local RTO for exact details."
+      : "मुझे इसके बारे में पक्का नहीं पता है। कृपया सटीक विवरण के लिए parivahan.gov.in पर आधिकारिक पोर्टल देखें या अपने स्थानीय आरटीओ से संपर्क करें।";
+  };
+
+  const handleSend = async (userText) => {
     if (!userText.trim()) return;
+    const trimmedText = userText.slice(0, 500); // Enforce 500 character limit
     
-    // Add user message
-    const newMsgs = [...messages, { type: 'user', text: userText }];
+    const newMsgs = [...messages, { type: 'user', text: trimmedText }];
     setMessages(newMsgs);
     setInput('');
+    setIsTyping(true);
 
-    // Process answer
-    setTimeout(() => {
-      const query = userText.toLowerCase();
-      let foundAnswer = null;
+    const stage = localStorage.getItem('licenceJourneyStage') || '0';
+    // Keep last 10 messages for context window
+    const recentHistory = newMsgs.slice(-10);
 
-      // Personal details block check
-      if (query.includes("aadhaar") || query.includes("pan") || query.includes("otp") || /[0-9]{6,}/.test(query)) {
-         foundAnswer = lang === 'en' 
-           ? "For your privacy, I never ask for your Aadhaar, OTP, or any personal details. Please do not share them here." 
-           : "आपकी निजता के लिए, मैं कभी भी आपका आधार, ओटीपी या कोई व्यक्तिगत विवरण नहीं मांगता। कृपया उन्हें यहां साझा न करें।";
-      } else {
-        // Search FAQs
-        for (const item of faqs) {
-          const keywords = item.keywords || Object.keys(item)[0].split(',');
-          if (keywords.some(kw => query.includes(kw.trim()))) {
-            foundAnswer = item.a ? item.a[lang] : Object.values(item)[0][lang];
-            break;
-          }
-        }
-      }
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: trimmedText,
+          history: recentHistory,
+          stage: stage,
+          configData: rulesConfig,
+          faqData: faqs,
+          lang: lang
+        })
+      });
 
-      // "I'm not sure" fallback
-      if (!foundAnswer) {
-        foundAnswer = lang === 'en' 
-          ? "I'm not sure about that. Please check the official portal at parivahan.gov.in or contact your local RTO for exact details."
-          : "मुझे इसके बारे में पक्का नहीं पता है। कृपया सटीक विवरण के लिए parivahan.gov.in पर आधिकारिक पोर्टल देखें या अपने स्थानीय आरटीओ से संपर्क करें।";
-      }
+      if (!res.ok) throw new Error('Server unreachable');
+      const data = await res.json();
+      
+      setIsTyping(false);
+      setMessages(prev => [...prev, { type: 'bot', text: data.reply }]);
 
-      setMessages([...newMsgs, { type: 'bot', text: foundAnswer }]);
-    }, 500);
+    } catch (err) {
+      console.warn('API call failed, falling back to offline keyword matcher:', err);
+      // Fallback mechanism if server fails
+      setTimeout(() => {
+        const fallbackAnswer = getKeywordFallback(trimmedText.toLowerCase());
+        setIsTyping(false);
+        setMessages(prev => [...prev, { type: 'bot', text: fallbackAnswer }]);
+      }, 600);
+    }
   };
 
   const quickReplies = [
@@ -94,7 +115,6 @@ export default function ChatHelper() {
 
   return (
     <>
-      {/* Floating Action Button */}
       <motion.button 
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
@@ -104,7 +124,6 @@ export default function ChatHelper() {
         <MessageSquare size={24} />
       </motion.button>
 
-      {/* Chat Window */}
       <AnimatePresence>
         {isOpen && (
           <motion.div 
@@ -113,14 +132,13 @@ export default function ChatHelper() {
             exit={{ opacity: 0, y: 20, scale: 0.9 }}
             className="fixed bottom-6 right-6 sm:bottom-8 sm:right-8 z-50 w-[calc(100%-48px)] sm:w-96 h-[500px] max-h-[80vh] bg-slate-900 border border-slate-700 rounded-3xl shadow-2xl flex flex-col overflow-hidden"
           >
-            {/* Chat Header */}
             <div className="bg-slate-950 p-4 border-b border-slate-800 flex justify-between items-center">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 bg-blue-600/20 text-blue-400 rounded-full flex items-center justify-center">
                   <Bot size={20} />
                 </div>
                 <div>
-                  <h3 className="font-bold text-white text-sm">Ask Licence Saathi</h3>
+                  <h3 className="font-bold text-white text-sm">Ask Licence Saathi (AI)</h3>
                   <p className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider">Online</p>
                 </div>
               </div>
@@ -129,7 +147,6 @@ export default function ChatHelper() {
               </button>
             </div>
 
-            {/* Messages Area */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-900/50">
               {messages.map((msg, idx) => (
                 <div key={idx} className={`flex flex-col ${msg.type === 'user' ? 'items-end' : 'items-start'}`}>
@@ -141,7 +158,6 @@ export default function ChatHelper() {
                     {msg.text}
                   </div>
                   
-                  {/* Next Step Suggestion (Only on Intro) */}
                   {msg.isIntro && msg.nextStep && (
                     <div className="mt-2 w-[85%]">
                       <p className="text-xs text-slate-400 mb-1 font-bold uppercase tracking-wider">
@@ -158,11 +174,19 @@ export default function ChatHelper() {
                   )}
                 </div>
               ))}
+
+              {isTyping && (
+                <div className="flex items-start">
+                  <div className="bg-slate-800 border border-slate-700 p-3 rounded-2xl rounded-bl-none flex items-center gap-2 text-slate-400 text-sm">
+                    <Loader2 size={16} className="animate-spin text-blue-400" />
+                    <span>{lang === 'en' ? 'Saathi is thinking...' : 'साथी सोच रहा है...'}</span>
+                  </div>
+                </div>
+              )}
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Quick Replies */}
-            {messages.length < 3 && (
+            {messages.length < 3 && !isTyping && (
               <div className="px-4 py-2 flex gap-2 overflow-x-auto no-scrollbar border-t border-slate-800/50 bg-slate-900">
                 {quickReplies.map((qr, i) => (
                   <button 
@@ -176,21 +200,21 @@ export default function ChatHelper() {
               </div>
             )}
 
-            {/* Input Box */}
             <form 
               onSubmit={(e) => { e.preventDefault(); handleSend(input); }} 
-              className="p-4 bg-slate-950 border-t border-slate-800 flex gap-2"
+              className="p-4 bg-slate-950 border-t border-slate-800 flex gap-2 items-center"
             >
               <input 
                 type="text" 
+                maxLength={500}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder={lang === 'en' ? "Ask a question..." : "कोई प्रश्न पूछें..."}
+                placeholder={lang === 'en' ? "Ask a question (max 500 chars)..." : "कोई प्रश्न पूछें (अधिकतम 500 अक्षर)..."}
                 className="flex-1 bg-slate-900 border border-slate-700 text-white px-4 py-2 rounded-full text-sm focus:outline-none focus:border-blue-500"
               />
               <button 
                 type="submit" 
-                disabled={!input.trim()}
+                disabled={!input.trim() || isTyping}
                 className="w-10 h-10 bg-blue-600 disabled:bg-slate-800 text-white rounded-full flex items-center justify-center transition shrink-0"
               >
                 <Send size={18} className="ml-[-2px] mt-[2px]" />
