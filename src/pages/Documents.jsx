@@ -1,71 +1,172 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { ArrowLeft, Share2, Check } from 'lucide-react';
+import { useState, useContext, useEffect } from 'react';
+import { AppContext } from '../App';
+import { documentData } from '../data/documents';
 import { motion } from 'framer-motion';
+import { ShieldCheck, CheckCircle2, Circle, AlertCircle, ArrowRight, CheckSquare } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export default function Documents() {
+  const { lang } = useContext(AppContext);
   const [checkedItems, setCheckedItems] = useState({});
+  const [isOver40, setIsOver40] = useState(false);
 
-  const docs = [
-    { id: 'age', title: 'Proof of Age', desc: 'Birth certificate, 10th marksheet, or PAN card' },
-    { id: 'address', title: 'Proof of Address', desc: 'Voter ID, Passport, or recent electricity bill' },
-    { id: 'photo', title: 'Passport Photo', desc: 'Recent colour photograph' },
-    { id: 'fitness', title: 'Form 1 (Self Declaration)', desc: 'Basic physical fitness declaration form' }
-  ];
+  // Update progress map when they reach this page
+  useEffect(() => {
+    const currentStage = parseInt(localStorage.getItem('licenceJourneyStage') || '0', 10);
+    if (currentStage < 1) localStorage.setItem('licenceJourneyStage', '1');
+  }, []);
 
   const toggleCheck = (id) => {
     setCheckedItems(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
-  const shareOnWhatsApp = () => {
-    const text = encodeURIComponent("Here are the documents I need for my Learner's Licence:\n\n- Proof of Age\n- Proof of Address\n- Passport Photo\n- Form 1 (Self Declaration)");
-    window.open(`https://wa.me/?text=${text}`, '_blank');
-  };
+  const activeDocs = [...documentData.common];
+  if (isOver40) {
+    activeDocs.push(documentData.conditional);
+  }
+
+  const progress = activeDocs.filter(doc => checkedItems[doc.id]).length;
+  const isComplete = progress === activeDocs.length;
 
   return (
-    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-6 mt-2">
-      <div className="flex items-center gap-3 mb-6">
-        <Link to="/" className="p-2 bg-white rounded-full shadow-sm hover:bg-gray-100 text-brand-600 transition-colors">
-          <ArrowLeft size={20} />
-        </Link>
-        <h1 className="text-xl font-bold text-gray-900">Required Documents</h1>
-      </div>
-
-      <div className="bg-brand-50 border border-brand-200 p-4 rounded-xl mb-6">
-        <p className="text-brand-800 font-medium text-sm">
-          <strong>Tip:</strong> People often get stuck here. Make sure your name is spelled exactly the same across all documents before you apply!
-        </p>
-      </div>
-
-      <div className="space-y-3">
-        {docs.map((doc) => (
-          <div 
-            key={doc.id} 
-            onClick={() => toggleCheck(doc.id)}
-            className={`p-4 rounded-2xl border-2 cursor-pointer transition-all flex gap-4 ${checkedItems[doc.id] ? 'bg-green-50 border-green-500' : 'bg-white border-gray-200 hover:border-brand-300'}`}
-          >
-            <div className={`w-6 h-6 shrink-0 rounded flex items-center justify-center border-2 mt-0.5 ${checkedItems[doc.id] ? 'bg-green-500 border-green-500 text-white' : 'border-gray-300'}`}>
-              {checkedItems[doc.id] && <Check size={16} strokeWidth={3} />}
-            </div>
-            <div>
-              <h3 className={`font-bold ${checkedItems[doc.id] ? 'text-green-900' : 'text-gray-900'}`}>{doc.title}</h3>
-              <p className={`text-sm mt-1 ${checkedItems[doc.id] ? 'text-green-700' : 'text-gray-500'}`}>{doc.desc}</p>
-            </div>
+    <div className="relative min-h-screen bg-slate-950 text-slate-50 overflow-hidden py-12 px-6">
+      {/* ATMOSPHERIC MESH GRADIENTS */}
+      <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-blue-600/20 rounded-full blur-[120px] pointer-events-none"></div>
+      
+      <div className="relative z-10 max-w-2xl mx-auto">
+        
+        {/* HEADER */}
+        <div className="text-center mb-10">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-slate-900 border border-slate-700 rounded-2xl mb-6 shadow-lg">
+            <CheckSquare className="text-emerald-400" size={32} />
           </div>
-        ))}
+          <h1 className="text-3xl md:text-4xl font-extrabold text-white tracking-tight mb-4">
+            {lang === 'en' ? 'Your Document Checklist' : 'आपकी दस्तावेज़ चेकलिस्ट'}
+          </h1>
+          <p className="text-slate-400">
+            {lang === 'en' ? 'Gather these items before starting your application.' : 'अपना आवेदन शुरू करने से पहले इन वस्तुओं को इकट्ठा करें।'}
+          </p>
+        </div>
+
+        {/* AGE TOGGLE (Dynamic Requirement) */}
+        <div className="bg-slate-900/50 backdrop-blur-md border border-slate-800 rounded-3xl p-6 mb-8 flex items-center justify-between">
+          <div>
+            <h3 className="text-white font-bold">{lang === 'en' ? 'Are you 40 years or older?' : 'क्या आप 40 वर्ष या उससे अधिक उम्र के हैं?'}</h3>
+            <p className="text-sm text-slate-400">{lang === 'en' ? 'This changes your required documents.' : 'यह आपके आवश्यक दस्तावेजों को बदलता है।'}</p>
+          </div>
+          <button 
+            onClick={() => setIsOver40(!isOver40)}
+            className={`w-14 h-8 rounded-full p-1 transition-colors duration-300 ease-in-out ${isOver40 ? 'bg-blue-600' : 'bg-slate-700'}`}
+          >
+            <motion.div 
+              layout 
+              className="w-6 h-6 bg-white rounded-full shadow-md"
+              initial={false}
+              animate={{ x: isOver40 ? 24 : 0 }}
+            />
+          </button>
+        </div>
+
+        {/* STUCK HERE WARNING BOX */}
+        <div className="bg-amber-950/30 border border-amber-900/50 rounded-2xl p-5 mb-8 flex gap-4 items-start">
+          <AlertCircle className="text-amber-500 shrink-0 mt-0.5" size={24} />
+          <div>
+            <h4 className="text-amber-500 font-bold mb-1">
+              {lang === 'en' ? 'People often get stuck here' : 'लोग अक्सर यहाँ फँस जाते हैं'}
+            </h4>
+            <p className="text-sm text-amber-200/70 leading-relaxed">
+              {lang === 'en' 
+                ? 'Make sure your name and date of birth match exactly across ALL your documents. A spelling mismatch between your Proof of Age and Proof of Address is the #1 reason applications get rejected.' 
+                : 'सुनिश्चित करें कि आपका नाम और जन्म तिथि आपके सभी दस्तावेजों में बिल्कुल मेल खाते हैं। आपके आयु प्रमाण और पता प्रमाण के बीच वर्तनी का बेमेल होना आवेदनों के अस्वीकृत होने का सबसे बड़ा कारण है।'}
+            </p>
+          </div>
+        </div>
+
+        {/* CHECKLIST */}
+        <div className="space-y-4 mb-10">
+          {activeDocs.map((doc, idx) => {
+            const isChecked = checkedItems[doc.id];
+            return (
+              <motion.button
+                key={doc.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.1 }}
+                onClick={() => toggleCheck(doc.id)}
+                className={`w-full text-left p-6 rounded-3xl border transition-all duration-300 ${
+                  isChecked 
+                    ? 'bg-emerald-950/20 border-emerald-900/50' 
+                    : 'bg-slate-900/50 border-slate-800 hover:border-slate-700'
+                }`}
+              >
+                <div className="flex gap-4 items-start">
+                  <div className="mt-1 shrink-0">
+                    {isChecked ? (
+                      <CheckCircle2 className="text-emerald-500" size={28} />
+                    ) : (
+                      <Circle className="text-slate-600" size={28} />
+                    )}
+                  </div>
+                  <div className={`flex-1 transition-all ${isChecked ? 'opacity-50' : 'opacity-100'}`}>
+                    <h3 className={`text-lg font-bold mb-1 ${isChecked ? 'text-emerald-400 line-through' : 'text-white'}`}>
+                      {doc.title[lang]}
+                    </h3>
+                    <p className="text-sm text-slate-400 mb-4">{doc.desc[lang]}</p>
+                    
+                    <div className="bg-slate-950/50 rounded-xl p-4 border border-slate-800/50">
+                      <p className="text-xs font-semibold text-slate-500 mb-2 uppercase tracking-wider">
+                        {lang === 'en' ? 'Examples:' : 'उदाहरण:'}
+                      </p>
+                      <ul className="list-disc list-inside text-sm text-slate-300 space-y-1">
+                        {doc.examples[lang].map((ex, i) => (
+                          <li key={i}>{ex}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </motion.button>
+            );
+          })}
+        </div>
+
+        {/* BOTTOM PROGRESS & CTA */}
+        <div className="sticky bottom-6 bg-slate-900/90 backdrop-blur-xl border border-slate-700 p-6 rounded-3xl shadow-2xl">
+          <div className="flex justify-between items-center mb-4">
+            <span className="text-sm font-bold text-slate-300">
+              {lang === 'en' ? 'Preparation Progress' : 'तैयारी की प्रगति'}
+            </span>
+            <span className="text-sm font-bold text-blue-400">
+              {progress} / {activeDocs.length} {lang === 'en' ? 'Ready' : 'तैयार'}
+            </span>
+          </div>
+          
+          <div className="w-full bg-slate-800 rounded-full h-2 mb-6 overflow-hidden">
+            <motion.div 
+              className="bg-gradient-to-r from-blue-500 to-emerald-400 h-2 rounded-full"
+              initial={{ width: 0 }}
+              animate={{ width: `${(progress / activeDocs.length) * 100}%` }}
+              transition={{ duration: 0.5 }}
+            />
+          </div>
+
+          <Link 
+            to="/application" 
+            className={`w-full p-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all ${
+              isComplete 
+                ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.4)]' 
+                : 'bg-blue-600 hover:bg-blue-500 text-white'
+            }`}
+          >
+            {isComplete 
+              ? (lang === 'en' ? 'All set! Start Application' : 'सब तैयार! आवेदन शुरू करें')
+              : (lang === 'en' ? 'Skip to Application' : 'आवेदन पर जाएं')
+            }
+            <ArrowRight size={20} />
+          </Link>
+        </div>
+
       </div>
-
-      <button 
-        onClick={shareOnWhatsApp}
-        className="w-full mt-6 bg-[#25D366] hover:bg-[#1ebd5a] text-white font-bold py-4 rounded-xl shadow-sm transition-colors text-lg flex items-center justify-center gap-2"
-      >
-        <Share2 size={20} />
-        Share List on WhatsApp
-      </button>
-
-      <Link to="/application" className="w-full mt-3 bg-white border-2 border-brand-600 text-brand-600 hover:bg-brand-50 font-bold py-4 rounded-xl shadow-sm transition-colors text-lg flex items-center justify-center">
-        Continue to Application
-      </Link>
-    </motion.div>
+    </div>
   );
 }
