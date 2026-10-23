@@ -1,4 +1,13 @@
 export const faqs = [
+  // General & Greetings
+  { 
+    keywords: ["hello", "hi", "hey", "what u do", "what do you do", "help", "who are you", "what can you do"], 
+    a: { 
+      en: "I am the Licence Saathi AI! I can answer questions about Learner's Licences, Permanent DLs, fees, rules, documents, and track your application. What do you need help with?", 
+      hi: "मैं लाइसेंस साथी एआई हूँ! मैं लर्नर लाइसेंस, स्थायी डीएल, शुल्क, नियम, दस्तावेजों के बारे में सवालों के जवाब दे सकता हूं और आपके आवेदन को ट्रैक कर सकता हूं। आपको क्या मदद चाहिए?" 
+    } 
+  },
+
   // Learner's Licence (LL)
   { keywords: ["validity", "expire", "how long", "ll validity", "valid"], a: { en: "A Learner's Licence is valid for exactly 6 months from the date of issue.", hi: "लर्नर लाइसेंस जारी होने की तारीख से ठीक 6 महीने के लिए वैध होता है।" } },
   { keywords: ["age", "how old", "minimum age"], a: { en: "You must be 16 for a gearless 50cc scooter (with parent consent), 18 for geared bikes/cars, and 20 for commercial vehicles.", hi: "गियरलेस 50cc स्कूटर के लिए आपकी उम्र 16 वर्ष (माता-पिता की सहमति के साथ), गियर वाली बाइक/कार के लिए 18 वर्ष और वाणिज्यिक वाहनों के लिए 20 वर्ष होनी चाहिए।" } },
@@ -28,7 +37,7 @@ export const faqs = [
   { keywords: ["ambulance", "fire engine", "emergency"], a: { en: "You must always pull over to the left and give free passage to emergency vehicles.", hi: "आपको हमेशा बाईं ओर खींचना चाहिए और आपातकालीन वाहनों को मुफ्त मार्ग देना चाहिए।" } },
 
   // mParivahan & Tech
-  { keywords: ["payment failed", "money deducted", "transaction error"], a: { en: "If payment fails but money is deducted, wait 24-48 hours. Check the 'Verify Payment Status' link on Parivahan.", hi: "यदि भुगतान विफल हो जाता है लेकिन पैसे कट जाते हैं, तो 24-48 घंटे प्रतीक्षा करें। परिवहन पर 'भुगतान स्थिति सत्यापित करें' लिंक देखें।" } },
+  { keywords: ["payment failed", "money deducted", "transaction error"], a: { en: "If payment fails but money is deducted, wait 24-48 hours. Check the 'Verify Payment Status' link on Parivahan.", hi: "यदि भुगतान विफल हो जाता है স্মৃতি विफल हो जाता है लेकिन पैसे कट जाते हैं, तो 24-48 घंटे प्रतीक्षा करें। परिवहन पर 'भुगतान स्थिति सत्यापित करें' लिंक देखें।" } },
   { keywords: ["slot booking", "no slots", "test date"], a: { en: "RTO slots open randomly. If none are available, check back early in the morning or select a nearby RTO.", hi: "आरटीओ स्लॉट बेतरतीब ढंग से खुलते हैं। यदि कोई उपलब्ध नहीं है, तो सुबह जल्दी वापस देखें या पास के आरटीओ का चयन करें।" } },
   { keywords: ["photo upload", "signature size", "error uploading"], a: { en: "Ensure your photo and signature are in JPEG format and the file size is under 50KB.", hi: "सुनिश्चित करें कि आपकी तस्वीर और हस्ताक्षर JPEG प्रारूप में हैं और फ़ाइल का आकार 50KB से कम है।" } },
   { keywords: ["rejected", "cancelled", "why fail"], a: { en: "Applications are usually rejected if your Aadhaar name does not exactly match your other documents.", hi: "यदि आपका आधार नाम आपके अन्य दस्तावेजों से बिल्कुल मेल नहीं खाता है तो आवेदन आमतौर पर अस्वीकार कर दिए जाते हैं।" } },

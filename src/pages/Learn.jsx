@@ -1,137 +1,185 @@
-import { useContext, useState } from 'react';
+import { useState, useContext } from 'react';
 import { AppContext } from '../App';
 import { signsData } from '../data/signs';
-import { Volume2, RefreshCw, AlertTriangle, Info, Octagon } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Map, Volume2, BookOpen, AlertTriangle, Info, ShieldCheck } from 'lucide-react';
 
 export default function Learn() {
-  const { lang } = useContext(AppContext);
-  const [flashcardIndex, setFlashcardIndex] = useState(0);
-  const [showAnswer, setShowAnswer] = useState(false);
+  const { lang, readAloud } = useContext(AppContext);
+  const [activeTab, setActiveTab] = useState('mandatory');
+  const [flippedCards, setFlippedCards] = useState({});
 
-  // Web Speech API
-  const speak = (text) => {
-    window.speechSynthesis.cancel();
+  const toggleFlip = (id) => {
+    setFlippedCards(prev => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const handleListen = (e, text) => {
+    e.stopPropagation();
+    if (!window.speechSynthesis) return alert("Text-to-speech not supported in this browser.");
+    window.speechSynthesis.cancel(); 
+    
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = lang === 'en' ? 'en-IN' : 'hi-IN';
+    utterance.lang = lang === 'hi' ? 'hi-IN' : 'en-IN';
     window.speechSynthesis.speak(utterance);
   };
 
-  const nextCard = () => {
-    setShowAnswer(false);
-    setFlashcardIndex((prev) => (prev + 1) % signsData.length);
-  };
-
-  // Helper to draw SVG shapes based on sign type
-  const renderSignShape = (type, icon) => {
-    if (type === 'mandatory') {
-      return (
-        <div className="relative w-20 h-20 bg-white border-4 border-red-500 rounded-full flex items-center justify-center shadow-md">
-          <span className="text-3xl">{icon}</span>
-        </div>
-      );
+  const tabs = [
+    { 
+      id: 'mandatory', 
+      icon: <ShieldCheck size={18} />, 
+      label: { en: 'Mandatory', hi: 'अनिवार्य' } 
+    },
+    { 
+      id: 'cautionary', 
+      icon: <AlertTriangle size={18} />, 
+      label: { en: 'Cautionary', hi: 'चेतावनी' } 
+    },
+    { 
+      id: 'informatory', 
+      icon: <Info size={18} />, 
+      label: { en: 'Informatory', hi: 'सूचनात्मक' } 
+    },
+    { 
+      id: 'rules', 
+      icon: <BookOpen size={18} />, 
+      label: { en: 'Rules', hi: 'नियम' } 
     }
-    if (type === 'cautionary') {
-      return (
-        <div className="relative w-24 h-24 flex items-center justify-center">
-          <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full drop-shadow-md">
-            <polygon points="50,10 90,85 10,85" fill="white" stroke="#ef4444" strokeWidth="6" strokeLinejoin="round" />
-          </svg>
-          <span className="text-3xl z-10 mt-3">{icon}</span>
-        </div>
-      );
-    }
-    return (
-      <div className="relative w-20 h-20 bg-blue-600 border-2 border-white rounded-lg flex items-center justify-center shadow-md">
-        <span className="text-3xl">{icon}</span>
-      </div>
-    );
-  };
+  ];
 
-  const rules = [
-    { en: "Keep Left: Always drive on the left side of the road.", hi: "बाईं ओर रहें: हमेशा सड़क के बाईं ओर ड्राइव करें।" },
-    { en: "Overtake on the Right: Only pass other vehicles from their right side.", hi: "दाईं ओर से ओवरटेक करें: अन्य वाहनों को केवल उनके दाईं ओर से पार करें।" },
-    { en: "Emergency Vehicles: Always give way to ambulances and fire engines.", hi: "आपातकालीन वाहन: एम्बुलेंस और दमकल गाड़ियों को हमेशा रास्ता दें।" },
-    { en: "Pedestrian Crossings: Stop and give way to pedestrians at zebra crossings.", hi: "पैदल यात्री क्रॉसिंग: ज़ेबरा क्रॉसिंग पर रुकें और पैदल चलने वालों को रास्ता दें।" }
+  const rulesOfTheRoad = [
+    { 
+      title: { en: "Keep Left", hi: "बाईं ओर चलें" }, 
+      desc: { en: "Always drive on the left side of the road and let traffic pass on your right.", hi: "हमेशा सड़क के बाईं ओर गाड़ी चलाएं और यातायात को अपने दाईं ओर से गुजरने दें।" } 
+    },
+    { 
+      title: { en: "Overtaking", hi: "ओवरटेकिंग" }, 
+      desc: { en: "Overtake only from the right side. Never overtake on curves or bridges.", hi: "केवल दाईं ओर से ओवरटेक करें। मोड़ या पुल पर कभी भी ओवरटेक न करें।" } 
+    },
+    { 
+      title: { en: "Intersections", hi: "चौराहे" }, 
+      desc: { en: "Slow down at intersections and give way to traffic on the right.", hi: "चौराहों पर गति कम करें और दाईं ओर के यातायात को रास्ता दें।" } 
+    },
+    { 
+      title: { en: "Emergency Vehicles", hi: "आपातकालीन वाहन" }, 
+      desc: { en: "Always pull over to the left to allow ambulances and fire engines to pass.", hi: "एम्बुलेंस और फायर इंजनों को गुजरने देने के लिए हमेशा बाईं ओर खींचें।" } 
+    }
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 p-4 pb-20">
-      <h1 className="text-2xl font-bold text-slate-900 mb-6">
-        {lang === 'en' ? 'Learn Road Safety' : 'सड़क सुरक्षा सीखें'}
-      </h1>
+    <div className="relative min-h-screen bg-slate-950 text-slate-50 py-12 px-6 flex flex-col font-sans overflow-hidden">
+      {/* Background Gradients */}
+      <div className="absolute top-[-10%] right-[-10%] w-[400px] h-[400px] bg-emerald-600/20 rounded-full blur-[120px] pointer-events-none"></div>
 
-      {/* FLASHCARDS SECTION */}
-      <section className="mb-10">
-        <h2 className="text-lg font-bold text-slate-700 mb-4">
-          {lang === 'en' ? 'Sign Flashcards' : 'संकेत फ्लैशकार्ड'}
-        </h2>
-        <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 text-center flex flex-col items-center min-h-[300px] justify-center">
-          <motion.div 
-            key={flashcardIndex + (showAnswer ? 'a' : 'q')}
-            initial={{ rotateY: 90, opacity: 0 }}
-            animate={{ rotateY: 0, opacity: 1 }}
-            transition={{ duration: 0.2 }}
-            className="flex flex-col items-center w-full"
-          >
-            {renderSignShape(signsData[flashcardIndex].type, signsData[flashcardIndex].icon)}
-            
-            <div className="mt-8 h-20">
-              {showAnswer ? (
-                <div>
-                  <h3 className="text-xl font-bold text-slate-900 mb-2">{signsData[flashcardIndex].name[lang]}</h3>
-                  <p className="text-slate-600 text-sm">{signsData[flashcardIndex].desc[lang]}</p>
-                </div>
-              ) : (
-                <div className="text-slate-400 font-medium italic mt-4">
-                  {lang === 'en' ? 'Tap to reveal answer' : 'उत्तर देखने के लिए टैप करें'}
-                </div>
-              )}
-            </div>
-          </motion.div>
-
-          <div className="flex gap-4 mt-8 w-full">
-            <button 
-              onClick={() => setShowAnswer(!showAnswer)}
-              className="flex-1 bg-slate-100 text-slate-700 py-3 rounded-xl font-semibold hover:bg-slate-200 transition"
-            >
-              {lang === 'en' ? 'Flip Card' : 'कार्ड पलटें'}
-            </button>
-            <button 
-              onClick={nextCard}
-              className="flex-1 bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition flex items-center justify-center gap-2"
-            >
-              {lang === 'en' ? 'Next Sign' : 'अगला संकेत'} <RefreshCw size={18} />
-            </button>
+      <div className="max-w-5xl mx-auto w-full relative z-10">
+        
+        {/* Header */}
+        <div className="text-center mb-10">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-slate-900 border border-slate-700 rounded-2xl mb-6 shadow-lg">
+            <Map className="text-emerald-400" size={32} />
           </div>
+          <h1 className="text-3xl md:text-4xl font-extrabold text-white tracking-tight mb-4">
+            {lang === 'en' ? 'Learn Road Signs & Rules' : 'सड़क संकेत और नियम सीखें'}
+          </h1>
+          <p className="text-slate-400">
+            {lang === 'en' ? 'Tap any card to flip it and read the explanation.' : 'इसे पलटने और स्पष्टीकरण पढ़ने के लिए किसी भी कार्ड पर टैप करें।'}
+          </p>
         </div>
-      </section>
 
-      {/* RULES OF THE ROAD SECTION */}
-      <section>
-        <h2 className="text-lg font-bold text-slate-700 mb-4">
-          {lang === 'en' ? 'Rules of the Road' : 'सड़क के नियम'}
-        </h2>
-        <div className="space-y-4">
-          {rules.map((rule, idx) => (
-            <div key={idx} className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex items-start gap-4">
-              <div className="p-2 bg-blue-50 text-blue-600 rounded-lg shrink-0 mt-1">
-                <Info size={20} />
-              </div>
-              <p className="text-slate-700 font-medium flex-1 text-sm leading-relaxed">
-                {rule[lang]}
-              </p>
-              <button 
-                onClick={() => speak(rule[lang])}
-                aria-label="Listen"
-                className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition shrink-0"
-              >
-                <Volume2 size={24} />
-              </button>
-            </div>
+        {/* Custom Tabs */}
+        <div className="flex overflow-x-auto no-scrollbar gap-2 mb-8 bg-slate-900/50 p-2 rounded-2xl border border-slate-800 backdrop-blur-sm">
+          {tabs.map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex-1 min-w-[120px] flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold text-sm transition-all ${
+                activeTab === tab.id 
+                  ? 'bg-blue-600 text-white shadow-lg' 
+                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+              }`}
+            >
+              {tab.icon} {tab.label[lang]}
+            </button>
           ))}
         </div>
-      </section>
+
+        {/* Content Area */}
+        <AnimatePresence mode="wait">
+          <motion.div 
+            key={activeTab}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="w-full"
+          >
+            {activeTab === 'rules' ? (
+              /* RULES OF THE ROAD */
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {rulesOfTheRoad.map((rule, idx) => (
+                  <div key={idx} className="bg-slate-900/50 backdrop-blur-md border border-slate-800 rounded-3xl p-6 shadow-xl relative">
+                    <button 
+                      onClick={(e) => handleListen(e, `${rule.title[lang]}. ${rule.desc[lang]}`)}
+                      className="absolute top-6 right-6 w-10 h-10 bg-slate-800 text-blue-400 rounded-full flex items-center justify-center hover:bg-slate-700 transition"
+                    >
+                      <Volume2 size={18} />
+                    </button>
+                    <h3 className="text-xl font-bold text-white mb-3 pr-12">{rule.title[lang]}</h3>
+                    <p className="text-slate-400 leading-relaxed">{rule.desc[lang]}</p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              /* SVG SIGN FLASHCARDS */
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+                {signsData.filter(s => s.type === activeTab).map(sign => (
+                  <div 
+                    key={sign.id} 
+                    className="relative w-full aspect-[3/4] cursor-pointer"
+                    style={{ perspective: '1000px' }}
+                    onClick={() => toggleFlip(sign.id)}
+                  >
+                    <motion.div 
+                      className="w-full h-full relative transition-all duration-500"
+                      style={{ transformStyle: 'preserve-3d' }}
+                      initial={false}
+                      animate={{ rotateY: flippedCards[sign.id] ? 180 : 0 }}
+                    >
+                      {/* FRONT OF CARD */}
+                      <div 
+                        className="absolute w-full h-full bg-slate-900 border border-slate-700 rounded-2xl p-4 flex flex-col items-center justify-center shadow-lg hover:border-slate-500 transition-colors"
+                        style={{ backfaceVisibility: 'hidden' }}
+                      >
+                        <div className="flex-1 flex items-center justify-center">
+                          {sign.icon}
+                        </div>
+                        <h4 className="text-center font-bold text-white text-sm mt-4">
+                          {sign.name[lang]}
+                        </h4>
+                      </div>
+
+                      {/* BACK OF CARD (Explanation) */}
+                      <div 
+                        className="absolute w-full h-full bg-blue-900/40 border border-blue-500/50 rounded-2xl p-5 flex flex-col items-center justify-center shadow-lg" 
+                        style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
+                      >
+                        <p className="text-center text-sm text-blue-100 font-medium leading-relaxed mb-4">
+                          {sign.desc[lang]}
+                        </p>
+                        <button 
+                          onClick={(e) => handleListen(e, sign.desc[lang])}
+                          className="w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center shadow-md hover:bg-blue-500 transition-colors"
+                        >
+                          <Volume2 size={20} />
+                        </button>
+                      </div>
+                    </motion.div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </motion.div>
+        </AnimatePresence>
+
+      </div>
     </div>
   );
 }

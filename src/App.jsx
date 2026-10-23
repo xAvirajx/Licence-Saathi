@@ -74,9 +74,10 @@ export default function App() {
         {/* Floating Global Buttons */}
         <ChatHelper />
         
+        {/* CHANGED to z-40 so it stays under the chat window */}
         <Link 
           to="/settings" 
-          className="fixed bottom-6 left-6 z-50 w-14 h-14 bg-slate-900 border border-slate-700 text-slate-300 rounded-full flex items-center justify-center shadow-lg shadow-black/50 hover:bg-slate-800 hover:text-white transition-all"
+          className="fixed bottom-6 left-6 z-40 w-14 h-14 bg-slate-900 border border-slate-700 text-slate-300 rounded-full flex items-center justify-center shadow-lg shadow-black/50 hover:bg-slate-800 hover:text-white transition-all"
         >
           <SettingsIcon size={24} />
         </Link>
