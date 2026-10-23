@@ -1,5 +1,6 @@
-import { useState, createContext } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { useState, createContext, useEffect } from 'react';
+import { Routes, Route, Link } from 'react-router-dom';
+import { Settings as SettingsIcon } from 'lucide-react';
 
 // Pages
 import Home from './pages/Home';
@@ -12,7 +13,6 @@ import PermanentLicence from './pages/PermanentLicence';
 import Learn from './pages/Learn';
 import DrivingTest from './pages/DrivingTest';
 import Settings from './pages/Settings';
-import TestDay from './pages/TestDay';
 
 // Components
 import ChatHelper from './components/ChatHelper';
@@ -20,21 +20,42 @@ import ChatHelper from './components/ChatHelper';
 export const AppContext = createContext();
 
 export default function App() {
-  const [lang, setLang] = useState('en');
+  // Load settings from localStorage or set defaults
+  const [lang, setLang] = useState(() => localStorage.getItem('ls_lang') || 'en');
+  const [textSize, setTextSize] = useState(() => localStorage.getItem('ls_textSize') || 'normal');
+  const [highContrast, setHighContrast] = useState(() => localStorage.getItem('ls_contrast') === 'true');
+  const [readAloud, setReadAloud] = useState(() => localStorage.getItem('ls_readAloud') === 'true');
 
-  // Basic global translations
   const t = {
     en: { appName: "Licence Saathi" },
     hi: { appName: "लाइसेंस साथी" }
   };
 
+  // Apply settings globally
+  useEffect(() => {
+    localStorage.setItem('ls_lang', lang);
+    localStorage.setItem('ls_textSize', textSize);
+    localStorage.setItem('ls_contrast', highContrast);
+    localStorage.setItem('ls_readAloud', readAloud);
+
+    // Dynamic Text Scaling: Changes the base REM value for Tailwind
+    const html = document.documentElement;
+    if (textSize === 'large') html.style.fontSize = '18px';
+    else if (textSize === 'extra') html.style.fontSize = '20px';
+    else html.style.fontSize = '16px'; // Normal
+
+  }, [lang, textSize, highContrast, readAloud]);
+
   return (
-    <AppContext.Provider value={{ lang, setLang, t }}>
+    <AppContext.Provider value={{ lang, setLang, textSize, setTextSize, highContrast, setHighContrast, readAloud, setReadAloud, t }}>
       
-      {/* 1. TRUE RESPONSIVE WRAPPER: Full width, dark theme base */}
-      <div className="w-full min-h-screen bg-slate-950 flex flex-col relative overflow-x-hidden text-slate-50 font-sans">
+      {/* 
+        TRUE RESPONSIVE WRAPPER 
+        Applies High Contrast CSS filter if enabled in settings
+      */}
+      <div className={`w-full min-h-screen bg-slate-950 flex flex-col relative overflow-x-hidden text-slate-50 font-sans transition-all duration-300 ${highContrast ? 'contrast-150 saturate-150 brightness-110' : ''}`}>
         
-        {/* 2. MAIN CONTENT AREA */}
+        {/* MAIN CONTENT AREA */}
         <main className="flex-1 w-full">
           <Routes>
             <Route path="/" element={<Home />} />
@@ -47,12 +68,18 @@ export default function App() {
             <Route path="/learn" element={<Learn />} />
             <Route path="/driving-test" element={<DrivingTest />} />
             <Route path="/settings" element={<Settings />} />
-            <Route path="/test-day" element={<TestDay />} />
           </Routes>
         </main>
         
-        {/* Floating AI Chatbot */}
+        {/* Floating Global Buttons */}
         <ChatHelper />
+        
+        <Link 
+          to="/settings" 
+          className="fixed bottom-6 left-6 z-50 w-14 h-14 bg-slate-900 border border-slate-700 text-slate-300 rounded-full flex items-center justify-center shadow-lg shadow-black/50 hover:bg-slate-800 hover:text-white transition-all"
+        >
+          <SettingsIcon size={24} />
+        </Link>
       </div>
 
     </AppContext.Provider>
