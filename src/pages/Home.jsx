@@ -49,9 +49,9 @@ export default function Home() {
       <div className="absolute top-[20%] right-[-5%] w-[400px] h-[400px] bg-emerald-500/15 rounded-full blur-[100px] pointer-events-none"></div>
       <div className="absolute bottom-[-10%] left-[20%] w-[600px] h-[600px] bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none"></div>
 
-      {/* NAVIGATION */}
-      <nav className="relative z-10 w-full py-6">
-        <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
+      {/* FIXED NAVIGATION: High z-index and solid background for mobile menu */}
+      <nav className="relative z-50 w-full py-6">
+        <div className="max-w-7xl mx-auto px-6 flex justify-between items-center relative z-50 bg-slate-950/0">
           <Link to="/" className="flex items-center gap-3">
             <div className="w-10 h-10 bg-slate-800 border border-slate-700 rounded-xl flex items-center justify-center shadow-lg">
               <ShieldCheck className="text-blue-400" size={24} />
@@ -72,17 +72,18 @@ export default function Home() {
           </button>
         </div>
 
-        {/* Mobile Dropdown */}
+        {/* Mobile Dropdown (Fixed Overlap) */}
         {mobileMenuOpen && (
-          <div className="md:hidden absolute top-full left-0 w-full bg-slate-900 border-t border-slate-800 flex flex-col p-6 gap-4 z-50 shadow-2xl">
-            <Link to="/mock-test" onClick={() => setMobileMenuOpen(false)} className="font-medium text-slate-300">Mock Tests</Link>
-            <Link to="/learn" onClick={() => setMobileMenuOpen(false)} className="font-medium text-slate-300">Road Signs</Link>
+          <div className="md:hidden absolute top-full left-0 w-full bg-slate-950 border-b border-slate-800 flex flex-col p-6 gap-6 shadow-2xl z-50">
+            <Link to="/mock-test" onClick={() => setMobileMenuOpen(false)} className="font-medium text-slate-300 text-lg">Mock Tests</Link>
+            <Link to="/learn" onClick={() => setMobileMenuOpen(false)} className="font-medium text-slate-300 text-lg">Road Signs</Link>
+            <a href="#faqs" onClick={(e) => { setMobileMenuOpen(false); handleComingSoon(e); }} className="font-medium text-slate-300 text-lg">FAQs</a>
           </div>
         )}
       </nav>
 
       {/* HERO SECTION */}
-      <section className="relative z-10 pt-10 pb-8 px-6 text-center">
+      <section className="relative z-10 pt-4 pb-8 px-6 text-center">
         <div className="inline-flex items-center gap-2 mb-6 px-4 py-1.5 bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 text-emerald-400 font-medium text-sm rounded-full">
           <span className="relative flex h-2 w-2">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>

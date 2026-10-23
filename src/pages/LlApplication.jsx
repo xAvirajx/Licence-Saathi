@@ -1,173 +1,274 @@
 import { useState, useContext, useEffect } from 'react';
 import { AppContext } from '../App';
-import { Link } from 'react-router-dom';
-import { ArrowLeft, CheckCircle, CreditCard, FileText } from 'lucide-react';
 import { rulesConfig } from '../data/config';
-import { motion } from 'framer-motion';
+import { ShieldCheck, ArrowRight, ArrowLeft, CheckCircle2, CreditCard, Receipt, FileText } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Link } from 'react-router-dom';
 
 export default function LlApplication() {
-  const { t } = useContext(AppContext);
+  const { lang } = useContext(AppContext);
   const [step, setStep] = useState(1);
-  const totalSteps = 4;
-
-  // Load saved draft or start fresh
-  const [formData, setFormData] = useState(() => {
-    const saved = localStorage.getItem('saathi_ll_draft');
-    return saved ? JSON.parse(saved) : {
-      fullName: '',
-      aadharNumber: '',
-      rto: 'jammu',
-      bloodGroup: 'O+',
-    };
+  const [formData, setFormData] = useState({
+    fullName: '',
+    phone: '',
+    bloodGroup: '',
+    education: '',
+    organDonor: false
   });
+  
+  // Simulate payment processing
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [appNumber, setAppNumber] = useState('');
 
-  // Save progress as they type
   useEffect(() => {
-    localStorage.setItem('saathi_ll_draft', JSON.stringify(formData));
-  }, [formData]);
+    // Update progress map when they finish the application
+    if (step === 6) {
+      localStorage.setItem('licenceJourneyStage', '2');
+    }
+  }, [step]);
+
+  const totalSteps = 5;
+  const progress = (step / totalSteps) * 100;
 
   const handleNext = (e) => {
-    e.preventDefault();
-    setStep((prev) => Math.min(prev + 1, totalSteps));
+    if (e) e.preventDefault();
+    setStep(prev => prev + 1);
   };
 
   const handleBack = () => {
-    setStep((prev) => Math.max(prev - 1, 1));
+    setStep(prev => prev - 1);
   };
 
-  const totalFee = rulesConfig.fees.learnersLicence + rulesConfig.fees.learnersTest;
+  const handlePayment = () => {
+    setIsProcessing(true);
+    setTimeout(() => {
+      setIsProcessing(false);
+      setAppNumber(`LL-${Math.floor(100000 + Math.random() * 900000)}`);
+      setStep(6); // Success Receipt
+    }, 2000);
+  };
+
+  const formQuestions = [
+    {
+      step: 1,
+      title: { en: "Basic Details", hi: "मूल विवरण" },
+      field: (
+        <div className="space-y-4">
+          <label className="block text-sm font-medium text-slate-300">{lang === 'en' ? 'Full Name (as per Aadhaar)' : 'पूरा नाम (आधार के अनुसार)'}</label>
+          <input 
+            type="text" 
+            required 
+            value={formData.fullName} 
+            onChange={e => setFormData({...formData, fullName: e.target.value})}
+            className="w-full bg-slate-950 border border-slate-700 text-white rounded-xl p-4 focus:border-blue-500 outline-none"
+            placeholder={lang === 'en' ? 'e.g. Ramesh Kumar' : 'उदा. रमेश कुमार'}
+          />
+        </div>
+      )
+    },
+    {
+      step: 2,
+      title: { en: "Contact Info", hi: "संपर्क जानकारी" },
+      field: (
+        <div className="space-y-4">
+          <label className="block text-sm font-medium text-slate-300">{lang === 'en' ? 'Mobile Number (Linked to Aadhaar)' : 'मोबाइल नंबर (आधार से जुड़ा हुआ)'}</label>
+          <input 
+            type="tel" 
+            required 
+            value={formData.phone} 
+            onChange={e => setFormData({...formData, phone: e.target.value})}
+            className="w-full bg-slate-950 border border-slate-700 text-white rounded-xl p-4 focus:border-blue-500 outline-none"
+            placeholder="10-digit number"
+            pattern="[0-9]{10}"
+          />
+        </div>
+      )
+    },
+    {
+      step: 3,
+      title: { en: "Medical Info", hi: "चिकित्सा जानकारी" },
+      field: (
+        <div className="space-y-4">
+          <label className="block text-sm font-medium text-slate-300">{lang === 'en' ? 'Blood Group' : 'रक्त समूह'}</label>
+          <select 
+            required 
+            value={formData.bloodGroup} 
+            onChange={e => setFormData({...formData, bloodGroup: e.target.value})}
+            className="w-full bg-slate-950 border border-slate-700 text-white rounded-xl p-4 focus:border-blue-500 outline-none appearance-none"
+          >
+            <option value="">{lang === 'en' ? 'Select Blood Group' : 'रक्त समूह चुनें'}</option>
+            <option value="A+">A+</option><option value="O+">O+</option><option value="B+">B+</option><option value="AB+">AB+</option>
+          </select>
+          <div className="pt-4 flex items-center gap-3">
+            <input 
+              type="checkbox" 
+              id="donor" 
+              checked={formData.organDonor}
+              onChange={e => setFormData({...formData, organDonor: e.target.checked})}
+              className="w-5 h-5 accent-blue-500"
+            />
+            <label htmlFor="donor" className="text-sm text-slate-300">
+              {lang === 'en' ? 'I am willing to donate my organs in case of accidental death.' : 'मैं दुर्घटना में मृत्यु होने पर अपने अंग दान करने को तैयार हूँ।'}
+            </label>
+          </div>
+        </div>
+      )
+    }
+  ];
 
   return (
-    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6 mt-2">
-      
-      {/* Header & Progress Bar */}
-      <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-        <div className="flex items-center gap-3 mb-4">
-          <Link to="/" className="p-2 bg-gray-50 rounded-full hover:bg-gray-100 text-brand-600">
-            <ArrowLeft size={20} />
-          </Link>
-          <div>
-            <h1 className="text-lg font-bold text-gray-900">LL Application</h1>
-            <p className="text-sm text-gray-500 font-medium">Step {step} of {totalSteps}</p>
-          </div>
-        </div>
-        
-        {/* Progress Tracker */}
-        <div className="w-full bg-gray-200 rounded-full h-2.5">
-          <div className="bg-brand-600 h-2.5 rounded-full transition-all duration-300" style={{ width: `${(step / totalSteps) * 100}%` }}></div>
-        </div>
-      </div>
+    <div className="relative min-h-screen bg-slate-950 text-slate-50 py-12 px-6 flex flex-col">
+      {/* Background Gradients */}
+      <div className="absolute top-[-10%] right-[-10%] w-[400px] h-[400px] bg-blue-600/20 rounded-full blur-[120px] pointer-events-none"></div>
 
-      {/* Step 1: Personal Details */}
-      {step === 1 && (
-        <form onSubmit={handleNext} className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 space-y-5">
-          <h2 className="font-bold text-gray-800 text-lg flex items-center gap-2">
-            <FileText size={20} className="text-brand-500"/> Personal Details
-          </h2>
-          <div>
-            <label className="block text-sm font-bold text-gray-700 mb-2">Full Name (As per records)</label>
-            <input 
-              type="text" 
-              value={formData.fullName}
-              onChange={(e) => setFormData({...formData, fullName: e.target.value})}
-              className="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-brand-500 outline-none"
-              required
+      {step < 6 && (
+        <div className="max-w-xl mx-auto w-full mb-8 relative z-10">
+          <div className="flex justify-between text-xs text-slate-400 font-bold mb-2 uppercase tracking-wider">
+            <span>{lang === 'en' ? 'Application Form' : 'आवेदन पत्र'}</span>
+            <span>{lang === 'en' ? `Step ${step} of ${totalSteps}` : `चरण ${step} / ${totalSteps}`}</span>
+          </div>
+          <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+            <motion.div 
+              className="bg-blue-500 h-2 rounded-full"
+              initial={{ width: 0 }}
+              animate={{ width: `${progress}%` }}
+              transition={{ duration: 0.3 }}
             />
           </div>
-          <div>
-            <label className="block text-sm font-bold text-gray-700 mb-2">Blood Group</label>
-            <select 
-              value={formData.bloodGroup}
-              onChange={(e) => setFormData({...formData, bloodGroup: e.target.value})}
-              className="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-brand-500 outline-none bg-white"
-            >
-              <option value="A+">A+</option>
-              <option value="B+">B+</option>
-              <option value="O+">O+</option>
-              <option value="AB+">AB+</option>
-            </select>
-          </div>
-          <button type="submit" className="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-3.5 rounded-xl shadow-sm">
-            Save & Next
-          </button>
-        </form>
-      )}
-
-      {/* Step 2: RTO Selection */}
-      {step === 2 && (
-        <form onSubmit={handleNext} className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 space-y-5">
-          <h2 className="font-bold text-gray-800 text-lg flex items-center gap-2">
-            <FileText size={20} className="text-brand-500"/> Select Jurisdiction
-          </h2>
-          <div>
-            <label className="block text-sm font-bold text-gray-700 mb-2">Choose your RTO</label>
-            <select 
-              value={formData.rto}
-              onChange={(e) => setFormData({...formData, rto: e.target.value})}
-              className="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-brand-500 outline-none bg-white"
-            >
-              <option value="jammu">JK02 - Jammu</option>
-              <option value="srinagar">JK01 - Srinagar</option>
-              <option value="delhi">DL01 - Delhi North</option>
-            </select>
-          </div>
-          <div className="flex gap-3 mt-6">
-            <button type="button" onClick={handleBack} className="w-1/3 bg-gray-100 text-gray-700 font-bold py-3.5 rounded-xl">Back</button>
-            <button type="submit" className="w-2/3 bg-brand-600 text-white font-bold py-3.5 rounded-xl">Save & Next</button>
-          </div>
-        </form>
-      )}
-
-      {/* Step 3: Review & Fee Summary */}
-      {step === 3 && (
-        <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 space-y-5">
-          <h2 className="font-bold text-gray-800 text-lg">Review Application</h2>
-          <div className="bg-gray-50 p-4 rounded-xl space-y-2 text-sm">
-            <p><span className="text-gray-500">Name:</span> <span className="font-bold">{formData.fullName || 'Not provided'}</span></p>
-            <p><span className="text-gray-500">RTO:</span> <span className="font-bold uppercase">{formData.rto}</span></p>
-          </div>
-          
-          <h2 className="font-bold text-gray-800 text-lg mt-4">Fee Summary</h2>
-          <div className="bg-brand-50 p-4 rounded-xl space-y-2 text-sm border border-brand-100">
-            <div className="flex justify-between"><span className="text-brand-700">Learner's Licence Fee</span> <span className="font-bold">₹{rulesConfig.fees.learnersLicence}</span></div>
-            <div className="flex justify-between"><span className="text-brand-700">LL Test Fee</span> <span className="font-bold">₹{rulesConfig.fees.learnersTest}</span></div>
-            <hr className="border-brand-200 my-2"/>
-            <div className="flex justify-between text-lg"><span className="font-bold text-brand-900">Total</span> <span className="font-bold text-brand-900">₹{totalFee}</span></div>
-          </div>
-
-          <div className="flex gap-3 mt-6">
-            <button type="button" onClick={handleBack} className="w-1/3 bg-gray-100 text-gray-700 font-bold py-3.5 rounded-xl">Edit</button>
-            <button onClick={handleNext} className="w-2/3 bg-green-600 text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2">
-              <CreditCard size={20}/> Pay (Simulated)
-            </button>
-          </div>
         </div>
       )}
 
-      {/* Step 4: Success Receipt */}
-      {step === 4 && (
-        <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 text-center space-y-4">
-          <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-2">
-            <CheckCircle size={32} />
-          </div>
-          <h2 className="text-2xl font-bold text-gray-900">Payment Successful!</h2>
-          <p className="text-gray-600">Your application has been submitted.</p>
-          
-          <div className="bg-gray-50 p-4 rounded-xl text-left my-4 border border-gray-200 block">
-            <p className="text-xs text-gray-500 uppercase font-bold tracking-wider">Application Number</p>
-            <p className="text-lg font-mono font-bold text-gray-900 mt-1">APP-2026-{Math.floor(1000 + Math.random() * 9000)}</p>
-          </div>
+      <div className="flex-1 flex items-center justify-center relative z-10">
+        <div className="w-full max-w-xl">
+          <AnimatePresence mode="wait">
+            
+            {/* Form Steps 1 to 3 */}
+            {step <= 3 && (
+              <motion.form 
+                key={step}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                onSubmit={handleNext}
+                className="bg-slate-900/50 backdrop-blur-md border border-slate-800 rounded-3xl p-8 shadow-2xl"
+              >
+                <div className="flex items-center gap-3 mb-6">
+                  <FileText className="text-blue-400" size={24} />
+                  <h2 className="text-2xl font-bold">{formQuestions[step-1].title[lang]}</h2>
+                </div>
+                
+                <div className="mb-8 min-h-[120px]">
+                  {formQuestions[step-1].field}
+                </div>
 
-          <div className="bg-blue-50 border border-blue-200 p-4 rounded-xl text-left text-sm text-blue-800">
-            <strong>Next Step:</strong> You must now prepare for and take your online Learner's Test.
-          </div>
+                <div className="flex gap-4">
+                  {step > 1 && (
+                    <button type="button" onClick={handleBack} className="px-6 py-4 bg-slate-800 text-white rounded-xl font-bold hover:bg-slate-700 transition">
+                      <ArrowLeft size={20} />
+                    </button>
+                  )}
+                  <button type="submit" className="flex-1 bg-blue-600 hover:bg-blue-500 text-white py-4 rounded-xl font-bold flex justify-center items-center gap-2 transition shadow-[0_0_15px_rgba(37,99,235,0.3)]">
+                    {lang === 'en' ? 'Continue' : 'जारी रखें'} <ArrowRight size={20} />
+                  </button>
+                </div>
+              </motion.form>
+            )}
 
-          <Link to="/" className="block w-full mt-6 bg-brand-600 text-white font-bold py-3.5 rounded-xl">
-            Return to Dashboard
-          </Link>
-        </motion.div>
-      )}
+            {/* Step 4: Review */}
+            {step === 4 && (
+              <motion.div 
+                key="review"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                className="bg-slate-900/50 backdrop-blur-md border border-slate-800 rounded-3xl p-8 shadow-2xl"
+              >
+                <h2 className="text-2xl font-bold mb-6">{lang === 'en' ? 'Review Details' : 'विवरण की समीक्षा करें'}</h2>
+                <div className="space-y-4 mb-8">
+                  <div className="flex justify-between border-b border-slate-800 pb-2">
+                    <span className="text-slate-400">{lang === 'en' ? 'Name' : 'नाम'}</span>
+                    <span className="font-medium">{formData.fullName}</span>
+                  </div>
+                  <div className="flex justify-between border-b border-slate-800 pb-2">
+                    <span className="text-slate-400">{lang === 'en' ? 'Mobile' : 'मोबाइल'}</span>
+                    <span className="font-medium">{formData.phone}</span>
+                  </div>
+                  <div className="flex justify-between pb-2">
+                    <span className="text-slate-400">{lang === 'en' ? 'Blood Group' : 'रक्त समूह'}</span>
+                    <span className="font-medium">{formData.bloodGroup}</span>
+                  </div>
+                </div>
+                
+                <div className="flex gap-4">
+                  <button onClick={handleBack} className="px-6 py-4 bg-slate-800 text-white rounded-xl font-bold hover:bg-slate-700 transition">
+                    {lang === 'en' ? 'Edit' : 'संपादित करें'}
+                  </button>
+                  <button onClick={handleNext} className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white py-4 rounded-xl font-bold transition shadow-[0_0_15px_rgba(16,185,129,0.3)]">
+                    {lang === 'en' ? 'Confirm & Proceed' : 'पुष्टि करें और आगे बढ़ें'}
+                  </button>
+                </div>
+              </motion.div>
+            )}
 
-    </motion.div>
+            {/* Step 5: Payment Simulator */}
+            {step === 5 && (
+              <motion.div 
+                key="payment"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="bg-slate-900/50 backdrop-blur-md border border-slate-800 rounded-3xl p-8 text-center shadow-2xl"
+              >
+                <div className="w-16 h-16 bg-blue-500/10 text-blue-400 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                  <CreditCard size={32} />
+                </div>
+                <h2 className="text-2xl font-bold mb-2">{lang === 'en' ? 'Fee Payment' : 'शुल्क भुगतान'}</h2>
+                <div className="text-4xl font-bold text-white mb-6 flex justify-center items-center gap-1">
+                  ₹{rulesConfig.fees.learnersLicence + rulesConfig.fees.learnersTest}
+                </div>
+                <p className="text-sm text-slate-400 mb-8">
+                  {lang === 'en' ? `LL Fee (₹${rulesConfig.fees.learnersLicence}) + Test Fee (₹${rulesConfig.fees.learnersTest})` : `एलएल शुल्क (₹${rulesConfig.fees.learnersLicence}) + टेस्ट शुल्क (₹${rulesConfig.fees.learnersTest})`}
+                </p>
+                
+                <button 
+                  onClick={handlePayment} 
+                  disabled={isProcessing}
+                  className="w-full bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 text-white py-4 rounded-xl font-bold flex justify-center items-center gap-2 transition"
+                >
+                  {isProcessing ? (lang === 'en' ? 'Processing...' : 'प्रोसेस हो रहा है...') : (lang === 'en' ? 'Pay (Simulated)' : 'भुगतान (सिम्युलेटेड)')}
+                </button>
+              </motion.div>
+            )}
+
+            {/* Step 6: Receipt */}
+            {step === 6 && (
+              <motion.div 
+                key="receipt"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-emerald-950/20 border border-emerald-900/50 rounded-3xl p-8 text-center shadow-2xl"
+              >
+                <div className="w-20 h-20 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <CheckCircle2 size={40} />
+                </div>
+                <h2 className="text-3xl font-bold text-white mb-2">{lang === 'en' ? 'Application Submitted!' : 'आवेदन जमा किया गया!'}</h2>
+                
+                <div className="bg-slate-900/80 rounded-2xl p-6 my-8 border border-slate-800 text-left">
+                  <p className="text-sm text-slate-400 mb-1">{lang === 'en' ? 'Application Number:' : 'आवेदन संख्या:'}</p>
+                  <p className="text-2xl font-mono font-bold text-emerald-400 mb-4">{appNumber}</p>
+                  <p className="text-sm text-slate-300 flex items-start gap-2">
+                    <Receipt size={16} className="shrink-0 mt-0.5" />
+                    {lang === 'en' ? 'Take a screenshot of this number. You will need it to take your Mock Test and track your status.' : 'इस नंबर का स्क्रीनशॉट लें। आपको अपने मॉक टेस्ट देने और अपनी स्थिति को ट्रैक करने के लिए इसकी आवश्यकता होगी।'}
+                  </p>
+                </div>
+
+                <Link to="/" className="w-full bg-slate-800 hover:bg-slate-700 text-white py-4 rounded-xl font-bold flex justify-center items-center transition">
+                  {lang === 'en' ? 'Return to Home' : 'होम पर लौटें'}
+                </Link>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
+    </div>
   );
 }
