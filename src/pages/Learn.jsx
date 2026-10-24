@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Map, Volume2, BookOpen, AlertTriangle, Info, ShieldCheck } from 'lucide-react';
 
 export default function Learn() {
-  const { lang, readAloud } = useContext(AppContext); // Pull readAloud from AppContext
+  const { lang } = useContext(AppContext);
   const [activeTab, setActiveTab] = useState('mandatory');
   const [flippedCards, setFlippedCards] = useState({});
   const [hasVoiceSupport, setHasVoiceSupport] = useState(false);
@@ -21,7 +21,7 @@ export default function Learn() {
       const found = voices.some(v => v.lang.toLowerCase().startsWith(targetLangPrefix));
       setHasVoiceSupport(found || lang === 'en');
     };
-
+    
     checkVoices();
     window.speechSynthesis?.addEventListener('voiceschanged', checkVoices);
     return () => window.speechSynthesis?.removeEventListener('voiceschanged', checkVoices);
@@ -31,7 +31,7 @@ export default function Learn() {
 
   const handleListen = (e, text) => {
     e.stopPropagation();
-    if (!window.speechSynthesis || !readAloud) return;
+    if (!window.speechSynthesis) return;
     window.speechSynthesis.cancel();
     
     const utterance = new SpeechSynthesisUtterance(text);
@@ -60,30 +60,45 @@ export default function Learn() {
   };
 
   const rulesOfTheRoad = [
-    { 
-      title: { en: "Keep Left", hi: "बाईं ओर चलें", gu: "હંમેશા ડાબી બાજુ ચાલો" }, 
-      desc: { en: "Always drive on the left side of the road and let traffic pass on your right.", hi: "हमेशा सड़क के बाईं ओर गाड़ी चलाएं और यातायात को अपने दाईं ओर से गुजरने दें।", gu: "હંમેશા રસ્તાની ડાબી બાજુ વાહન ચલાવો જેથી સામેથી આવતા વાહનો નીકળી શકે." } 
+    {
+      title: { en: "Keep Left", hi: "बाईं ओर चलें", gu: "હંમેશા ડાબી બાજુ ચાલો" },
+      desc: { 
+        en: "Always drive on the left side of the road and let traffic pass on your right.", 
+        hi: "हमेशा सड़क के बाईं ओर गाड़ी चलाएं और यातायात को अपने दाईं ओर से गुजरने दें।", 
+        gu: "હંમેશા રસ્તાની ડાબી બાજુ વાહન ચલાવો જેથી જે સામેથી આવતા વાહનો નીકળી શકે." 
+      }
     },
-    { 
-      title: { en: "Overtaking", hi: "ओवरटेकिंग", gu: "ઓવરટેકિંગ નિયમ" }, 
-      desc: { en: "Overtake only from the right side. Never overtake on curves or bridges.", hi: "केवल दाईं ओर से ओवरटेक करें। मोड़ या पुल पर कभी भी ओवरटेक न करें।", gu: "હંમેશા વાહનની જમણી બાજુથી ઓવરટેક કરો. વળાંક કે પુલ પર ક્યારેય ઓવરટેક ન કરો." } 
+    {
+      title: { en: "Overtaking", hi: "ओवरटेकिंग", gu: "ઓવરટેકિંગ નિયમ" },
+      desc: { 
+        en: "Overtake only from the right side. Never overtake on curves or bridges.", 
+        hi: "केवल दाईं ओर से ओवरटेक करें। मोड़ या पुल पर कभी भी ओवरटेक न करें।", 
+        gu: "હંમેશા વાહનની જમણી બાજુથી ઓવરટેક કરો. વળાંક કે પુલ પર ક્યારેય ઓવરટેક ન કરો." 
+      }
     },
-    { 
-      title: { en: "Intersections", hi: "चौराहे", gu: "ચોક કે ટ્રાફિક જંકશન" }, 
-      desc: { en: "Slow down at intersections and give way to traffic on the right.", hi: "चौराहों पर गति कम करें और दाईं ओर के यातायात को रास्ता दें।", gu: "ચોક પર વાહનની ઝડપધીમી કરો અને જમણી બાજુના ટ્રાફિકને જવા દો." } 
+    {
+      title: { en: "Intersections", hi: "चौराहे", gu: "ચોક કે ટ્રાફિક જંકશન" },
+      desc: { 
+        en: "Slow down at intersections and give way to traffic on the right.", 
+        hi: "चौराहों पर गति कम करें और दाईं ओर के यातायात को रास्ता दें।", 
+        gu: "ચોક પર વાહનની ઝડપ ધીમી કરો અને જમણી બાજુના ટ્રાફિકને જવા દો." 
+      }
     },
-    { 
-      title: { en: "Emergency Vehicles", hi: "आपातकालीन वाहन", gu: "કટોકટી વાહનો" }, 
-      desc: { en: "Always pull over to the left to allow ambulances and fire engines to pass.", hi: "आपको हमेशा बाईं ओर खींचना चाहिए और आपातकालीन वाहनों को मुफ्त मार्ग देना चाहिए।", gu: "એમ્બ્યુલન્સ અને ફાયર બ્રિગેડ જેવા વાહનો માટે હંમેશા સાઈડ આપો." } 
+    {
+      title: { en: "Emergency Vehicles", hi: "आपातकालीन वाहन", gu: "કટોકટી વાહનો" },
+      desc: { 
+        en: "Always pull over to the left to allow ambulances and fire engines to pass.", 
+        hi: "आपको हमेशा बाईं ओर खींचना चाहिए और आपातकालीन वाहनों को रास्ता देना चाहिए।", 
+        gu: "એમ્બ્યુલન્સ અને ફાયર એન્જિનને પસાર થવા દેવા માટે હંમેશા ડાબી બાજુ વાહન ચલાવો." 
+      }
     }
   ];
 
   return (
     <div className="relative min-h-screen bg-slate-950 text-slate-50 py-12 px-6 flex flex-col font-sans overflow-hidden">
       <div className="absolute top-[-10%] right-[-10%] w-[400px] h-[400px] bg-emerald-600/20 rounded-full blur-[120px] pointer-events-none"></div>
-
+      
       <div className="max-w-5xl mx-auto w-full relative z-10">
-        
         <div className="text-center mb-10">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-slate-900 border border-slate-700 rounded-2xl mb-6 shadow-lg">
             <Map className="text-emerald-400" size={32} />
@@ -92,18 +107,18 @@ export default function Learn() {
             {lang === 'en' ? 'Learn Road Signs & Rules' : lang === 'hi' ? 'सड़क संकेत और नियम सीखें' : 'રોડ સાઇન્સ અને નિયમો શીખો'}
           </h1>
           <p className="text-slate-400">
-            {lang === 'en' ? 'Tap any card to flip it and read the explanation.' : lang === 'hi' ? 'इसे पलटने और स्पष्टीकरण पढ़ने के लिए किसी भी कार्ड पर टैप करें।' : 'વિગતો વાંચવા અને કાર્ડ ફ્લિપ કરવા માટે ટેપ કરો.'}
+            {lang === 'en' ? 'Tap any card to flip it and read the explanation.' : lang === 'hi' ? 'इसे पलटने और स्पष्टीकरण पढ़ने के लिए किसी भी कार्ड पर टैप करें।' : 'વિગતો વાંચવા માટે કાર્ડ પર ટેપ કરો.'}
           </p>
         </div>
 
-        <div className="flex overflow-x-auto no-scrollbar gap-2 mb-8 bg-slate-900/50 p-2 rounded-2xl border border-slate-800 backdrop-blur-sm">
+        <div className="flex overflow-x-auto no-scrollbar gap-2 mb-8 bg-slate-900/50 p-2 rounded-2xl border border-slate-800">
           {tabs.map(tab => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex-1 min-w-[110px] flex items-center justify-center gap-2 py-3 px-3 rounded-xl font-bold text-xs sm:text-sm transition-all ${
-                activeTab === tab.id 
-                  ? 'bg-blue-600 text-white shadow-lg' 
+              className={`flex-1 min-w-[110px] flex items-center justify-center gap-2 py-3 px-3 rounded-xl font-bold transition-all ${
+                activeTab === tab.id
+                  ? 'bg-blue-600 text-white shadow-lg'
                   : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
               }`}
             >
@@ -113,7 +128,7 @@ export default function Learn() {
         </div>
 
         <AnimatePresence mode="wait">
-          <motion.div 
+          <motion.div
             key={activeTab}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -123,12 +138,11 @@ export default function Learn() {
             {activeTab === 'rules' ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {rulesOfTheRoad.map((rule, idx) => (
-                  <div key={idx} className="bg-slate-900/50 backdrop-blur-md border border-slate-800 rounded-3xl p-6 shadow-xl relative">
-                    {/* FIXED: Check both hasVoiceSupport AND readAloud global state */}
-                    {hasVoiceSupport && readAloud && (
-                      <button 
+                  <div key={idx} className="relative bg-slate-900/50 backdrop-blur-md border border-slate-800 rounded-3xl p-6 shadow-xl">
+                    {hasVoiceSupport && (
+                      <button
                         onClick={(e) => handleListen(e, `${rule.title[lang] || rule.title.en}. ${rule.desc[lang] || rule.desc.en}`)}
-                        className="absolute top-6 right-6 w-10 h-10 bg-slate-800 text-blue-400 rounded-full flex items-center justify-center hover:bg-slate-700 transition"
+                        className="absolute top-6 right-6 w-10 h-10 bg-slate-800 text-blue-400 hover:text-white rounded-full flex items-center justify-center transition"
                       >
                         <Volume2 size={18} />
                       </button>
@@ -143,42 +157,44 @@ export default function Learn() {
                 {signsData.filter(s => s.type === activeTab).map(sign => {
                   const localized = getSignText(sign);
                   return (
-                    <div 
-                      key={sign.id} 
+                    <div
+                      key={sign.id}
                       className="relative w-full aspect-[3/4] cursor-pointer"
                       style={{ perspective: '1000px' }}
                       onClick={() => toggleFlip(sign.id)}
                     >
-                      <motion.div 
+                      <motion.div
                         className="w-full h-full relative transition-all duration-500"
                         style={{ transformStyle: 'preserve-3d' }}
                         initial={false}
                         animate={{ rotateY: flippedCards[sign.id] ? 180 : 0 }}
                       >
-                        <div 
-                          className="absolute w-full h-full bg-slate-900 border border-slate-700 rounded-2xl p-4 flex flex-col items-center justify-between shadow-lg hover:border-slate-500 transition-colors"
+                        {/* Front of Card */}
+                        <div
+                          className="absolute w-full h-full bg-slate-900 border border-slate-700 rounded-2xl p-4 flex flex-col"
                           style={{ backfaceVisibility: 'hidden' }}
                         >
-                          <div className="flex-1 w-full flex items-center justify-center p-2">
+                          {/* COLOR AND SIZE FIX APPLIED HERE */}
+                          <div className="flex-1 flex items-center justify-center p-2 drop-shadow-md [&>svg]:w-20 [&>svg]:h-20">
                             {sign.icon}
                           </div>
-                          <h4 className="text-center font-bold text-white text-xs sm:text-sm mt-2 line-clamp-2">
+                          <h4 className="text-center font-bold text-white text-xs sm:text-sm mt-4">
                             {localized.name}
                           </h4>
                         </div>
 
-                        <div 
-                          className="absolute w-full h-full bg-blue-900/40 border border-blue-500/50 rounded-2xl p-4 flex flex-col items-center justify-center shadow-lg" 
+                        {/* Back of Card */}
+                        <div
+                          className="absolute w-full h-full bg-blue-900/40 border border-blue-500/50 rounded-2xl p-4 flex flex-col items-center justify-center"
                           style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
                         >
                           <p className="text-center text-xs sm:text-sm text-blue-100 font-medium leading-relaxed mb-4">
                             {localized.desc}
                           </p>
-                          {/* FIXED: Check both hasVoiceSupport AND readAloud global state */}
-                          {hasVoiceSupport && readAloud && (
-                            <button 
+                          {hasVoiceSupport && (
+                            <button
                               onClick={(e) => handleListen(e, localized.desc)}
-                              className="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center shadow-md hover:bg-blue-500 transition-colors"
+                              className="w-10 h-10 bg-blue-600 hover:bg-blue-500 text-white rounded-full flex items-center justify-center transition"
                             >
                               <Volume2 size={18} />
                             </button>
@@ -192,7 +208,6 @@ export default function Learn() {
             )}
           </motion.div>
         </AnimatePresence>
-
       </div>
     </div>
   );
