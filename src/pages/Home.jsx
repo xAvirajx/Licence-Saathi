@@ -158,10 +158,14 @@ export default function Home() {
       <main className="flex-1 relative z-10 flex flex-col items-center justify-center text-center px-6 mt-10 md:mt-20 max-w-4xl mx-auto">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
           
-          <span className="inline-block py-1 px-3 rounded-full bg-blue-900/50 border border-blue-500/30 text-blue-300 text-xs font-bold tracking-wider uppercase mb-6 shadow-sm">
-            {lang === 'en' && 'Your Smart mParivahan Guide'}
-            {lang === 'hi' && 'आपका स्मार्ट एम-परिवहन गाइड'}
-            {lang === 'gu' && 'તમારું સ્માર્ટ પરિવહન માર્ગદર્શક'}
+          <span className="inline-flex items-center gap-2 py-2 px-4 rounded-full bg-slate-900/80 border border-emerald-500/30 text-emerald-400 text-sm font-medium tracking-wide mb-6 shadow-lg backdrop-blur-sm">
+           <span className="relative flex h-2 w-2">
+             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+             <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+           </span>
+           {lang === 'en' && 'Stress-free mParivahan assistance'}
+           {lang === 'hi' && 'तनाव मुक्त एम-परिवहन सहायता'}
+           {lang === 'gu' && 'તણાવ મુક્ત પરિવહન સહાય'}
           </span>
           
           <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight text-white leading-[1.15] mb-6">

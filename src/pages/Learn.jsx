@@ -158,7 +158,12 @@ export default function Learn() {
                           className="absolute w-full h-full bg-slate-900 border border-slate-700 rounded-2xl p-4 flex flex-col items-center justify-center shadow-lg hover:border-slate-500 transition-colors"
                           style={{ backfaceVisibility: 'hidden' }}
                         >
-                          <div className="flex-1 flex items-center justify-center">
+                          {/* COLOR AND SIZE FIX APPLIED HERE */}
+                          <div className={`flex-1 flex items-center justify-center [&>svg]:w-16 [&>svg]:h-16 drop-shadow-md ${
+                            activeTab === 'mandatory' ? 'text-blue-400' :
+                            activeTab === 'cautionary' ? 'text-amber-400' :
+                            'text-emerald-400'
+                          }`}>
                             {sign.icon}
                           </div>
                           <h4 className="text-center font-bold text-white text-xs sm:text-sm mt-4">
