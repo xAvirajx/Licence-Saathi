@@ -7,11 +7,11 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['pwa-192x192.svg', 'pwa-512x512.svg'],
+      includeAssets: ['favicon.svg', 'pwa-192x192.svg', 'pwa-512x512.svg'],
       manifest: {
         name: 'Licence Saathi',
         short_name: 'LicenceSaathi',
-        description: 'Stress-free mParivahan assistance and driving licence guide',
+        description: 'Stress-free mParivahan assistance and driving licence guide for India',
         theme_color: '#020617',
         background_color: '#020617',
         display: 'standalone',
@@ -30,7 +30,6 @@ export default defineConfig({
         ]
       },
       workbox: {
-        // Caches everything in the build output, including src/data JSON/JS files
         globPatterns: ['**/*.{js,css,html,ico,png,svg,json}'],
         runtimeCaching: [
           {
@@ -44,5 +43,17 @@ export default defineConfig({
         ]
       }
     })
-  ]
+  ],
+  build: {
+    rollupOptions: {
+      output: {
+        // Splits heavy vendor libraries into isolated cached chunks
+        manualChunks: {
+          vendor: ['react', 'react-dom', 'react-router-dom'],
+          motion: ['framer-motion'],
+          icons: ['lucide-react']
+        }
+      }
+    }
+  }
 });
