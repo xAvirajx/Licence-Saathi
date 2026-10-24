@@ -19,9 +19,11 @@ export default function Home() {
     setJourneyStage(stageNum);
     localStorage.setItem('licenceJourneyStage', stageNum.toString());
     
-    // Auto-scroll to the Journey Map
+    // Auto-scroll to the Journey Map smoothly
     setTimeout(() => {
-      journeyMapRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      if (journeyMapRef.current) {
+        journeyMapRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
     }, 150);
   };
 
@@ -39,11 +41,11 @@ export default function Home() {
     { 
       icon: <PlayCircle size={24} />, path: "/mock-test", 
       title: { en: "Mock Test", hi: "मॉक टेस्ट", gu: "મોક ટેસ્ટ" }, 
-      desc: { en: "Practice the 15-question LL test.", hi: "15-प्रश्नों वाले एलएल टेस्ट का अभ्यास करें।", gu: "15-પ્રશ્નોवाળા LL ટેસ્ટની પ્રેક્ટિસ કરો." } 
+      desc: { en: "Practice the 15-question LL test.", hi: "15-प्रश्नों वाले एलएल टेस्ट का अभ्यास करें।", gu: "15-પ્રશ્નોવાળા LL ટેસ્ટની પ્રેક્ટિસ કરો." } 
     },
     { 
       icon: <Navigation size={24} />, path: "/track-app", 
-      title: { en: "Track Status", hi: "स्थिति ट्रैक करें", gu: "સ્ટેટસ ટ્રેક કરો" }, 
+      title: { en: "Track Status", hi: "स्थिति ट्रैक करें", gu: "સ્ટેટસ ટ્રેક करो" }, 
       desc: { en: "Track your real-time RTO application.", hi: "अपने रीयल-टाइम आरटीओ आवेदन को ट्रैक करें।", gu: "તમારી RTO અરજીનું સ્ટેટસ તપાસો." } 
     }
   ];
@@ -82,7 +84,7 @@ export default function Home() {
   ];
 
   return (
-    <div className="relative min-h-screen bg-slate-950 text-slate-50 overflow-hidden pb-24 flex flex-col items-center">
+    <div className="relative min-h-screen bg-slate-950 text-slate-50 overflow-hidden pb-12 flex flex-col items-center">
       
       {/* Background Gradients */}
       <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-blue-600/20 rounded-full blur-[120px] pointer-events-none"></div>
@@ -98,6 +100,7 @@ export default function Home() {
             <span className="text-xl font-bold tracking-tight text-white">Licence Saathi</span>
           </div>
 
+          {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-8 font-medium text-sm text-slate-300">
             <Link to="/application" className="hover:text-white transition">
               {lang === 'en' && 'Apply Now'}
@@ -116,6 +119,7 @@ export default function Home() {
             </Link>
           </nav>
 
+          {/* Mobile Menu Button */}
           <button 
             onClick={() => setMobileMenuOpen(true)} 
             aria-label="Toggle Menu"
@@ -173,6 +177,8 @@ export default function Home() {
         
         {/* HERO SECTION */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="text-center mb-16">
+          
+          {/* Green Pulse Badge */}
           <span className="inline-flex items-center gap-2 py-2 px-4 rounded-full bg-slate-900/80 border border-emerald-500/30 text-emerald-400 text-sm font-medium tracking-wide mb-6 shadow-lg backdrop-blur-sm">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -336,7 +342,7 @@ export default function Home() {
         </div>
 
         {/* FEATURE GRID */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full mb-8">
           {features.map((feature, idx) => (
             <Link key={idx} to={feature.path} className="bg-slate-900/50 backdrop-blur-sm border border-slate-800 hover:border-slate-600 p-6 rounded-3xl text-left transition group flex items-start gap-4">
               <div className="w-12 h-12 bg-slate-800 border border-slate-700 rounded-xl flex items-center justify-center text-blue-400 shrink-0 group-hover:scale-110 group-hover:bg-blue-900/50 transition-all duration-300">
@@ -356,9 +362,9 @@ export default function Home() {
 
       </main>
 
-      {/* FOOTER - Restored perfectly */}
-      <footer className="relative z-10 border-t border-slate-800/80 w-full max-w-4xl mx-auto mt-12 pt-8 pb-8 px-6 bg-transparent">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+      {/* FOOTER - Restored perfectly centered and matched to design */}
+      <footer className="relative z-10 border-t border-slate-800/80 w-full mt-12 pt-8 pb-8 px-6 bg-transparent">
+        <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-2">
             <Car size={20} className="text-blue-500" />
             <span className="font-bold text-white tracking-tight">Licence Saathi</span>

@@ -17,10 +17,7 @@ export default function ChatHelper() {
   }
 
   const [messages, setMessages] = useState([
-    { 
-      type: 'bot', 
-      text: initialGreeting 
-    }
+    { type: 'bot', text: initialGreeting }
   ]);
   
   const [input, setInput] = useState('');
@@ -38,7 +35,7 @@ export default function ChatHelper() {
     scrollToBottom();
   }, [messages]);
 
-  // 2. Fully expanded Input Placeholder logic
+  // 2. Input Placeholder logic
   let placeholderText = "Type your question...";
   if (lang === 'hi') {
     placeholderText = "अपना प्रश्न टाइप करें...";
@@ -46,6 +43,23 @@ export default function ChatHelper() {
     placeholderText = "તમારો પ્રશ્ન લખો...";
   }
 
+  // 3. Quick Replies Feature
+  const quickReplies = {
+    en: ["What documents do I need?", "What are the fees?", "Track DL status"],
+    hi: ["मुझे किन दस्तावेजों की आवश्यकता है?", "फीस क्या है?", "डीएल स्थिति ट्रैक करें"],
+    gu: ["મારે કયા દસ્તાવેજોની જરૂર છે?", "ફી શું છે?", "DL સ્ટેટસ ટ્રેક કરો"]
+  };
+
+  const handleQuickReply = (text) => {
+    setInput(text);
+    // Use a small timeout to let React update the input state before submitting
+    setTimeout(() => {
+      const submitBtn = document.getElementById('chat-submit-btn');
+      if (submitBtn) submitBtn.click();
+    }, 50);
+  };
+
+  // 4. Handle sending messages
   const handleSend = async (e) => {
     e.preventDefault();
     
@@ -64,12 +78,10 @@ export default function ChatHelper() {
     setIsLoading(true);
 
     try {
-      // Attempt to hit the Gemini API backend
+      // Attempt to hit the backend API
       const response = await fetch('/api/chat', {
         method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json' 
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           message: userMessage, 
           history: messages,
@@ -92,7 +104,7 @@ export default function ChatHelper() {
     } catch (error) {
       console.warn("API call failed, falling back to offline keyword matcher:", error);
       
-      // 3. Fully expanded Offline Fallback logic
+      // Offline Fallback logic
       const lowerInput = userMessage.toLowerCase();
       let foundAnswer = null;
       
@@ -176,12 +188,8 @@ export default function ChatHelper() {
             <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-900/50">
               {messages.map((msg, idx) => {
                 const isUser = msg.type === 'user';
-                
                 return (
-                  <div 
-                    key={idx} 
-                    className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}
-                  >
+                  <div key={idx} className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
                     <div 
                       className={`max-w-[80%] rounded-2xl p-3 text-sm leading-relaxed ${
                         isUser 
@@ -210,6 +218,19 @@ export default function ChatHelper() {
               <div ref={messagesEndRef} />
             </div>
 
+            {/* Quick Replies Buttons */}
+            <div className="px-3 pb-3 bg-slate-950 flex gap-2 overflow-x-auto no-scrollbar pt-3">
+              {quickReplies[lang].map((reply, idx) => (
+                <button 
+                  key={idx}
+                  onClick={() => handleQuickReply(reply)}
+                  className="whitespace-nowrap px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-full text-xs font-medium border border-slate-700 transition"
+                >
+                  {reply}
+                </button>
+              ))}
+            </div>
+
             {/* Chat Input Form */}
             <form 
               onSubmit={handleSend} 
@@ -223,6 +244,7 @@ export default function ChatHelper() {
                 className="flex-1 bg-slate-900 border border-slate-700 text-white rounded-xl px-4 py-2 focus:outline-none focus:border-blue-500 transition-colors text-sm"
               />
               <button 
+                id="chat-submit-btn" 
                 type="submit" 
                 disabled={!input.trim() || isLoading}
                 className="w-10 h-10 bg-blue-600 text-white rounded-xl flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-500 transition"
