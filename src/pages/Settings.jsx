@@ -1,8 +1,9 @@
 import { useContext, useState, useEffect } from 'react';
 import { AppContext } from '../App';
-import { Settings as SettingsIcon, Type, Languages, Eye, Volume2, ArrowLeft, Download, Trash2, CheckCircle2 } from 'lucide-react';
+import { Settings as SettingsIcon, Type, Languages, Eye, Volume2, ArrowLeft, Download, Trash2, CheckCircle2, BarChart2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getAnalyticsSummary, clearAnalytics } from '../utils/analytics';
 
 export default function Settings() {
   const {
@@ -16,8 +17,11 @@ export default function Settings() {
   const [isInstalled, setIsInstalled] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [resetSuccess, setResetSuccess] = useState(false);
+  const [analytics, setAnalytics] = useState({ totalViews: 0, totalEvents: 0, topPages: [] });
 
   useEffect(() => {
+    setAnalytics(getAnalyticsSummary());
+
     const handleBeforeInstall = (e) => {
       e.preventDefault();
       setInstallPrompt(e);
@@ -41,10 +45,11 @@ export default function Settings() {
   };
 
   const handleClearData = () => {
-    // Clear all persistent user state
+    // Clear all persistent user state & analytics
     localStorage.removeItem('licenceJourneyStage');
     localStorage.removeItem('mockTestHistory');
     localStorage.removeItem('ls_doc_checks');
+    clearAnalytics();
     
     setShowResetConfirm(false);
     setResetSuccess(true);
@@ -260,7 +265,43 @@ export default function Settings() {
             </button>
           </motion.div>
 
-          {/* 6. Reset Journey & Clear Data (Item 18) */}
+          {/* 6. Local Analytics & Usage Insights (Item 14) */}
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }} className="bg-slate-900/50 backdrop-blur-md border border-slate-800 rounded-3xl p-6 shadow-xl">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="w-12 h-12 bg-blue-500/10 text-blue-400 rounded-2xl flex items-center justify-center shrink-0">
+                <BarChart2 size={24} />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-white">
+                  {lang === 'en' && 'Local Usage Insights'}
+                  {lang === 'hi' && 'स्थानीय उपयोग आँकड़े'}
+                  {lang === 'gu' && 'લોકલ વપરાશ આંકડા'}
+                </h2>
+                <p className="text-sm text-slate-400">
+                  {lang === 'en' && 'Zero tracking cookies. Private metrics stored only on your device.'}
+                  {lang === 'hi' && 'शून्य ट्रैकिंग कुकीज़। निजी डेटा केवल आपके डिवाइस पर सुरक्षित है।'}
+                  {lang === 'gu' && 'કોઈ ટ્રેકિંગ કૂકીઝ નથી. ખાનગી ડેટા માત્ર તમારા ઉપકરણ પર છે.'}
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 mt-4">
+              <div className="bg-slate-950/60 p-4 rounded-2xl border border-slate-800/80 text-center">
+                <p className="text-2xl font-bold font-mono text-blue-400">{analytics.totalViews}</p>
+                <p className="text-xs text-slate-400 uppercase tracking-wider font-semibold mt-1">
+                  {lang === 'en' ? 'Pages Viewed' : lang === 'hi' ? 'देखे गए पृष्ठ' : 'જોયેલા પેજ'}
+                </p>
+              </div>
+              <div className="bg-slate-950/60 p-4 rounded-2xl border border-slate-800/80 text-center">
+                <p className="text-2xl font-bold font-mono text-emerald-400">{analytics.totalEvents}</p>
+                <p className="text-xs text-slate-400 uppercase tracking-wider font-semibold mt-1">
+                  {lang === 'en' ? 'Actions Taken' : lang === 'hi' ? 'किए गए कार्य' : 'કરેલી ક્રિયાઓ'}
+                </p>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* 7. Reset Journey & Clear Data */}
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="bg-red-950/20 border border-red-900/40 rounded-3xl p-6 shadow-xl">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="flex items-center gap-4">
@@ -274,9 +315,9 @@ export default function Settings() {
                     {lang === 'gu' && 'પ્રવાસ અને ડેટા રીસેટ કરો'}
                   </h2>
                   <p className="text-sm text-slate-400">
-                    {lang === 'en' && 'Erase mock test scores, application forms, and checklist checks.'}
-                    {lang === 'hi' && 'मॉक टेस्ट स्कोर, आवेदन फॉर्म और चेकलिस्ट विवरण हटाएं।'}
-                    {lang === 'gu' && 'મોક ટેસ્ટ સ્કોર, અરજી વિગતો અને ચેકલિસ્ટ દૂર કરો.'}
+                    {lang === 'en' && 'Erase mock test scores, application forms, checklist, and stats.'}
+                    {lang === 'hi' && 'मॉक टेस्ट स्कोर, आवेदन फॉर्म, चेकलिस्ट और आंकड़े हटाएं।'}
+                    {lang === 'gu' && 'મોક ટેસ્ટ સ્કોર, અરજી વિગતો, ચેકલિસ્ટ અને આંકડા દૂર કરો.'}
                   </p>
                 </div>
               </div>

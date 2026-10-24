@@ -1,10 +1,11 @@
 import { useState, createContext, useEffect, Suspense, lazy } from 'react';
-import { Routes, Route, Link } from 'react-router-dom';
+import { Routes, Route, Link, useLocation } from 'react-router-dom';
 import { Settings as SettingsIcon, WifiOff } from 'lucide-react';
 import { en } from './i18n/en';
 import { hi } from './i18n/hi';
 import { gu } from './i18n/gu';
 import ChatHelper from './components/ChatHelper';
+import { trackPageView } from './utils/analytics';
 
 // Lazy load pages for maximum performance
 const Home = lazy(() => import('./pages/Home'));
@@ -18,8 +19,8 @@ const PermanentLicence = lazy(() => import('./pages/PermanentLicence'));
 const Learn = lazy(() => import('./pages/Learn'));
 const DrivingTest = lazy(() => import('./pages/DrivingTest'));
 const Settings = lazy(() => import('./pages/Settings'));
-const Privacy = lazy(() => import('./pages/Privacy')); // Added Privacy Policy
-const Terms = lazy(() => import('./pages/Terms'));     // Added Terms of Service
+const Privacy = lazy(() => import('./pages/Privacy'));
+const Terms = lazy(() => import('./pages/Terms'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
 // Loading Fallback Component
@@ -42,6 +43,14 @@ export default function App() {
   const [readAloud, setReadAloud] = useState(() => localStorage.getItem('ls_readAloud') === 'true');
   const [isOnline, setIsOnline] = useState(navigator.onLine);
 
+  const location = useLocation();
+
+  // Automatic privacy-friendly page view tracking (Item 14)
+  useEffect(() => {
+    trackPageView(location.pathname);
+  }, [location.pathname]);
+
+  // Network connection listener
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
@@ -56,6 +65,7 @@ export default function App() {
   const dictionaries = { en, hi, gu };
   const t = dictionaries[lang] || en;
 
+  // Sync settings & font scaling to root HTML document
   useEffect(() => {
     localStorage.setItem('ls_lang', lang);
     localStorage.setItem('ls_textSize', textSize);
@@ -72,6 +82,7 @@ export default function App() {
     <AppContext.Provider value={{ lang, setLang, textSize, setTextSize, highContrast, setHighContrast, readAloud, setReadAloud, t }}>
       <div className={`w-full min-h-screen bg-slate-950 flex flex-col relative overflow-x-hidden text-slate-50 font-sans transition-all duration-300 ${highContrast ? 'contrast-150 saturate-150 brightness-110' : ''}`}>
         
+        {/* Offline Notification Banner */}
         {!isOnline && (
           <div className="bg-amber-500 text-slate-950 px-4 py-2 font-bold text-xs sm:text-sm text-center flex items-center justify-center gap-2 sticky top-0 z-50 shadow-md">
             <WifiOff size={16} />
