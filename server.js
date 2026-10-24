@@ -11,18 +11,13 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const app = express();
 
-// ==========================================
-// 1. PERFORMANCE OPTIMIZATION (GZIP / BROTLI)
-// ==========================================
-// Slashes JavaScript and CSS transfer size by >70%
+// Gzip/Brotli Compression
 app.use(compression());
 
-// Body parser with 100kb payload cap
+// Body parser with 100kb payload limit
 app.use(express.json({ limit: '100kb' }));
 
-// ==========================================
-// 2. PRIVACY-SAFE REQUEST & PERFORMANCE LOGGER
-// ==========================================
+// Privacy-Safe Request Logger
 app.use((req, res, next) => {
   const start = Date.now();
   const clientIp = req.headers['x-forwarded-for']?.split(',')[0] || req.socket.remoteAddress || 'unknown';
@@ -30,21 +25,17 @@ app.use((req, res, next) => {
   res.on('finish', () => {
     const duration = Date.now() - start;
     const timestamp = new Date().toISOString();
-    // Intentionally never log req.body to preserve applicant privacy
     console.log(`[${timestamp}] ${req.method} ${req.originalUrl} ${res.statusCode} - ${duration}ms (IP: ${clientIp})`);
   });
 
   next();
 });
 
-// ==========================================
-// 3. SLIDING-WINDOW IN-MEMORY RATE LIMITER
-// ==========================================
+// Sliding-Window Rate Limiter (25 requests per 15 min per IP)
 const rateLimitMap = new Map();
-const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000; // 15-minute sliding window
-const MAX_REQUESTS_PER_WINDOW = 25; // 25 queries per window per IP
+const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
+const MAX_REQUESTS_PER_WINDOW = 25;
 
-// Periodically clean up stale entries every 10 minutes
 setInterval(() => {
   const now = Date.now();
   for (const [ip, data] of rateLimitMap.entries()) {
@@ -57,27 +48,17 @@ setInterval(() => {
 const chatRateLimiter = (req, res, next) => {
   const clientIp = req.headers['x-forwarded-for']?.split(',')[0] || req.socket.remoteAddress || 'unknown';
   const now = Date.now();
-
   const record = rateLimitMap.get(clientIp);
 
-  if (!record) {
+  if (!record || now - record.startTime > RATE_LIMIT_WINDOW_MS) {
     rateLimitMap.set(clientIp, { count: 1, startTime: now });
     return next();
   }
 
-  // If window has passed, reset counter
-  if (now - record.startTime > RATE_LIMIT_WINDOW_MS) {
-    rateLimitMap.set(clientIp, { count: 1, startTime: now });
-    return next();
-  }
-
-  // Increment within window
   record.count += 1;
-
   if (record.count > MAX_REQUESTS_PER_WINDOW) {
     const retryAfterSeconds = Math.ceil((record.startTime + RATE_LIMIT_WINDOW_MS - now) / 1000);
     res.setHeader('Retry-After', retryAfterSeconds);
-    console.warn(`[RATE LIMIT EXCEEDED] IP: ${clientIp} exceeded threshold.`);
     return res.status(429).json({
       error: 'Too many requests. Please wait before asking more questions.',
       retryAfter: retryAfterSeconds
@@ -87,29 +68,29 @@ const chatRateLimiter = (req, res, next) => {
   next();
 };
 
-// ==========================================
-// 4. AI CHAT ENDPOINT WITH DIAGNOSTIC ERROR HANDLING
-// ==========================================
+// AI Chat Endpoint
 app.post('/api/chat', chatRateLimiter, async (req, res) => {
   const { message, history, stage, configData, faqData, lang } = req.body;
 
   if (!message || typeof message !== 'string' || !message.trim()) {
-    return res.status(400).json({ error: 'Message payload is required' });
+    return res.status(400).json({ error: 'Message text is required' });
+  }
+
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    console.error('[AI CONFIG ERROR] GEMINI_API_KEY is not set in environment variables.');
+    return res.status(500).json({ 
+      error: 'GEMINI_API_KEY is missing on Render. Please add it to Render Dashboard -> Environment tab.' 
+    });
   }
 
   try {
-    const apiKey = process.env.GEMINI_API_KEY;
-
-    if (!apiKey) {
-      console.error('[AI CONFIG ERROR] GEMINI_API_KEY environment variable is missing.');
-      return res.status(500).json({ error: 'AI service configuration missing on server' });
-    }
-
     const ai = new GoogleGenAI({ apiKey });
+
     const systemInstruction = `
-You are Licence Saathi AI, a helpful assistant helping people get a driving licence in India.
-- Reply in the language the user writes in (support English, Hindi, and Gujarati).
-- Use short sentences a Class 8 student would understand.
+You are Licence Saathi AI, an expert assistant helping people get a driving licence in India.
+- Reply in the language the user writes in (English, Hindi, or Gujarati).
+- Use short, clear sentences a Class 8 student would understand.
 - If the answer depends on the state, ask which state they are in.
 - Use these facts: CONFIG: ${JSON.stringify(configData || {})} FAQS: ${JSON.stringify(faqData || {})}
 - If unsure, point the user to parivahan.gov.in or their local RTO.
@@ -117,49 +98,67 @@ You are Licence Saathi AI, a helpful assistant helping people get a driving lice
 - User journey stage progress index: ${stage || '1'}. Suggest their next step.
     `.trim();
 
-    const contents = Array.isArray(history)
-      ? history.slice(-6).map((h) => ({
-          role: h.type === 'user' ? 'user' : 'model',
-          parts: [{ text: h.text }]
-        }))
-      : [];
+    // GEMINI FIX: Filter history so conversation strictly starts with a USER turn
+    let validHistory = [];
+    if (Array.isArray(history)) {
+      const firstUserIndex = history.findIndex((h) => h.type === 'user');
+      if (firstUserIndex !== -1) {
+        validHistory = history.slice(firstUserIndex);
+      }
+    }
 
+    const contents = validHistory.slice(-6).map((h) => ({
+      role: h.type === 'user' ? 'user' : 'model',
+      parts: [{ text: h.text }]
+    }));
+
+    // Add current user prompt
     contents.push({ role: 'user', parts: [{ text: message.trim() }] });
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents,
-      config: {
-        systemInstruction,
-        maxOutputTokens: 300,
-        temperature: 0.7
-      }
-    });
+    // Try gemini-2.0-flash first; fall back to gemini-1.5-flash if needed
+    let response;
+    try {
+      response = await ai.models.generateContent({
+        model: 'gemini-2.0-flash',
+        contents,
+        config: {
+          systemInstruction,
+          maxOutputTokens: 300,
+          temperature: 0.7
+        }
+      });
+    } catch (primaryModelError) {
+      console.warn('[MODEL RETRY] gemini-2.0-flash failed, falling back to gemini-1.5-flash:', primaryModelError.message);
+      response = await ai.models.generateContent({
+        model: 'gemini-1.5-flash',
+        contents,
+        config: {
+          systemInstruction,
+          maxOutputTokens: 300,
+          temperature: 0.7
+        }
+      });
+    }
 
     return res.status(200).json({ reply: response.text });
   } catch (error) {
     const status = error.status || error.statusCode || 500;
     const errorMessage = error.message || 'Unknown AI error';
+    console.error(`[AI ERROR] Status: ${status} - Message: ${errorMessage}`);
 
-    console.error(`[AI GENERATION ERROR] Status: ${status} - Message: ${errorMessage}`);
-
-    if (status === 429) {
-      return res.status(429).json({ error: 'AI model rate limit reached. Please try again shortly.' });
-    }
-
-    return res.status(500).json({ error: 'Failed to process AI response' });
+    return res.status(status).json({ 
+      error: errorMessage,
+      details: 'Check server logs for detailed stack trace.' 
+    });
   }
 });
 
-// ==========================================
-// 5. REACT FRONTEND STATIC ASSETS & ASSET CACHING
-// ==========================================
+// Serve frontend build with asset caching
 app.use(
   express.static(path.join(__dirname, 'dist'), {
     maxAge: '1y',
     etag: true,
     setHeaders: (res, filePath) => {
-      // index.html must not be cached long-term to ensure immediate deploys
       if (filePath.endsWith('index.html')) {
         res.setHeader('Cache-Control', 'no-cache, must-revalidate');
       }
@@ -167,16 +166,14 @@ app.use(
   })
 );
 
-// Express 5 catch-all handler for React client-side routing
+// Express 5 catch-all
 app.use((req, res) => {
   res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
-// ==========================================
-// 6. GLOBAL FALLBACK ERROR HANDLER
-// ==========================================
+// Global error handler
 app.use((err, req, res, next) => {
-  console.error('[UNCAUGHT SERVER ERROR]', err);
+  console.error('[UNCAUGHT ERROR]', err);
   res.status(500).json({ error: 'Internal server error occurred' });
 });
 
