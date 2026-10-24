@@ -43,17 +43,5 @@ export default defineConfig({
         ]
       }
     })
-  ],
-  build: {
-    rollupOptions: {
-      output: {
-        // Splits heavy vendor libraries into isolated cached chunks
-        manualChunks: {
-          vendor: ['react', 'react-dom', 'react-router-dom'],
-          motion: ['framer-motion'],
-          icons: ['lucide-react']
-        }
-      }
-    }
-  }
+  ]
 });
