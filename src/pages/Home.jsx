@@ -1,4 +1,4 @@
-import { useContext, useState, useRef, useEffect } from 'react';
+import { useContext, useState, useRef } from 'react';
 import { AppContext } from '../App';
 import { Link } from 'react-router-dom';
 import { Car, FileText, CheckCircle, Navigation, PlayCircle, Menu, X, ArrowRight, CheckCircle2, Circle } from 'lucide-react';
@@ -39,7 +39,7 @@ export default function Home() {
     { 
       icon: <PlayCircle size={24} />, path: "/mock-test", 
       title: { en: "Mock Test", hi: "मॉक टेस्ट", gu: "મોક ટેસ્ટ" }, 
-      desc: { en: "Practice the 15-question LL test.", hi: "15-प्रश्नों वाले एलएल टेस्ट का अभ्यास करें।", gu: "15-પ્રશ્નોવાળા LL ટેસ્ટની પ્રેક્ટિસ કરો." } 
+      desc: { en: "Practice the 15-question LL test.", hi: "15-प्रश्नों वाले एलएल टेस्ट का अभ्यास करें।", gu: "15-પ્રશ્નોवाળા LL ટેસ્ટની પ્રેક્ટિસ કરો." } 
     },
     { 
       icon: <Navigation size={24} />, path: "/track-app", 
@@ -82,15 +82,15 @@ export default function Home() {
   ];
 
   return (
-    <div className="relative min-h-screen bg-slate-950 text-slate-50 overflow-hidden pb-12 flex flex-col items-center">
+    <div className="relative min-h-screen bg-slate-950 text-slate-50 overflow-hidden pb-24 flex flex-col items-center">
       
       {/* Background Gradients */}
       <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-blue-600/20 rounded-full blur-[120px] pointer-events-none"></div>
       <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-emerald-600/20 rounded-full blur-[120px] pointer-events-none"></div>
 
       {/* Header Container Constrained for Desktop */}
-      <div className="w-full max-w-4xl mx-auto">
-        <header className="relative z-20 w-full p-6 flex items-center justify-between">
+      <div className="w-full max-w-4xl mx-auto relative z-20">
+        <header className="w-full p-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/30">
               <Car size={24} className="text-white" />
@@ -144,16 +144,24 @@ export default function Home() {
             
             <nav className="flex flex-col items-center justify-center flex-1 gap-8 text-2xl font-bold">
               <Link to="/application" onClick={() => setMobileMenuOpen(false)} className="text-white hover:text-blue-400 transition">
-                {lang === 'en' ? 'Apply Now' : lang === 'hi' ? 'अभी आवेदन करें' : 'હવે અરજી કરો'}
+                {lang === 'en' && 'Apply Now'}
+                {lang === 'hi' && 'अभी आवेदन करें'}
+                {lang === 'gu' && 'હવે અરજી કરો'}
               </Link>
               <Link to="/learn" onClick={() => setMobileMenuOpen(false)} className="text-white hover:text-blue-400 transition">
-                {lang === 'en' ? 'Learn Signs' : lang === 'hi' ? 'संकेत सीखें' : 'સાઇન શીખો'}
+                {lang === 'en' && 'Learn Signs'}
+                {lang === 'hi' && 'संकेत सीखें'}
+                {lang === 'gu' && 'સાઇન શીખો'}
               </Link>
               <Link to="/permanent-licence" onClick={() => setMobileMenuOpen(false)} className="text-white hover:text-blue-400 transition">
-                {lang === 'en' ? 'Permanent DL' : lang === 'hi' ? 'स्थायी डीएल' : 'કાયમી DL'}
+                {lang === 'en' && 'Permanent DL'}
+                {lang === 'hi' && 'स्थायी डीएल'}
+                {lang === 'gu' && 'કાયમી DL'}
               </Link>
               <Link to="/settings" onClick={() => setMobileMenuOpen(false)} className="text-white hover:text-blue-400 transition">
-                {lang === 'en' ? 'Settings' : lang === 'hi' ? 'सेटिंग्स' : 'સેટિંગ્સ'}
+                {lang === 'en' && 'Settings'}
+                {lang === 'hi' && 'सेटिंग्स'}
+                {lang === 'gu' && 'સેટિંગ્સ'}
               </Link>
             </nav>
           </motion.div>
@@ -348,9 +356,9 @@ export default function Home() {
 
       </main>
 
-      {/* FOOTER */}
-      <footer className="relative z-10 border-t border-slate-800/80 w-full mt-auto pt-12 pb-6 px-6 bg-slate-950/50 backdrop-blur-md">
-        <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+      {/* FOOTER - Restored perfectly */}
+      <footer className="relative z-10 border-t border-slate-800/80 w-full max-w-4xl mx-auto mt-12 pt-8 pb-8 px-6 bg-transparent">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-2">
             <Car size={20} className="text-blue-500" />
             <span className="font-bold text-white tracking-tight">Licence Saathi</span>
