@@ -6,18 +6,19 @@ import { hi } from './i18n/hi';
 import { gu } from './i18n/gu';
 import ChatHelper from './components/ChatHelper';
 
-// Lazy load pages to achieve 100 Performance Score
+// Lazy load pages for maximum performance
 const Home = lazy(() => import('./pages/Home'));
 const Eligibility = lazy(() => import('./pages/Eligibility'));
 const Documents = lazy(() => import('./pages/Documents'));
 const LlApplication = lazy(() => import('./pages/LlApplication'));
 const MockTest = lazy(() => import('./pages/MockTest'));
-const TestDay = lazy(() => import('./pages/TestDay')); // Added Test Day Simulator
+const TestDay = lazy(() => import('./pages/TestDay'));
 const TrackApp = lazy(() => import('./pages/TrackApp'));
 const PermanentLicence = lazy(() => import('./pages/PermanentLicence'));
 const Learn = lazy(() => import('./pages/Learn'));
 const DrivingTest = lazy(() => import('./pages/DrivingTest'));
 const Settings = lazy(() => import('./pages/Settings'));
+const NotFound = lazy(() => import('./pages/NotFound')); // Added 404 Page
 
 // Loading Fallback Component
 const PageLoader = () => (
@@ -94,6 +95,8 @@ export default function App() {
               <Route path="/learn" element={<Learn />} />
               <Route path="/driving-test" element={<DrivingTest />} />
               <Route path="/settings" element={<Settings />} />
+              {/* Catch-all route for non-existent URLs */}
+              <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
         </main>
