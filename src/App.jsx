@@ -1,6 +1,6 @@
 import { useState, createContext, useEffect, Suspense, lazy } from 'react';
 import { Routes, Route, Link, useLocation } from 'react-router-dom';
-import { Settings as SettingsIcon, WifiOff, Car, Menu, X } from 'lucide-react';
+import { Settings as SettingsIcon, WifiOff, Car, Menu, X, Share2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { en } from './i18n/en';
 import { hi } from './i18n/hi';
@@ -78,11 +78,21 @@ export default function App() {
     else html.style.fontSize = '16px'; 
   }, [lang, textSize, highContrast, readAloud]);
 
+  // Global WhatsApp referral message for footer
+  const footerShareText = 
+    lang === 'gu'
+      ? `🚗 લાઇસન્સ સાથી - સરળ RTO ડ્રાઇવિંગ લાઇસન્સ માર્ગદર્શિકા! પાત્રતા તપાસો, મોક ટેસ્ટ આપો અને રોડ સાઇન શીખો: https://licence-saathi-v2.onrender.com/`
+      : lang === 'hi'
+      ? `🚗 लाइसेंस साथी - तनाव मुक्त एम-परिवहन सहायता और आरटीओ ड्राइविंग लाइसेंस गाइड! पात्रता जांचें, मॉक टेस्ट दें और रोड साइन्स सीखें: https://licence-saathi-v2.onrender.com/`
+      : `🚗 Licence Saathi - Stress-free mParivahan assistance and RTO driving licence guide for India! Check eligibility, practice mock tests, and learn road signs: https://licence-saathi-v2.onrender.com/`;
+
+  const footerWhatsappUrl = `https://wa.me/?text=${encodeURIComponent(footerShareText)}`;
+
   return (
     <AppContext.Provider value={{ lang, setLang, textSize, setTextSize, highContrast, setHighContrast, readAloud, setReadAloud, t }}>
       <div className={`w-full min-h-screen bg-slate-950 flex flex-col relative overflow-x-hidden text-slate-50 font-sans transition-all duration-300 ${highContrast ? 'contrast-150 saturate-150 brightness-110' : ''}`}>
         
-        {/* Skip to Main Content Link for Screen Readers */}
+        {/* Skip Link for Screen Readers */}
         <a 
           href="#main-content" 
           className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 z-50 bg-blue-600 text-white px-4 py-2 rounded-xl font-bold shadow-lg"
@@ -90,7 +100,7 @@ export default function App() {
           Skip to main content
         </a>
 
-        {/* Offline Notification */}
+        {/* Offline Notification Banner */}
         {!isOnline && (
           <div role="status" aria-live="polite" className="bg-amber-500 text-slate-950 px-4 py-2 font-bold text-xs sm:text-sm text-center flex items-center justify-center gap-2 sticky top-0 z-50 shadow-md">
             <WifiOff size={16} />
@@ -202,10 +212,10 @@ export default function App() {
           </Suspense>
         </main>
         
-        {/* Chat Assistant */}
+        {/* Floating Chat Helper */}
         <ChatHelper />
         
-        {/* Settings Quick Access Link */}
+        {/* Floating Settings Button */}
         <Link 
           to="/settings" 
           aria-label="App Settings"
@@ -214,7 +224,7 @@ export default function App() {
           <SettingsIcon size={24} />
         </Link>
 
-        {/* 3. CONTENTINFO FOOTER LANDMARK */}
+        {/* 3. CONTENTINFO FOOTER WITH WHATSAPP REFERRAL BUTTON */}
         <footer role="contentinfo" className="relative z-10 border-t border-slate-800/80 w-full mt-auto py-8 px-6 bg-slate-950/60">
           <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-2">
@@ -222,7 +232,7 @@ export default function App() {
               <span className="font-bold text-white tracking-tight">Licence Saathi</span>
             </div>
 
-            <div className="flex items-center gap-6 text-xs text-slate-400 font-medium">
+            <div className="flex items-center gap-4 sm:gap-6 text-xs text-slate-400 font-medium">
               <Link to="/privacy" className="hover:text-blue-400 transition-colors">
                 {lang === 'en' ? 'Privacy Policy' : lang === 'hi' ? 'गोपनीयता नीति' : 'પ્રાઇવસી પોલિસી'}
               </Link>
@@ -232,11 +242,18 @@ export default function App() {
               </Link>
             </div>
 
-            <p className="text-slate-400 text-xs sm:text-sm text-center md:text-right">
-              {lang === 'en' && 'Designed to simplify the mParivahan process.'}
-              {lang === 'hi' && 'एम-परिवहन प्रक्रिया को सरल बनाने के लिए डिज़ाइन किया गया।'}
-              {lang === 'gu' && 'પરિવહન પ્રક્રિયાને સરળ બનાવવા માટે બનાવેલ.'}
-            </p>
+            {/* Global WhatsApp Referral Pill */}
+            <div className="flex items-center gap-3">
+              <a
+                href={footerWhatsappUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 bg-[#25D366]/15 hover:bg-[#25D366] text-[#25D366] hover:text-slate-950 border border-[#25D366]/40 font-bold px-4 py-2 rounded-xl transition-all text-xs shadow-sm"
+              >
+                <Share2 size={14} />
+                {lang === 'en' ? 'Share on WhatsApp' : lang === 'hi' ? 'व्हाट्सएप पर शेयर करें' : 'વોટ્સએપ પર શેર કરો'}
+              </a>
+            </div>
           </div>
         </footer>
       </div>

@@ -4,7 +4,7 @@ import { rulesConfig } from '../data/config';
 import { 
   ShieldCheck, ArrowRight, ArrowLeft, CheckCircle2, 
   CreditCard, Receipt, FileText, UploadCloud, FileCheck2, 
-  Sparkles, Lock 
+  Sparkles, Lock, Share2 
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
@@ -31,12 +31,10 @@ export default function LlApplication() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [appNumber, setAppNumber] = useState('');
 
-  // Total user steps before receipt is generated
   const totalSteps = 6;
   const progress = (step / totalSteps) * 100;
 
   useEffect(() => {
-    // Save progress to Journey Map stage 2 when the application receipt is rendered
     if (step === 7) {
       localStorage.setItem('licenceJourneyStage', '2');
     }
@@ -51,7 +49,6 @@ export default function LlApplication() {
     setStep(prev => prev - 1);
   };
 
-  // Simulate document upload delay
   const simulateDocUpload = (docKey, sampleFileName) => {
     setDocsState(prev => ({
       ...prev,
@@ -66,7 +63,6 @@ export default function LlApplication() {
     }, 700);
   };
 
-  // One-click demo helper for hackathon judges
   const handleUploadAllSamples = () => {
     setDocsState({
       ageProof: { uploading: false, uploaded: true, name: 'Sample_Birth_Certificate.pdf' },
@@ -183,6 +179,16 @@ export default function LlApplication() {
     }
   ];
 
+  // Localized WhatsApp receipt message
+  const receiptShareText = 
+    lang === 'gu'
+      ? `📄 મારી લર્નર લાઇસન્સ અરજી લાઇસન્સ સાથી પર સફળતાપૂર્વક જમા થઈ ગઈ છે! અરજી નંબર: ${appNumber}. સ્ટેટસ અહીં ટ્રેક કરો: https://licence-saathi-v2.onrender.com/track-app`
+      : lang === 'hi'
+      ? `📄 मेरा लर्नर लाइसेंस आवेदन लाइसेंस साथी पर सफलतापूर्वक जमा हो गया है! आवेदन संख्या: ${appNumber}। स्थिति यहाँ ट्रैक करें: https://licence-saathi-v2.onrender.com/track-app`
+      : `📄 My Learner's Licence Application has been submitted on Licence Saathi! Application No: ${appNumber}. Track status and prepare here: https://licence-saathi-v2.onrender.com/track-app`;
+
+  const whatsappReceiptUrl = `https://wa.me/?text=${encodeURIComponent(receiptShareText)}`;
+
   return (
     <div className="relative min-h-screen bg-slate-950 text-slate-50 py-12 px-4 sm:px-6 flex flex-col font-sans overflow-x-hidden">
       {/* Background Gradients */}
@@ -211,7 +217,7 @@ export default function LlApplication() {
         <div className="w-full max-w-xl">
           <AnimatePresence mode="wait">
 
-            {/* Steps 1 to 3: Question Cards */}
+            {/* Steps 1 to 3: Questions */}
             {step <= 3 && (
               <motion.form
                 key={step}
@@ -252,7 +258,7 @@ export default function LlApplication() {
               </motion.form>
             )}
 
-            {/* Step 4: Simulated Document Upload (Privacy-First) */}
+            {/* Step 4: Simulated Document Upload */}
             {step === 4 && (
               <motion.div
                 key="doc_simulation"
@@ -278,7 +284,6 @@ export default function LlApplication() {
                   </button>
                 </div>
 
-                {/* Privacy Guarantee Note */}
                 <div className="mb-6 p-3 bg-slate-950/80 border border-slate-800 rounded-2xl flex items-center gap-3 text-xs text-slate-400">
                   <Lock size={16} className="text-emerald-400 shrink-0" />
                   <span>
@@ -288,9 +293,8 @@ export default function LlApplication() {
                   </span>
                 </div>
 
-                {/* Upload Slots */}
                 <div className="space-y-3.5 mb-8">
-                  {/* Slot 1: Age Proof */}
+                  {/* Age Proof */}
                   <div className="p-4 bg-slate-950 border border-slate-800 rounded-2xl flex items-center justify-between gap-3">
                     <div>
                       <p className="text-sm font-bold text-white">
@@ -316,7 +320,7 @@ export default function LlApplication() {
                     )}
                   </div>
 
-                  {/* Slot 2: Address Proof */}
+                  {/* Address Proof */}
                   <div className="p-4 bg-slate-950 border border-slate-800 rounded-2xl flex items-center justify-between gap-3">
                     <div>
                       <p className="text-sm font-bold text-white">
@@ -342,7 +346,7 @@ export default function LlApplication() {
                     )}
                   </div>
 
-                  {/* Slot 3: Passport Photo */}
+                  {/* Photo */}
                   <div className="p-4 bg-slate-950 border border-slate-800 rounded-2xl flex items-center justify-between gap-3">
                     <div>
                       <p className="text-sm font-bold text-white">
@@ -390,7 +394,7 @@ export default function LlApplication() {
               </motion.div>
             )}
 
-            {/* Step 5: Review Screen */}
+            {/* Step 5: Review */}
             {step === 5 && (
               <motion.div
                 key="review"
@@ -480,7 +484,7 @@ export default function LlApplication() {
               </motion.div>
             )}
 
-            {/* Step 7: Receipt */}
+            {/* Step 7: Receipt with WhatsApp Sharing */}
             {step === 7 && (
               <motion.div
                 key="receipt"
@@ -510,12 +514,25 @@ export default function LlApplication() {
                   </p>
                 </div>
 
-                <Link
-                  to="/"
-                  className="w-full bg-slate-800 hover:bg-slate-700 text-white py-4 rounded-xl font-bold flex justify-center items-center transition shadow-lg"
-                >
-                  {lang === 'en' ? 'Return to Home' : lang === 'hi' ? 'होम पर लौटें' : 'હોમ પેજ પર પાછા જાઓ'}
-                </Link>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  {/* WhatsApp Share Receipt Button */}
+                  <a
+                    href={whatsappReceiptUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 bg-[#25D366] hover:bg-[#20bd5a] text-slate-950 py-4 rounded-xl font-bold flex justify-center items-center gap-2 transition shadow-lg text-sm sm:text-base"
+                  >
+                    <Share2 size={18} />
+                    {lang === 'en' ? 'Share on WhatsApp' : lang === 'hi' ? 'व्हाट्सएप पर शेयर करें' : 'વોટ્સએપ પર શેર કરો'}
+                  </a>
+
+                  <Link
+                    to="/"
+                    className="flex-1 bg-slate-800 hover:bg-slate-700 text-white py-4 rounded-xl font-bold flex justify-center items-center transition shadow-lg text-sm sm:text-base"
+                  >
+                    {lang === 'en' ? 'Return to Home' : lang === 'hi' ? 'होम पर लौटें' : 'હોમ પેજ પર પાછા જાઓ'}
+                  </Link>
+                </div>
               </motion.div>
             )}
 
