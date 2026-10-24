@@ -12,6 +12,7 @@ const Eligibility = lazy(() => import('./pages/Eligibility'));
 const Documents = lazy(() => import('./pages/Documents'));
 const LlApplication = lazy(() => import('./pages/LlApplication'));
 const MockTest = lazy(() => import('./pages/MockTest'));
+const TestDay = lazy(() => import('./pages/TestDay')); // Added Test Day Simulator
 const TrackApp = lazy(() => import('./pages/TrackApp'));
 const PermanentLicence = lazy(() => import('./pages/PermanentLicence'));
 const Learn = lazy(() => import('./pages/Learn'));
@@ -87,6 +88,7 @@ export default function App() {
               <Route path="/documents" element={<Documents />} />
               <Route path="/application" element={<LlApplication />} />
               <Route path="/mock-test" element={<MockTest />} />
+              <Route path="/test-day" element={<TestDay />} />
               <Route path="/track-app" element={<TrackApp />} />
               <Route path="/permanent-licence" element={<PermanentLicence />} />
               <Route path="/learn" element={<Learn />} />
