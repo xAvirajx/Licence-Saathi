@@ -25,6 +25,8 @@ export default function App() {
   const [textSize, setTextSize] = useState(() => localStorage.getItem('ls_textSize') || 'normal');
   const [highContrast, setHighContrast] = useState(() => localStorage.getItem('ls_contrast') === 'true');
   const [readAloud, setReadAloud] = useState(() => localStorage.getItem('ls_readAloud') === 'true');
+  
+  // Connection monitoring for PWA
   const [isOnline, setIsOnline] = useState(navigator.onLine);
 
   useEffect(() => {
@@ -41,6 +43,7 @@ export default function App() {
   const dictionaries = { en, hi, gu };
   const t = dictionaries[lang] || en;
 
+  // Persist settings to prevent data loss on connection drops
   useEffect(() => {
     localStorage.setItem('ls_lang', lang);
     localStorage.setItem('ls_textSize', textSize);
@@ -57,13 +60,14 @@ export default function App() {
     <AppContext.Provider value={{ lang, setLang, textSize, setTextSize, highContrast, setHighContrast, readAloud, setReadAloud, t }}>
       <div className={`w-full min-h-screen bg-slate-950 flex flex-col relative overflow-x-hidden text-slate-50 font-sans transition-all duration-300 ${highContrast ? 'contrast-150 saturate-150 brightness-110' : ''}`}>
         
+        {/* Offline Indicator Banner */}
         {!isOnline && (
           <div className="bg-amber-500 text-slate-950 px-4 py-2 font-bold text-xs sm:text-sm text-center flex items-center justify-center gap-2 sticky top-0 z-50 shadow-md">
             <WifiOff size={16} />
             <span>
-              {lang === 'en' && "You are offline. Journey map, documents, mock tests, and rules remain fully available."}
-              {lang === 'hi' && "आप ऑफ़लाइन हैं। यात्रा मानचित्र, दस्तावेज़, मॉक टेस्ट और नियम पूरी तरह उपलब्ध हैं।"}
-              {lang === 'gu' && "તમે ઓફલાઇન છો. પ્રવાસ નકશો, દસ્તાવેજો, અને મોક ટેસ્ટ ઉપલબ્ધ છે."}
+              {lang === 'en' && "You are offline. Journey map, documents, and mock tests remain available."}
+              {lang === 'hi' && "आप ऑफ़लाइन हैं। यात्रा मानचित्र, दस्तावेज़ और मॉक टेस्ट उपलब्ध हैं।"}
+              {lang === 'gu' && "તમે ઓફલાઇન છો. પ્રવાસ નકશો, દસ્તાવેજો અને મોક ટેસ્ટ ઉપલબ્ધ છે."}
             </span>
           </div>
         )}

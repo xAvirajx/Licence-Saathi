@@ -7,11 +7,11 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
+      includeAssets: ['pwa-192x192.svg', 'pwa-512x512.svg'],
       manifest: {
         name: 'Licence Saathi',
         short_name: 'LicenceSaathi',
-        description: 'Stress-free mParivahan assistance and driving licence guide for India',
+        description: 'Stress-free mParivahan assistance and driving licence guide',
         theme_color: '#020617',
         background_color: '#020617',
         display: 'standalone',
@@ -30,7 +30,7 @@ export default defineConfig({
         ]
       },
       workbox: {
-        // Cache all app assets, pages, and src/data files for offline usage
+        // Caches everything in the build output, including src/data JSON/JS files
         globPatterns: ['**/*.{js,css,html,ico,png,svg,json}'],
         runtimeCaching: [
           {
