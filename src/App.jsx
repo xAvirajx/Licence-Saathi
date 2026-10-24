@@ -1,6 +1,6 @@
 import { useState, createContext, useEffect, Suspense, lazy } from 'react';
 import { Routes, Route, Link, useLocation } from 'react-router-dom';
-import { Settings as SettingsIcon, WifiOff, Car, Menu, X, Share2 } from 'lucide-react';
+import { Settings as SettingsIcon, WifiOff, Car, Menu, X, Share2, Languages, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { en } from './i18n/en';
 import { hi } from './i18n/hi';
@@ -45,6 +45,9 @@ export default function App() {
   const [readAloud, setReadAloud] = useState(() => localStorage.getItem('ls_readAloud') === 'true');
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  
+  // Floating language switcher menu state
+  const [langMenuOpen, setLangMenuOpen] = useState(false);
 
   const location = useLocation();
 
@@ -212,10 +215,64 @@ export default function App() {
           </Suspense>
         </main>
         
-        {/* Floating Chat Helper */}
+        {/* Floating Chat Helper (Bottom Right) */}
         <ChatHelper />
+
+        {/* 3. FLOATING ACTION BUTTONS (Bottom Left) */}
         
-        {/* Floating Settings Button */}
+        {/* Floating Language Switcher (Stacked above Settings) */}
+        <div className="fixed bottom-24 left-6 z-40">
+          <AnimatePresence>
+            {langMenuOpen && (
+              <motion.div
+                initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                transition={{ duration: 0.15 }}
+                className="absolute bottom-16 left-0 bg-slate-900 border border-slate-700/90 rounded-2xl p-1.5 shadow-2xl backdrop-blur-xl w-40 space-y-1 mb-1"
+              >
+                <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-800">
+                  {lang === 'en' ? 'Select Language' : lang === 'hi' ? 'भाषा चुनें' : 'ભાષા પસંદ કરો'}
+                </div>
+                {[
+                  { code: 'en', label: 'English' },
+                  { code: 'hi', label: 'हिंदी' },
+                  { code: 'gu', label: 'ગુજરાતી' }
+                ].map((item) => (
+                  <button
+                    key={item.code}
+                    onClick={() => {
+                      setLang(item.code);
+                      setLangMenuOpen(false);
+                    }}
+                    className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition-all ${
+                      lang === item.code
+                        ? 'bg-blue-600 text-white shadow-md'
+                        : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                    }`}
+                  >
+                    <span>{item.label}</span>
+                    {lang === item.code && <Check size={14} className="stroke-[3]" />}
+                  </button>
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <button
+            onClick={() => setLangMenuOpen(!langMenuOpen)}
+            aria-label="Change Language"
+            title="Change Language / भाषा बदलें / ભાષા બદલો"
+            className="w-14 h-14 bg-slate-900 border border-slate-700 text-slate-300 rounded-full flex items-center justify-center shadow-lg shadow-black/50 hover:bg-slate-800 hover:text-white transition-all relative group"
+          >
+            <Languages size={24} className="group-hover:scale-110 transition-transform" />
+            <span className="absolute -top-1 -right-1 bg-blue-600 text-white font-mono text-[10px] font-bold px-1.5 py-0.5 rounded-full uppercase border border-slate-900 shadow">
+              {lang}
+            </span>
+          </button>
+        </div>
+
+        {/* Floating Settings Button (Bottom Left) */}
         <Link 
           to="/settings" 
           aria-label="App Settings"
@@ -224,7 +281,7 @@ export default function App() {
           <SettingsIcon size={24} />
         </Link>
 
-        {/* 3. CONTENTINFO FOOTER WITH WHATSAPP REFERRAL BUTTON */}
+        {/* 4. CONTENTINFO FOOTER WITH WHATSAPP REFERRAL BUTTON */}
         <footer role="contentinfo" className="relative z-10 border-t border-slate-800/80 w-full mt-auto py-8 px-6 bg-slate-950/60">
           <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-2">
