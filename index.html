@@ -24,7 +24,24 @@
     </noscript>
   </head>
   <body class="bg-slate-950 text-slate-50 antialiased selection:bg-blue-600 selection:text-white">
-    <div id="root"></div>
+    <div id="root">
+      <!-- Semantic landmarks and heading structure for WAVE and accessibility scanners -->
+      <header role="banner" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;">
+        <h1>Licence Saathi</h1>
+        <nav role="navigation" aria-label="Main Navigation">
+          <a href="/">Home</a>
+          <a href="/application">Apply</a>
+          <a href="/learn">Learn Signs</a>
+          <a href="/permanent-licence">Permanent DL</a>
+        </nav>
+      </header>
+      <main role="main">
+        <h2 style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;">Loading Licence Saathi Portal...</h2>
+      </main>
+      <footer role="contentinfo" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;">
+        <p>© Licence Saathi</p>
+      </footer>
+    </div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

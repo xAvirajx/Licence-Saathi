@@ -1,13 +1,14 @@
 import { useState, createContext, useEffect, Suspense, lazy } from 'react';
 import { Routes, Route, Link, useLocation } from 'react-router-dom';
-import { Settings as SettingsIcon, WifiOff } from 'lucide-react';
+import { Settings as SettingsIcon, WifiOff, Car, Menu, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { en } from './i18n/en';
 import { hi } from './i18n/hi';
 import { gu } from './i18n/gu';
 import ChatHelper from './components/ChatHelper';
 import { trackPageView } from './utils/analytics';
 
-// Lazy load pages for maximum performance
+// Lazy load pages
 const Home = lazy(() => import('./pages/Home'));
 const Eligibility = lazy(() => import('./pages/Eligibility'));
 const Documents = lazy(() => import('./pages/Documents'));
@@ -23,9 +24,10 @@ const Privacy = lazy(() => import('./pages/Privacy'));
 const Terms = lazy(() => import('./pages/Terms'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
-// Loading Fallback Component
+// Accessible Loading Fallback with Heading
 const PageLoader = () => (
-  <div className="w-full min-h-[50vh] flex items-center justify-center">
+  <div role="status" aria-live="polite" className="w-full min-h-[50vh] flex flex-col items-center justify-center gap-4">
+    <h2 className="sr-only">Loading page content...</h2>
     <div className="flex gap-2">
       <span className="w-3 h-3 bg-blue-500 rounded-full animate-bounce"></span>
       <span className="w-3 h-3 bg-blue-500 rounded-full animate-bounce delay-75"></span>
@@ -42,15 +44,14 @@ export default function App() {
   const [highContrast, setHighContrast] = useState(() => localStorage.getItem('ls_contrast') === 'true');
   const [readAloud, setReadAloud] = useState(() => localStorage.getItem('ls_readAloud') === 'true');
   const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const location = useLocation();
 
-  // Automatic privacy-friendly page view tracking (Item 14)
   useEffect(() => {
     trackPageView(location.pathname);
   }, [location.pathname]);
 
-  // Network connection listener
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
@@ -65,7 +66,6 @@ export default function App() {
   const dictionaries = { en, hi, gu };
   const t = dictionaries[lang] || en;
 
-  // Sync settings & font scaling to root HTML document
   useEffect(() => {
     localStorage.setItem('ls_lang', lang);
     localStorage.setItem('ls_textSize', textSize);
@@ -82,9 +82,17 @@ export default function App() {
     <AppContext.Provider value={{ lang, setLang, textSize, setTextSize, highContrast, setHighContrast, readAloud, setReadAloud, t }}>
       <div className={`w-full min-h-screen bg-slate-950 flex flex-col relative overflow-x-hidden text-slate-50 font-sans transition-all duration-300 ${highContrast ? 'contrast-150 saturate-150 brightness-110' : ''}`}>
         
-        {/* Offline Notification Banner */}
+        {/* Skip to Main Content Link for Screen Readers */}
+        <a 
+          href="#main-content" 
+          className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 z-50 bg-blue-600 text-white px-4 py-2 rounded-xl font-bold shadow-lg"
+        >
+          Skip to main content
+        </a>
+
+        {/* Offline Notification */}
         {!isOnline && (
-          <div className="bg-amber-500 text-slate-950 px-4 py-2 font-bold text-xs sm:text-sm text-center flex items-center justify-center gap-2 sticky top-0 z-50 shadow-md">
+          <div role="status" aria-live="polite" className="bg-amber-500 text-slate-950 px-4 py-2 font-bold text-xs sm:text-sm text-center flex items-center justify-center gap-2 sticky top-0 z-50 shadow-md">
             <WifiOff size={16} />
             <span>
               {lang === 'en' && "You are offline. Journey map, documents, and mock tests remain available."}
@@ -94,7 +102,86 @@ export default function App() {
           </div>
         )}
 
-        <main className="flex-1 w-full">
+        {/* 1. GLOBAL HEADER & BANNER LANDMARK */}
+        <header role="banner" className="relative z-30 w-full border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-md">
+          <div className="max-w-5xl mx-auto p-4 sm:px-6 flex items-center justify-between">
+            <Link to="/" aria-label="Licence Saathi Home" className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
+                <Car size={24} className="text-white" />
+              </div>
+              <span className="text-xl font-bold tracking-tight text-white">Licence Saathi</span>
+            </Link>
+
+            {/* Desktop Navigation */}
+            <nav role="navigation" aria-label="Main Navigation" className="hidden md:flex items-center gap-8 font-medium text-sm text-slate-300">
+              <Link to="/application" className="hover:text-white transition">
+                {lang === 'en' ? 'Apply Now' : lang === 'hi' ? 'अभी आवेदन करें' : 'હવે અરજી કરો'}
+              </Link>
+              <Link to="/learn" className="hover:text-white transition">
+                {lang === 'en' ? 'Learn Signs' : lang === 'hi' ? 'संकेत सीखें' : 'સાઇન શીખો'}
+              </Link>
+              <Link to="/permanent-licence" className="hover:text-white transition">
+                {lang === 'en' ? 'Permanent DL' : lang === 'hi' ? 'स्थायी डीएल' : 'કાયમી DL'}
+              </Link>
+              <Link to="/mock-test" className="hover:text-white transition">
+                {lang === 'en' ? 'Mock Test' : lang === 'hi' ? 'मॉक टेस्ट' : 'મોક ટેસ્ટ'}
+              </Link>
+            </nav>
+
+            {/* Mobile Menu Button */}
+            <button
+              onClick={() => setMobileMenuOpen(true)}
+              aria-label="Toggle Menu"
+              className="md:hidden text-slate-300 hover:text-white p-2"
+            >
+              <Menu size={28} />
+            </button>
+          </div>
+        </header>
+
+        {/* Mobile Navigation Drawer */}
+        <AnimatePresence>
+          {mobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, x: '100%' }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="fixed inset-0 z-50 bg-slate-950 flex flex-col p-6"
+            >
+              <div className="flex justify-end">
+                <button
+                  onClick={() => setMobileMenuOpen(false)}
+                  aria-label="Close Menu"
+                  className="text-slate-300 hover:text-white p-2"
+                >
+                  <X size={32} />
+                </button>
+              </div>
+
+              <nav role="navigation" aria-label="Mobile Navigation" className="flex flex-col items-center justify-center flex-1 gap-8 text-2xl font-bold">
+                <Link to="/application" onClick={() => setMobileMenuOpen(false)} className="text-white hover:text-blue-400 transition">
+                  {lang === 'en' ? 'Apply Now' : lang === 'hi' ? 'अभी आवेदन करें' : 'હવે અરજી કરો'}
+                </Link>
+                <Link to="/learn" onClick={() => setMobileMenuOpen(false)} className="text-white hover:text-blue-400 transition">
+                  {lang === 'en' ? 'Learn Signs' : lang === 'hi' ? 'संकेत सीखें' : 'સાઇન શીખો'}
+                </Link>
+                <Link to="/permanent-licence" onClick={() => setMobileMenuOpen(false)} className="text-white hover:text-blue-400 transition">
+                  {lang === 'en' ? 'Permanent DL' : lang === 'hi' ? 'स्थायी डीएल' : 'કાયમી DL'}
+                </Link>
+                <Link to="/mock-test" onClick={() => setMobileMenuOpen(false)} className="text-white hover:text-blue-400 transition">
+                  {lang === 'en' ? 'Mock Test' : lang === 'hi' ? 'मॉक टेस्ट' : 'મોક ટેસ્ટ'}
+                </Link>
+                <Link to="/settings" onClick={() => setMobileMenuOpen(false)} className="text-white hover:text-blue-400 transition">
+                  {lang === 'en' ? 'Settings' : lang === 'hi' ? 'सेटिंग्स' : 'સેટિંગ્સ'}
+                </Link>
+              </nav>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* 2. MAIN REGION LANDMARK */}
+        <main id="main-content" role="main" className="flex-1 w-full">
           <Suspense fallback={<PageLoader />}>
             <Routes>
               <Route path="/" element={<Home />} />
@@ -115,8 +202,10 @@ export default function App() {
           </Suspense>
         </main>
         
+        {/* Chat Assistant */}
         <ChatHelper />
         
+        {/* Settings Quick Access Link */}
         <Link 
           to="/settings" 
           aria-label="App Settings"
@@ -124,6 +213,32 @@ export default function App() {
         >
           <SettingsIcon size={24} />
         </Link>
+
+        {/* 3. CONTENTINFO FOOTER LANDMARK */}
+        <footer role="contentinfo" className="relative z-10 border-t border-slate-800/80 w-full mt-auto py-8 px-6 bg-slate-950/60">
+          <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="flex items-center gap-2">
+              <Car size={20} className="text-blue-500" />
+              <span className="font-bold text-white tracking-tight">Licence Saathi</span>
+            </div>
+
+            <div className="flex items-center gap-6 text-xs text-slate-400 font-medium">
+              <Link to="/privacy" className="hover:text-blue-400 transition-colors">
+                {lang === 'en' ? 'Privacy Policy' : lang === 'hi' ? 'गोपनीयता नीति' : 'પ્રાઇવસી પોલિસી'}
+              </Link>
+              <span className="text-slate-700">•</span>
+              <Link to="/terms" className="hover:text-blue-400 transition-colors">
+                {lang === 'en' ? 'Terms & Disclaimer' : lang === 'hi' ? 'नियम और अस्वीकरण' : 'નિયમો અને શરતો'}
+              </Link>
+            </div>
+
+            <p className="text-slate-400 text-xs sm:text-sm text-center md:text-right">
+              {lang === 'en' && 'Designed to simplify the mParivahan process.'}
+              {lang === 'hi' && 'एम-परिवहन प्रक्रिया को सरल बनाने के लिए डिज़ाइन किया गया।'}
+              {lang === 'gu' && 'પરિવહન પ્રક્રિયાને સરળ બનાવવા માટે બનાવેલ.'}
+            </p>
+          </div>
+        </footer>
       </div>
     </AppContext.Provider>
   );
