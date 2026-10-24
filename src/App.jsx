@@ -18,7 +18,9 @@ const PermanentLicence = lazy(() => import('./pages/PermanentLicence'));
 const Learn = lazy(() => import('./pages/Learn'));
 const DrivingTest = lazy(() => import('./pages/DrivingTest'));
 const Settings = lazy(() => import('./pages/Settings'));
-const NotFound = lazy(() => import('./pages/NotFound')); // Added 404 Page
+const Privacy = lazy(() => import('./pages/Privacy')); // Added Privacy Policy
+const Terms = lazy(() => import('./pages/Terms'));     // Added Terms of Service
+const NotFound = lazy(() => import('./pages/NotFound'));
 
 // Loading Fallback Component
 const PageLoader = () => (
@@ -95,7 +97,8 @@ export default function App() {
               <Route path="/learn" element={<Learn />} />
               <Route path="/driving-test" element={<DrivingTest />} />
               <Route path="/settings" element={<Settings />} />
-              {/* Catch-all route for non-existent URLs */}
+              <Route path="/privacy" element={<Privacy />} />
+              <Route path="/terms" element={<Terms />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>

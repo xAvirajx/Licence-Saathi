@@ -362,15 +362,25 @@ export default function Home() {
 
       </main>
 
-      {/* FOOTER - Restored perfectly centered and matched to design */}
-      <footer className="relative z-10 border-t border-slate-800/80 w-full mt-12 pt-8 pb-8 px-6 bg-transparent">
+      {/* FOOTER */}
+      <footer className="relative z-10 border-t border-slate-800/80 w-full mt-12 pt-8 pb-10 px-6 bg-transparent">
         <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-2">
             <Car size={20} className="text-blue-500" />
             <span className="font-bold text-white tracking-tight">Licence Saathi</span>
           </div>
-          
-          <p className="text-slate-400 text-sm text-center md:text-left">
+
+          <div className="flex items-center gap-6 text-xs text-slate-400 font-medium">
+            <Link to="/privacy" className="hover:text-blue-400 transition-colors">
+              {lang === 'en' ? 'Privacy Policy' : lang === 'hi' ? 'गोपनीयता नीति' : 'પ્રાઇવસી પોલિસી'}
+            </Link>
+            <span className="text-slate-700">•</span>
+            <Link to="/terms" className="hover:text-blue-400 transition-colors">
+              {lang === 'en' ? 'Terms & Disclaimer' : lang === 'hi' ? 'नियम और अस्वीकरण' : 'નિયમો અને શરતો'}
+            </Link>
+          </div>
+
+          <p className="text-slate-400 text-xs sm:text-sm text-center md:text-right">
             {lang === 'en' && 'Designed to simplify the mParivahan process.'}
             {lang === 'hi' && 'एम-परिवहन प्रक्रिया को सरल बनाने के लिए डिज़ाइन किया गया।'}
             {lang === 'gu' && 'પરિવહન પ્રક્રિયાને સરળ બનાવવા માટે બનાવેલ.'}
