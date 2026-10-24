@@ -1,236 +1,235 @@
-import { useState, useEffect, useContext } from 'react';
-import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { useContext, useState } from 'react';
 import { AppContext } from '../App';
-import { 
-  ShieldCheck, CheckCircle2, Circle, ArrowRight,
-  Menu, X, Clock, Map as MapIcon, MessageSquare
-} from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Car, FileText, CheckCircle, Navigation, PlayCircle, Menu, X, ArrowRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Home() {
-  const { t } = useContext(AppContext);
+  const { lang } = useContext(AppContext);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [activeStage, setActiveStage] = useState(() => {
-    const saved = localStorage.getItem('licenceJourneyStage');
-    return saved !== null ? parseInt(saved, 10) : 0;
-  });
 
-  useEffect(() => {
-    localStorage.setItem('licenceJourneyStage', activeStage.toString());
-  }, [activeStage]);
-
-  const openFaqChat = (e) => {
-    e.preventDefault();
-    setMobileMenuOpen(false);
-    window.dispatchEvent(new CustomEvent('open-chat-helper'));
-  };
-
-  const journeyOptions = [
-    { id: 0, label: t.journey.opt0.label, subtitle: t.journey.opt0.sub },
-    { id: 3, label: t.journey.opt3.label, subtitle: t.journey.opt3.sub },
-    { id: 4, label: t.journey.opt4.label, subtitle: t.journey.opt4.sub },
-    { id: 5, label: t.journey.opt5.label, subtitle: t.journey.opt5.sub }
-  ];
-
-  const stages = [
-    { title: t.stages.s1.title, action: t.stages.s1.action, path: "/eligibility" },
-    { title: t.stages.s2.title, action: t.stages.s2.action, path: "/application" },
-    { title: t.stages.s3.title, action: t.stages.s3.action, path: "/mock-test" },
-    { title: t.stages.s4.title, action: t.stages.s4.action, path: "/permanent-licence" },
-    { title: t.stages.s5.title, action: t.stages.s5.action, path: "/driving-test" },
-    { title: t.stages.s6.title, action: t.stages.s6.action, path: "/track-app" }
+  const features = [
+    { 
+      icon: <CheckCircle size={24} />, 
+      path: "/eligibility", 
+      title: { 
+        en: "Eligibility Check", 
+        hi: "पात्रता जांच", 
+        gu: "પાત્રતા તપાસ" 
+      }, 
+      desc: { 
+        en: "See if you meet age & vehicle rules.", 
+        hi: "देखें कि क्या आप उम्र और वाहन नियमों को पूरा करते हैं।", 
+        gu: "ઉંમર અને વાહનના નિયમો તપાસો." 
+      } 
+    },
+    { 
+      icon: <FileText size={24} />, 
+      path: "/documents", 
+      title: { 
+        en: "Documents Needed", 
+        hi: "आवश्यक दस्तावेज़", 
+        gu: "જરૂરી દસ્તાવેજો" 
+      }, 
+      desc: { 
+        en: "Get the exact list of required proofs.", 
+        hi: "आवश्यक प्रमाणों की सटीक सूची प्राप्त करें।", 
+        gu: "જરૂરી પુરાવાઓની ચોક્કસ સૂચિ મેળવો." 
+      } 
+    },
+    { 
+      icon: <PlayCircle size={24} />, 
+      path: "/mock-test", 
+      title: { 
+        en: "Mock Test", 
+        hi: "मॉक टेस्ट", 
+        gu: "મોક ટેસ્ટ" 
+      }, 
+      desc: { 
+        en: "Practice the 15-question LL test.", 
+        hi: "15-प्रश्नों वाले एलएल टेस्ट का अभ्यास करें।", 
+        gu: "15-પ્રશ્નોવાળા LL ટેસ્ટની પ્રેક્ટિસ કરો." 
+      } 
+    },
+    { 
+      icon: <Navigation size={24} />, 
+      path: "/track-app", 
+      title: { 
+        en: "Track Status", 
+        hi: "स्थिति ट्रैक करें", 
+        gu: "સ્ટેટસ ટ્રેક કરો" 
+      }, 
+      desc: { 
+        en: "Track your real-time RTO application.", 
+        hi: "अपने रीयल-टाइम आरटीओ आवेदन को ट्रैक करें।", 
+        gu: "તમારી RTO અરજીનું સ્ટેટસ તપાસો." 
+      } 
+    }
   ];
 
   return (
-    <div className="relative min-h-screen bg-slate-950 text-slate-50 overflow-hidden pb-12">
+    <div className="relative min-h-screen bg-slate-950 text-slate-50 overflow-hidden pb-12 flex flex-col">
+      
+      {/* Background Gradients */}
       <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-blue-600/20 rounded-full blur-[120px] pointer-events-none"></div>
-      <div className="absolute top-[20%] right-[-5%] w-[400px] h-[400px] bg-emerald-500/15 rounded-full blur-[100px] pointer-events-none"></div>
-      <div className="absolute bottom-[-10%] left-[20%] w-[600px] h-[600px] bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none"></div>
+      <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-emerald-600/20 rounded-full blur-[120px] pointer-events-none"></div>
 
-      <nav className="relative z-50 w-full py-6">
-        <div className="max-w-7xl mx-auto px-6 flex justify-between items-center relative z-50 bg-slate-950/0">
-          <Link to="/" className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-slate-800 border border-slate-700 rounded-xl flex items-center justify-center shadow-lg">
-              <ShieldCheck className="text-blue-400" size={24} />
-            </div>
-            <span className="text-xl font-bold tracking-tight text-white">{t.nav.title}</span>
+      {/* Header */}
+      <header className="relative z-20 w-full p-6 flex items-center justify-between max-w-6xl mx-auto">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/30">
+            <Car size={24} className="text-white" />
+          </div>
+          <span className="text-xl font-bold tracking-tight text-white">Licence Saathi</span>
+        </div>
+
+        {/* Desktop Navigation */}
+        <nav className="hidden md:flex items-center gap-8 font-medium text-sm text-slate-300">
+          <Link to="/application" className="hover:text-white transition">
+            {lang === 'en' && 'Apply Now'}
+            {lang === 'hi' && 'अभी आवेदन करें'}
+            {lang === 'gu' && 'હવે અરજી કરો'}
           </Link>
-          
-          <div className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-300">
-            <Link to="/mock-test" className="hover:text-white transition-colors">{t.nav.mockTest}</Link>
-            <Link to="/learn" className="hover:text-white transition-colors">{t.nav.roadSigns}</Link>
-            <a href="#faqs" onClick={openFaqChat} className="hover:text-white transition-colors cursor-pointer">{t.nav.faqs}</a>
-          </div>
+          <Link to="/learn" className="hover:text-white transition">
+            {lang === 'en' && 'Learn Signs'}
+            {lang === 'hi' && 'संकेत सीखें'}
+            {lang === 'gu' && 'સાઇન શીખો'}
+          </Link>
+          <Link to="/permanent-licence" className="hover:text-white transition">
+            {lang === 'en' && 'Permanent DL'}
+            {lang === 'hi' && 'स्थायी डीएल'}
+            {lang === 'gu' && 'કાયમી DL'}
+          </Link>
+        </nav>
 
-          <button className="md:hidden text-slate-300" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-            {mobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
-          </button>
-        </div>
+        {/* LIGHTHOUSE FIX: Added aria-label="Toggle Menu" */}
+        <button 
+          onClick={() => setMobileMenuOpen(true)} 
+          aria-label="Toggle Menu"
+          className="md:hidden text-slate-300 hover:text-white"
+        >
+          <Menu size={28} />
+        </button>
+      </header>
 
+      {/* Mobile Menu Overlay */}
+      <AnimatePresence>
         {mobileMenuOpen && (
-          <div className="md:hidden absolute top-full left-0 w-full bg-slate-950 border-b border-slate-800 flex flex-col p-6 gap-6 shadow-2xl z-50">
-            <Link to="/mock-test" onClick={() => setMobileMenuOpen(false)} className="font-medium text-slate-300 text-lg">{t.nav.mockTest}</Link>
-            <Link to="/learn" onClick={() => setMobileMenuOpen(false)} className="font-medium text-slate-300 text-lg">{t.nav.roadSigns}</Link>
-            <a href="#faqs" onClick={openFaqChat} className="font-medium text-slate-300 text-lg cursor-pointer">{t.nav.faqs}</a>
-          </div>
-        )}
-      </nav>
-
-      <section className="relative z-10 pt-4 pb-8 px-6 text-center">
-        <div className="inline-flex items-center gap-2 mb-6 px-4 py-1.5 bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 text-emerald-400 font-medium text-sm rounded-full">
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-          </span>
-          {t.home.heroTag}
-        </div>
-        <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight text-white leading-[1.15] mb-4">
-          {t.home.heroTitle} <br />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">
-            {t.home.heroHighlight}
-          </span>
-        </h1>
-      </section>
-
-      <section className="relative z-10 px-6 max-w-4xl mx-auto mb-16">
-        <h2 className="text-xl font-bold text-white mb-6 text-center">{t.home.journeyTitle}</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-12">
-          {journeyOptions.map((opt) => (
-            <button 
-              key={opt.id}
-              onClick={() => setActiveStage(opt.id)}
-              className={`p-4 rounded-2xl border text-left transition-all ${
-                activeStage === opt.id 
-                  ? 'bg-blue-600/20 border-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.2)]' 
-                  : 'bg-slate-900/50 border-slate-800 hover:border-slate-700'
-              }`}
-            >
-              <div className="font-bold text-white text-lg">{opt.label}</div>
-              <div className="text-slate-400 text-sm">{opt.subtitle}</div>
-            </button>
-          ))}
-        </div>
-
-        <div className="bg-slate-900/50 backdrop-blur-md border border-slate-800 rounded-3xl p-6 md:p-10 shadow-xl">
-          <h3 className="text-lg font-bold text-slate-300 mb-8">{t.home.mapTitle}</h3>
-          
-          <div className="space-y-6 relative">
-            <div className="absolute left-[15px] top-[10px] bottom-[30px] w-0.5 bg-slate-800 z-0"></div>
-
-            {stages.map((stage, idx) => {
-              const isCompleted = idx < activeStage;
-              const isCurrent = idx === activeStage;
-              const isLocked = idx > activeStage;
-
-              return (
-                <div key={idx} className="relative z-10 flex gap-4 items-start">
-                  <div className="mt-1 shrink-0 bg-slate-950 rounded-full">
-                    {isCompleted ? (
-                      <CheckCircle2 className="text-emerald-500 bg-emerald-500/10 rounded-full" size={32} />
-                    ) : isCurrent ? (
-                      <div className="relative">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-40"></span>
-                        <Circle className="text-blue-500 fill-blue-500/20" size={32} />
-                      </div>
-                    ) : (
-                      <Circle className="text-slate-700" size={32} />
-                    )}
-                  </div>
-
-                  <div className={`flex-1 ${isLocked ? 'opacity-50' : 'opacity-100'}`}>
-                    <h4 className={`text-lg font-bold ${isCurrent ? 'text-blue-400' : 'text-white'}`}>
-                      {idx + 1}. {stage.title}
-                    </h4>
-                    
-                    {isCurrent && (
-                      <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="mt-4">
-                        <p className="text-sm text-slate-400 mb-3">{t.home.nextStepLabel}</p>
-                        <Link 
-                          to={stage.path}
-                          className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-full font-semibold transition-colors shadow-lg shadow-blue-500/20"
-                        >
-                          {stage.action} <ArrowRight size={18} />
-                        </Link>
-                      </motion.div>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      <section className="relative z-10 py-8 px-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <motion.div 
+            initial={{ opacity: 0, x: '100%' }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: '100%' }}
+            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+            className="fixed inset-0 z-50 bg-slate-950 flex flex-col"
+          >
+            <div className="p-6 flex justify-end">
+              <button onClick={() => setMobileMenuOpen(false)} className="text-slate-300 hover:text-white p-2">
+                <X size={32} />
+              </button>
+            </div>
             
-            <Link to="/mock-test" className="group block bg-slate-900/50 backdrop-blur-sm p-8 rounded-3xl border border-slate-800/80 hover:border-slate-700 transition-all duration-300">
-              <div className="w-12 h-12 bg-slate-800 rounded-xl border border-slate-700 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <Clock className="text-indigo-400" size={24} />
-              </div>
-              <h3 className="text-xl font-bold text-white mb-3">{t.features.mock.title}</h3>
-              <p className="text-slate-400 text-sm leading-relaxed font-light">{t.features.mock.desc}</p>
+            <nav className="flex flex-col items-center justify-center flex-1 gap-8 text-2xl font-bold">
+              <Link to="/application" onClick={() => setMobileMenuOpen(false)} className="text-white hover:text-blue-400 transition">
+                {lang === 'en' && 'Apply Now'}
+                {lang === 'hi' && 'अभी आवेदन करें'}
+                {lang === 'gu' && 'હવે અરજી કરો'}
+              </Link>
+              <Link to="/learn" onClick={() => setMobileMenuOpen(false)} className="text-white hover:text-blue-400 transition">
+                {lang === 'en' && 'Learn Signs'}
+                {lang === 'hi' && 'संकेत सीखें'}
+                {lang === 'gu' && 'સાઇન શીખો'}
+              </Link>
+              <Link to="/permanent-licence" onClick={() => setMobileMenuOpen(false)} className="text-white hover:text-blue-400 transition">
+                {lang === 'en' && 'Permanent DL'}
+                {lang === 'hi' && 'स्थायी डीएल'}
+                {lang === 'gu' && 'કાયમી DL'}
+              </Link>
+              <Link to="/settings" onClick={() => setMobileMenuOpen(false)} className="text-white hover:text-blue-400 transition">
+                {lang === 'en' && 'Settings'}
+                {lang === 'hi' && 'सेटिंग्स'}
+                {lang === 'gu' && 'સેટિંગ્સ'}
+              </Link>
+            </nav>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Hero Section */}
+      <main className="flex-1 relative z-10 flex flex-col items-center justify-center text-center px-6 mt-10 md:mt-20 max-w-4xl mx-auto">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+          
+          <span className="inline-block py-1 px-3 rounded-full bg-blue-900/50 border border-blue-500/30 text-blue-300 text-xs font-bold tracking-wider uppercase mb-6 shadow-sm">
+            {lang === 'en' && 'Your Smart mParivahan Guide'}
+            {lang === 'hi' && 'आपका स्मार्ट एम-परिवहन गाइड'}
+            {lang === 'gu' && 'તમારું સ્માર્ટ પરિવહન માર્ગદર્શક'}
+          </span>
+          
+          <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight text-white leading-[1.15] mb-6">
+            {lang === 'en' && "Getting your driving licence shouldn't feel like a test."}
+            {lang === 'hi' && "ड्राइविंग लाइसेंस प्राप्त करना एक परीक्षा जैसा नहीं लगना चाहिए।"}
+            {lang === 'gu' && "ડ્રાઇવિંગ લાઇસન્સ મેળવવું મુશ્કેલ ન હોવું જોઈએ."}
+          </h1>
+          
+          <p className="text-lg text-slate-400 mb-10 max-w-2xl mx-auto leading-relaxed">
+            {lang === 'en' && 'Navigate the Indian RTO process with ease. Check eligibility, gather documents, practice tests, and track your application all in one place.'}
+            {lang === 'hi' && 'भारतीय आरटीओ प्रक्रिया को आसानी से नेविगेट करें। पात्रता जांचें, दस्तावेज़ एकत्र करें, अभ्यास परीक्षण करें, और एक ही स्थान पर अपने आवेदन को ट्रैक करें।'}
+            {lang === 'gu' && 'ભારતીય RTO પ્રક્રિયાને સરળતાથી સમજો. પાત્રતા તપાસો, દસ્તાવેજો એકત્ર કરો, પ્રેક્ટિસ ટેસ્ટ આપો અને તમારી અરજીને એક જ જગ્યાએ ટ્રેક કરો.'}
+          </p>
+          
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <Link to="/application" className="w-full sm:w-auto bg-blue-600 hover:bg-blue-500 text-white px-8 py-4 rounded-xl font-bold transition shadow-lg shadow-blue-600/30 flex items-center justify-center gap-2">
+              {lang === 'en' && 'Start Journey'}
+              {lang === 'hi' && 'यात्रा शुरू करें'}
+              {lang === 'gu' && 'શરૂઆત કરો'} 
+              <ArrowRight size={20} />
             </Link>
-
-            <Link to="/learn" className="group block bg-slate-900/50 backdrop-blur-sm p-8 rounded-3xl border border-slate-800/80 hover:border-slate-700 transition-all duration-300">
-              <div className="w-12 h-12 bg-slate-800 rounded-xl border border-slate-700 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <MapIcon className="text-emerald-400" size={24} />
-              </div>
-              <h3 className="text-xl font-bold text-white mb-3">{t.features.signs.title}</h3>
-              <p className="text-slate-400 text-sm leading-relaxed font-light">{t.features.signs.desc}</p>
+            
+            <Link to="/mock-test" className="w-full sm:w-auto bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 px-8 py-4 rounded-xl font-bold transition flex items-center justify-center">
+              {lang === 'en' && 'Take Mock Test'}
+              {lang === 'hi' && 'मॉक टेस्ट लें'}
+              {lang === 'gu' && 'મોક ટેસ્ટ આપો'}
             </Link>
-
-            <button onClick={openFaqChat} className="text-left group block bg-slate-900/50 backdrop-blur-sm p-8 rounded-3xl border border-slate-800/80 hover:border-slate-700 transition-all duration-300">
-              <div className="w-12 h-12 bg-slate-800 rounded-xl border border-slate-700 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <MessageSquare className="text-blue-400" size={24} />
-              </div>
-              <h3 className="text-xl font-bold text-white mb-3">{t.features.ai.title}</h3>
-              <p className="text-slate-400 text-sm leading-relaxed font-light">{t.features.ai.desc}</p>
-            </button>
-
           </div>
-        </div>
-      </section>
 
-      <footer className="relative z-10 border-t border-slate-800/80 mt-12 pt-12 pb-6 px-6 bg-slate-950/50 backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center md:items-start gap-8 mb-12">
-          <div className="text-center md:text-left">
-            <div className="flex items-center justify-center md:justify-start gap-2 mb-4">
-              <ShieldCheck className="text-blue-400" size={28} />
-              <span className="text-xl font-bold text-white">{t.nav.title}</span>
-            </div>
-            <p className="text-slate-400 text-sm max-w-xs leading-relaxed">
-              {t.footer.mission}
-            </p>
+        </motion.div>
+
+        {/* Feature Grid */}
+        <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.2 }} className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full mt-20">
+          {features.map((feature, idx) => (
+            <Link key={idx} to={feature.path} className="bg-slate-900/50 backdrop-blur-sm border border-slate-800 hover:border-slate-600 p-6 rounded-3xl text-left transition group flex items-start gap-4">
+              <div className="w-12 h-12 bg-slate-800 border border-slate-700 rounded-xl flex items-center justify-center text-blue-400 shrink-0 group-hover:scale-110 group-hover:bg-blue-900/50 transition-all duration-300">
+                {feature.icon}
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-white mb-1 group-hover:text-blue-400 transition-colors">
+                  {feature.title[lang] || feature.title.en}
+                </h3>
+                <p className="text-sm text-slate-400 leading-relaxed">
+                  {feature.desc[lang] || feature.desc.en}
+                </p>
+              </div>
+            </Link>
+          ))}
+        </motion.div>
+      </main>
+
+      {/* Footer */}
+      <footer className="relative z-10 border-t border-slate-800/80 mt-20 pt-12 pb-6 px-6 bg-slate-950/50 backdrop-blur-md">
+        <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="flex items-center gap-2">
+            <Car size={20} className="text-blue-500" />
+            <span className="font-bold text-white tracking-tight">Licence Saathi</span>
           </div>
           
-          <div className="flex gap-16 text-center md:text-left">
-            <div>
-              <h4 className="font-semibold text-white mb-4">{t.footer.quickLinks}</h4>
-              <ul className="space-y-3 text-sm text-slate-400">
-                <li><Link to="/eligibility" className="hover:text-blue-400 transition-colors">{t.stages.s1.action}</Link></li>
-                <li><Link to="/mock-test" className="hover:text-blue-400 transition-colors">{t.nav.mockTest}</Link></li>
-                <li><Link to="/learn" className="hover:text-blue-400 transition-colors">{t.nav.roadSigns}</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold text-white mb-4">{t.footer.support}</h4>
-              <ul className="space-y-3 text-sm text-slate-400">
-                <li><Link to="/documents" className="hover:text-blue-400 transition-colors">{t.footer.reqDocs}</Link></li>
-                <li><a href="#faqs" onClick={openFaqChat} className="hover:text-blue-400 transition-colors cursor-pointer">{t.nav.faqs}</a></li>
-              </ul>
-            </div>
-          </div>
-        </div>
-
-        <div className="max-w-7xl mx-auto pt-8 border-t border-slate-800/80 text-xs text-slate-500 text-center flex flex-col md:flex-row justify-between items-center gap-4">
-          <p>© 2026 Licence Saathi. All rights reserved.</p>
-          <p className="max-w-xl md:text-right">
-            {t.footer.disclaimer}
+          {/* LIGHTHOUSE FIX: Changed text-slate-500 to text-slate-400 for better contrast */}
+          <p className="text-slate-400 text-sm text-center md:text-left">
+            {lang === 'en' && 'Designed to simplify the mParivahan process.'}
+            {lang === 'hi' && 'एम-परिवहन प्रक्रिया को सरल बनाने के लिए डिज़ाइन किया गया।'}
+            {lang === 'gu' && 'પરિવહન પ્રક્રિયાને સરળ બનાવવા માટે બનાવેલ.'}
           </p>
         </div>
       </footer>
+
     </div>
   );
 }
