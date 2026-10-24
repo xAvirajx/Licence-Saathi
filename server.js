@@ -52,7 +52,7 @@ You are Licence Saathi AI, a helpful assistant helping people get a driving lice
 
 // Serve React Frontend
 app.use(express.static(path.join(__dirname, 'dist')));
-app.get('*', (req, res) => {
+app.use((req, res) => {
   res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
