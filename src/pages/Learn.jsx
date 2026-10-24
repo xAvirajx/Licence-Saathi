@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Map, Volume2, BookOpen, AlertTriangle, Info, ShieldCheck } from 'lucide-react';
 
 export default function Learn() {
-  const { lang } = useContext(AppContext);
+  const { lang, readAloud } = useContext(AppContext); // Pull readAloud from AppContext
   const [activeTab, setActiveTab] = useState('mandatory');
   const [flippedCards, setFlippedCards] = useState({});
   const [hasVoiceSupport, setHasVoiceSupport] = useState(false);
@@ -31,7 +31,7 @@ export default function Learn() {
 
   const handleListen = (e, text) => {
     e.stopPropagation();
-    if (!window.speechSynthesis) return;
+    if (!window.speechSynthesis || !readAloud) return;
     window.speechSynthesis.cancel();
     
     const utterance = new SpeechSynthesisUtterance(text);
@@ -124,7 +124,8 @@ export default function Learn() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {rulesOfTheRoad.map((rule, idx) => (
                   <div key={idx} className="bg-slate-900/50 backdrop-blur-md border border-slate-800 rounded-3xl p-6 shadow-xl relative">
-                    {hasVoiceSupport && (
+                    {/* FIXED: Check both hasVoiceSupport AND readAloud global state */}
+                    {hasVoiceSupport && readAloud && (
                       <button 
                         onClick={(e) => handleListen(e, `${rule.title[lang] || rule.title.en}. ${rule.desc[lang] || rule.desc.en}`)}
                         className="absolute top-6 right-6 w-10 h-10 bg-slate-800 text-blue-400 rounded-full flex items-center justify-center hover:bg-slate-700 transition"
@@ -158,7 +159,6 @@ export default function Learn() {
                           className="absolute w-full h-full bg-slate-900 border border-slate-700 rounded-2xl p-4 flex flex-col items-center justify-between shadow-lg hover:border-slate-500 transition-colors"
                           style={{ backfaceVisibility: 'hidden' }}
                         >
-                          {/* Expanded wrapper for high-visibility SVG rendering */}
                           <div className="flex-1 w-full flex items-center justify-center p-2">
                             {sign.icon}
                           </div>
@@ -174,7 +174,8 @@ export default function Learn() {
                           <p className="text-center text-xs sm:text-sm text-blue-100 font-medium leading-relaxed mb-4">
                             {localized.desc}
                           </p>
-                          {hasVoiceSupport && (
+                          {/* FIXED: Check both hasVoiceSupport AND readAloud global state */}
+                          {hasVoiceSupport && readAloud && (
                             <button 
                               onClick={(e) => handleListen(e, localized.desc)}
                               className="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center shadow-md hover:bg-blue-500 transition-colors"
