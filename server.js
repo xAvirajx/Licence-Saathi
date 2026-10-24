@@ -2,6 +2,7 @@ import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
+import compression from 'compression';
 import { GoogleGenAI } from '@google/genai';
 
 dotenv.config();
@@ -10,10 +11,17 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const app = express();
 
+// ==========================================
+// 1. PERFORMANCE OPTIMIZATION (GZIP / BROTLI)
+// ==========================================
+// Slashes JavaScript and CSS transfer size by >70%
+app.use(compression());
+
+// Body parser with 100kb payload cap
 app.use(express.json({ limit: '100kb' }));
 
 // ==========================================
-// 1. PRIVACY-SAFE REQUEST & PERFORMANCE LOGGER (Item 15)
+// 2. PRIVACY-SAFE REQUEST & PERFORMANCE LOGGER
 // ==========================================
 app.use((req, res, next) => {
   const start = Date.now();
@@ -30,11 +38,11 @@ app.use((req, res, next) => {
 });
 
 // ==========================================
-// 2. SLIDING-WINDOW IN-MEMORY RATE LIMITER (Item 8)
+// 3. SLIDING-WINDOW IN-MEMORY RATE LIMITER
 // ==========================================
 const rateLimitMap = new Map();
-const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
-const MAX_REQUESTS_PER_WINDOW = 25; // 25 queries per 15 min per IP
+const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000; // 15-minute sliding window
+const MAX_REQUESTS_PER_WINDOW = 25; // 25 queries per window per IP
 
 // Periodically clean up stale entries every 10 minutes
 setInterval(() => {
@@ -80,7 +88,7 @@ const chatRateLimiter = (req, res, next) => {
 };
 
 // ==========================================
-// 3. AI CHAT ENDPOINT WITH DIAGNOSTIC ERROR HANDLING
+// 4. AI CHAT ENDPOINT WITH DIAGNOSTIC ERROR HANDLING
 // ==========================================
 app.post('/api/chat', chatRateLimiter, async (req, res) => {
   const { message, history, stage, configData, faqData, lang } = req.body;
@@ -130,7 +138,6 @@ You are Licence Saathi AI, a helpful assistant helping people get a driving lice
 
     return res.status(200).json({ reply: response.text });
   } catch (error) {
-    // Categorize errors for clear server diagnostics
     const status = error.status || error.statusCode || 500;
     const errorMessage = error.message || 'Unknown AI error';
 
@@ -145,9 +152,20 @@ You are Licence Saathi AI, a helpful assistant helping people get a driving lice
 });
 
 // ==========================================
-// 4. REACT FRONTEND STATIC ASSETS & EXPRESS 5 SPA CATCH-ALL
+// 5. REACT FRONTEND STATIC ASSETS & ASSET CACHING
 // ==========================================
-app.use(express.static(path.join(__dirname, 'dist')));
+app.use(
+  express.static(path.join(__dirname, 'dist'), {
+    maxAge: '1y',
+    etag: true,
+    setHeaders: (res, filePath) => {
+      // index.html must not be cached long-term to ensure immediate deploys
+      if (filePath.endsWith('index.html')) {
+        res.setHeader('Cache-Control', 'no-cache, must-revalidate');
+      }
+    }
+  })
+);
 
 // Express 5 catch-all handler for React client-side routing
 app.use((req, res) => {
@@ -155,7 +173,7 @@ app.use((req, res) => {
 });
 
 // ==========================================
-// 5. GLOBAL FALLBACK ERROR HANDLER
+// 6. GLOBAL FALLBACK ERROR HANDLER
 // ==========================================
 app.use((err, req, res, next) => {
   console.error('[UNCAUGHT SERVER ERROR]', err);
