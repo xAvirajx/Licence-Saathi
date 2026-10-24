@@ -155,18 +155,14 @@ export default function Learn() {
                         animate={{ rotateY: flippedCards[sign.id] ? 180 : 0 }}
                       >
                         <div 
-                          className="absolute w-full h-full bg-slate-900 border border-slate-700 rounded-2xl p-4 flex flex-col items-center justify-center shadow-lg hover:border-slate-500 transition-colors"
+                          className="absolute w-full h-full bg-slate-900 border border-slate-700 rounded-2xl p-4 flex flex-col items-center justify-between shadow-lg hover:border-slate-500 transition-colors"
                           style={{ backfaceVisibility: 'hidden' }}
                         >
-                          {/* COLOR AND SIZE FIX APPLIED HERE */}
-                          <div className={`flex-1 flex items-center justify-center [&>svg]:w-16 [&>svg]:h-16 drop-shadow-md ${
-                            activeTab === 'mandatory' ? 'text-blue-400' :
-                            activeTab === 'cautionary' ? 'text-amber-400' :
-                            'text-emerald-400'
-                          }`}>
+                          {/* Expanded wrapper for high-visibility SVG rendering */}
+                          <div className="flex-1 w-full flex items-center justify-center p-2">
                             {sign.icon}
                           </div>
-                          <h4 className="text-center font-bold text-white text-xs sm:text-sm mt-4">
+                          <h4 className="text-center font-bold text-white text-xs sm:text-sm mt-2 line-clamp-2">
                             {localized.name}
                           </h4>
                         </div>
