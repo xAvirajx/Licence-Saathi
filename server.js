@@ -109,10 +109,11 @@ You are License Saathi AI, an expert assistant helping people get a driving lice
 
     contents.push({ role: 'user', parts: [{ text: message.trim() }] });
 
+    // Primary: gemini-2.5-flash | Fallback: gemini-2.0-flash
     let response;
     try {
       response = await ai.models.generateContent({
-        model: 'gemini-2.0-flash',
+        model: 'gemini-2.5-flash',
         contents,
         config: {
           systemInstruction,
@@ -121,9 +122,9 @@ You are License Saathi AI, an expert assistant helping people get a driving lice
         }
       });
     } catch (primaryError) {
-      console.warn('[MODEL RETRY] Primary model failed, trying gemini-1.5-flash:', primaryError.message);
+      console.warn('[MODEL RETRY] gemini-2.5-flash failed, trying gemini-2.0-flash:', primaryError.message);
       response = await ai.models.generateContent({
-        model: 'gemini-1.5-flash',
+        model: 'gemini-2.0-flash',
         contents,
         config: {
           systemInstruction,
