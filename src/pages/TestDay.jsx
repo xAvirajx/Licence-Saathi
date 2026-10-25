@@ -2,6 +2,7 @@ import { useState, useContext, useEffect } from 'react';
 import { AppContext } from '../App';
 import { Monitor, Clock, CheckCircle2, XCircle, ArrowRight, RotateCcw, AlertCircle, ShieldAlert } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import RtoMap from '../components/RtoMap';
 
 export default function TestDay() {
   const { lang } = useContext(AppContext);

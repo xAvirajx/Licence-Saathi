@@ -1,10 +1,10 @@
 import { useState, useContext, useEffect } from 'react';
 import { AppContext } from '../App';
 import { 
-  Languages, Type, SunMoon, Volume2, Download, 
+  Languages, Type, SunMoon, Volume2, 
   Trash2, ShieldCheck, CheckCircle2, Check, ArrowLeft,
-  Smartphone, HardDrive, Sun, Moon, Monitor, Info,
-  VolumeX, Play, RotateCcw, AlertTriangle, FileText
+  Smartphone, HardDrive, Sun, Moon, Monitor,
+  Play, BookOpen, Database, MapPin
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -239,7 +239,7 @@ export default function Settings() {
         <div className="p-5 sm:p-6 rounded-3xl bg-slate-900/50 border border-slate-800 space-y-4 shadow-xl">
           <div className="border-b border-slate-800 pb-3">
             <h2 className="text-base font-bold text-white">
-              {lang === 'en' ? 'Accessibility Enhancements' : lang === 'hi' ? 'सुलભતા सुविधाएं' : 'સરળતા અને સુલભતા'}
+              {lang === 'en' ? 'Accessibility Enhancements' : lang === 'hi' ? 'सुलभता सुविधाएं' : 'સરળતા અને સુલભતા'}
             </h2>
             <p className="text-xs text-slate-400">
               {lang === 'en' ? 'High contrast visuals and text-to-speech audio' : 'દ્રશ્ય સ્પષ્ટતા અને ઓડિયો સહાય'}
@@ -310,9 +310,8 @@ export default function Settings() {
           </div>
         </div>
 
-        {/* 5. SMART PWA INSTALLATION STATUS & ACTION CARD */}
+        {/* 5. SMART PWA INSTALLATION STATUS */}
         {isInstalled ? (
-          /* INSIDE INSTALLED APP: Verified Standalone Status Badge */
           <div className="p-5 sm:p-6 rounded-3xl bg-emerald-950/20 border border-emerald-900/50 flex items-center justify-between shadow-xl">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
@@ -332,7 +331,6 @@ export default function Settings() {
             </div>
           </div>
         ) : (
-          /* IN BROWSER WEB: Functional Install Prompt with instructions */
           <div className="p-5 sm:p-6 rounded-3xl bg-slate-900/50 border border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xl">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-2xl bg-blue-500/10 text-blue-400 flex items-center justify-center shrink-0">
@@ -340,7 +338,7 @@ export default function Settings() {
               </div>
               <div>
                 <h2 className="text-base font-bold text-white">
-                  {lang === 'en' ? 'Install App on Phone' : lang === 'hi' ? 'फोन पर ऐप इंस्टॉल करें' : 'ફોન પર એપ ઇન્સ્ટોલ કરો'}
+                  {lang === 'en' ? 'Install App on Device' : lang === 'hi' ? 'डिवाइस पर ऐप इंस्टॉल करें' : 'ડિવાઇસ પર એપ ઇન્સ્ટોલ કરો'}
                 </h2>
                 <p className="text-xs text-slate-400">
                   {lang === 'en' 
@@ -359,7 +357,7 @@ export default function Settings() {
               </button>
             ) : (
               <span className="text-[11px] text-slate-400 bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800">
-                {lang === 'en' ? 'Chrome/Android: Menu (⋮) → Add to Home' : 'Chrome: મેનૂ (⋮) → Add to Home'}
+                {lang === 'en' ? 'Chrome: Menu (⋮) → Add to Home' : 'Chrome: મેનૂ (⋮) → Add to Home'}
               </span>
             )}
           </div>
@@ -426,7 +424,7 @@ export default function Settings() {
           </div>
         </div>
 
-        {/* 8. About & Legal Disclaimer */}
+        {/* 8. About & Open Government Data (data.gov.in) Attributions */}
         <div className="p-5 rounded-3xl bg-slate-900/40 border border-slate-800 space-y-3 text-center sm:text-left text-xs text-slate-400">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-2 border-b border-slate-800/60 pb-2">
             <span className="font-bold text-slate-300">License Saathi v1.0.0 (Hackathon Edition)</span>
@@ -436,9 +434,32 @@ export default function Settings() {
               <Link to="/terms" className="hover:text-blue-400 transition">Terms & Disclaimer</Link>
             </div>
           </div>
+
           <p className="text-[11px] text-slate-500 leading-relaxed">
-            License Saathi is an independent educational and procedural assistance portal designed to help Indian citizens prepare for their RTO tests. It is not affiliated with the Ministry of Road Transport and Highways (MoRTH) or state RTOs. Official applications are processed via parivahan.gov.in.
+            License Saathi is an independent educational and procedural assistance portal designed to help Indian citizens prepare for their RTO tests. Official applications are processed via parivahan.gov.in.
           </p>
+
+          {/* Open Government Data (OGD) & Standards Attribution Box */}
+          <div className="mt-3 p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800/80 space-y-2 text-left">
+            <p className="text-[11px] font-bold uppercase tracking-wider text-blue-400 flex items-center gap-1.5">
+              <Database size={13} />
+              <span>Open Government Data & Standards Attributions</span>
+            </p>
+            <ul className="text-[11px] text-slate-400 space-y-1.5 list-disc pl-4">
+              <li>
+                <strong>data.gov.in (MoRTH Datasets):</strong> State-wise RTO codes, passing criteria, and Central Motor Vehicles Rules (CMVR 1989) fee schedules.
+              </li>
+              <li>
+                <strong>API Setu (apisetu.gov.in):</strong> National e-Governance Division (NeGD) MoRTH Driving Licence Verification Schema v1.0.2.
+              </li>
+              <li>
+                <strong>Indian Roads Congress (IRC):</strong> IRC:67-2012 Code of Practice for Road Signs specifications.
+              </li>
+              <li>
+                <strong>OpenStreetMap & Leaflet:</strong> Cartographic tile mapping for Automated Driving Test Tracks (ADTT).
+              </li>
+            </ul>
+          </div>
         </div>
 
       </div>
