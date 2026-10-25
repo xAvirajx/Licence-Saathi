@@ -64,6 +64,7 @@ export default function App() {
     trackPageView(location.pathname);
   }, [location.pathname]);
 
+  // System Theme Detector & Listener
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     
@@ -88,6 +89,7 @@ export default function App() {
     return () => mediaQuery.removeEventListener('change', handleSystemThemeChange);
   }, [theme]);
 
+  // Close menus when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (themeMenuRef.current && !themeMenuRef.current.contains(e.target)) {
@@ -98,6 +100,7 @@ export default function App() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Online / Offline listener
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
@@ -112,6 +115,7 @@ export default function App() {
   const dictionaries = { en, hi, gu };
   const t = dictionaries[lang] || en;
 
+  // Sync settings & font scaling to root HTML document
   useEffect(() => {
     localStorage.setItem('ls_lang', lang);
     localStorage.setItem('ls_textSize', textSize);
@@ -152,134 +156,185 @@ export default function App() {
       effectiveTheme,
       t 
     }}>
-      {effectiveTheme === 'light' && (
-        <style>{`
-          .light-mode {
-            background-color: #f8fafc !important;
-            color: #0f172a !important;
-          }
-          .light-mode .bg-slate-950 {
-            background-color: #f8fafc !important;
-            color: #0f172a !important;
-          }
-          .light-mode .bg-slate-900 {
-            background-color: #ffffff !important;
-            color: #0f172a !important;
-          }
-          .light-mode .bg-slate-900\\/50,
-          .light-mode .bg-slate-900\\/60,
-          .light-mode .bg-slate-900\\/70,
-          .light-mode .bg-slate-900\\/80 {
-            background-color: #ffffff !important;
-            color: #0f172a !important;
-            border-color: #cbd5e1 !important;
-            box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.06) !important;
-          }
-          .light-mode .bg-slate-950\\/50,
-          .light-mode .bg-slate-950\\/60,
-          .light-mode .bg-slate-950\\/70,
-          .light-mode .bg-slate-950\\/80 {
-            background-color: #f1f5f9 !important;
-            color: #0f172a !important;
-            border-color: #e2e8f0 !important;
-          }
-          .light-mode .bg-slate-800 {
-            background-color: #e2e8f0 !important;
-            color: #0f172a !important;
-          }
-          .light-mode .border-slate-800,
-          .light-mode .border-slate-800\\/80,
-          .light-mode .border-slate-700 {
-            border-color: #cbd5e1 !important;
-          }
-          .light-mode .text-white,
-          .light-mode .text-slate-50 {
-            color: #0f172a !important;
-          }
-          .light-mode .text-slate-200,
-          .light-mode .text-slate-300 {
-            color: #334155 !important;
-          }
-          .light-mode .text-slate-400 {
-            color: #475569 !important;
-          }
-          .light-mode .text-slate-500 {
-            color: #64748b !important;
-          }
-          .light-mode input[type="text"],
-          .light-mode input[type="tel"],
-          .light-mode input[type="date"],
-          .light-mode select {
-            background-color: #ffffff !important;
-            color: #0f172a !important;
-            border-color: #cbd5e1 !important;
-          }
-          .light-mode input::placeholder {
-            color: #94a3b8 !important;
-          }
-          .light-mode .bg-emerald-950\\/50 {
-            background-color: #dcfce7 !important;
-            color: #16a34a !important;
-          }
-          .light-mode .fill-blue-900\\/50 {
-            fill: #dbeafe !important;
-          }
-          .light-mode .bg-blue-950\\/40 {
-            background-color: #eff6ff !important;
-            border-color: #3b82f6 !important;
-          }
-          .light-mode .text-blue-200 {
-            color: #1d4ed8 !important;
-          }
-          .light-mode .bg-emerald-950\\/20,
-          .light-mode .bg-emerald-950\\/30,
-          .light-mode .bg-emerald-950\\/40 {
-            background-color: #ecfdf5 !important;
-            border-color: #a7f3d0 !important;
-          }
-          .light-mode .bg-red-950\\/20,
-          .light-mode .bg-red-950\\/30,
-          .light-mode .bg-red-950\\/40 {
-            background-color: #fef2f2 !important;
-            border-color: #fecaca !important;
-          }
-          .light-mode .text-red-200,
-          .light-mode .text-red-300 {
-            color: #b91c1c !important;
-          }
-          .light-mode .text-emerald-100,
-          .light-mode .text-emerald-200 {
-            color: #065f46 !important;
-          }
-          .light-mode .text-blue-100 {
-            color: #1e40af !important;
-          }
-          .light-mode .before\\:bg-gradient-to-b::before {
-            background: linear-gradient(to bottom, #2563eb, #cbd5e1, transparent) !important;
-          }
-          .light-mode .text-slate-700 {
-            color: #94a3b8 !important;
-          }
-          .light-mode header {
-            background-color: rgba(255, 255, 255, 0.9) !important;
-            border-color: #e2e8f0 !important;
-          }
-          .light-mode footer {
-            background-color: #f1f5f9 !important;
-            border-color: #e2e8f0 !important;
-          }
-          .light-mode .fixed.bottom-6.left-6,
-          .light-mode .fixed.bottom-24.left-6 > button {
-            background-color: #ffffff !important;
-            border-color: #cbd5e1 !important;
-            color: #1e293b !important;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1) !important;
-          }
-        `}</style>
-      )}
+      {/* Global Adaptive Scrollbar & Light-Mode Stylesheet */}
+      <style>{`
+        /* Universal Modern Scrollbar Base */
+        * {
+          scrollbar-width: thin;
+        }
+
+        /* 🌙 Dark Mode Scrollbars (Chat Window, Modal, Full Page) */
+        .dark-mode, 
+        body:not(.light-mode),
+        .dark-mode * {
+          scrollbar-color: #334155 transparent;
+        }
+        .dark-mode *::-webkit-scrollbar,
+        body:not(.light-mode) *::-webkit-scrollbar {
+          width: 6px;
+          height: 6px;
+        }
+        .dark-mode *::-webkit-scrollbar-track,
+        body:not(.light-mode) *::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .dark-mode *::-webkit-scrollbar-thumb,
+        body:not(.light-mode) *::-webkit-scrollbar-thumb {
+          background-color: #334155;
+          border-radius: 9999px;
+        }
+        .dark-mode *::-webkit-scrollbar-thumb:hover,
+        body:not(.light-mode) *::-webkit-scrollbar-thumb:hover {
+          background-color: #475569;
+        }
+
+        /* ☀️ Light Mode Scrollbars */
+        .light-mode,
+        .light-mode * {
+          scrollbar-color: #cbd5e1 transparent;
+        }
+        .light-mode *::-webkit-scrollbar {
+          width: 6px;
+          height: 6px;
+        }
+        .light-mode *::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .light-mode *::-webkit-scrollbar-thumb {
+          background-color: #cbd5e1;
+          border-radius: 9999px;
+        }
+        .light-mode *::-webkit-scrollbar-thumb:hover {
+          background-color: #94a3b8;
+        }
+
+        /* Light Mode Theme Overrides */
+        .light-mode {
+          background-color: #f8fafc !important;
+          color: #0f172a !important;
+        }
+        .light-mode .bg-slate-950 {
+          background-color: #f8fafc !important;
+          color: #0f172a !important;
+        }
+        .light-mode .bg-slate-900 {
+          background-color: #ffffff !important;
+          color: #0f172a !important;
+        }
+        .light-mode .bg-slate-900\\/50,
+        .light-mode .bg-slate-900\\/60,
+        .light-mode .bg-slate-900\\/70,
+        .light-mode .bg-slate-900\\/80 {
+          background-color: #ffffff !important;
+          color: #0f172a !important;
+          border-color: #cbd5e1 !important;
+          box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.06) !important;
+        }
+        .light-mode .bg-slate-950\\/50,
+        .light-mode .bg-slate-950\\/60,
+        .light-mode .bg-slate-950\\/70,
+        .light-mode .bg-slate-950\\/80 {
+          background-color: #f1f5f9 !important;
+          color: #0f172a !important;
+          border-color: #e2e8f0 !important;
+        }
+        .light-mode .bg-slate-800 {
+          background-color: #e2e8f0 !important;
+          color: #0f172a !important;
+        }
+        .light-mode .border-slate-800,
+        .light-mode .border-slate-800\\/80,
+        .light-mode .border-slate-700 {
+          border-color: #cbd5e1 !important;
+        }
+        .light-mode .text-white,
+        .light-mode .text-slate-50 {
+          color: #0f172a !important;
+        }
+        .light-mode .text-slate-200,
+        .light-mode .text-slate-300 {
+          color: #334155 !important;
+        }
+        .light-mode .text-slate-400 {
+          color: #475569 !important;
+        }
+        .light-mode .text-slate-500 {
+          color: #64748b !important;
+        }
+        .light-mode input[type="text"],
+        .light-mode input[type="tel"],
+        .light-mode input[type="date"],
+        .light-mode select {
+          background-color: #ffffff !important;
+          color: #0f172a !important;
+          border-color: #cbd5e1 !important;
+        }
+        .light-mode input::placeholder {
+          color: #94a3b8 !important;
+        }
+        .light-mode .bg-emerald-950\\/50 {
+          background-color: #dcfce7 !important;
+          color: #16a34a !important;
+        }
+        .light-mode .fill-blue-900\\/50 {
+          fill: #dbeafe !important;
+        }
+        .light-mode .bg-blue-950\\/40 {
+          background-color: #eff6ff !important;
+          border-color: #3b82f6 !important;
+        }
+        .light-mode .text-blue-200 {
+          color: #1d4ed8 !important;
+        }
+        .light-mode .bg-emerald-950\\/20,
+        .light-mode .bg-emerald-950\\/30,
+        .light-mode .bg-emerald-950\\/40 {
+          background-color: #ecfdf5 !important;
+          border-color: #a7f3d0 !important;
+        }
+        .light-mode .bg-red-950\\/20,
+        .light-mode .bg-red-950\\/30,
+        .light-mode .bg-red-950\\/40 {
+          background-color: #fef2f2 !important;
+          border-color: #fecaca !important;
+        }
+        .light-mode .text-red-200,
+        .light-mode .text-red-300 {
+          color: #b91c1c !important;
+        }
+        .light-mode .text-emerald-100,
+        .light-mode .text-emerald-200 {
+          color: #065f46 !important;
+        }
+        .light-mode .text-blue-100 {
+          color: #1e40af !important;
+        }
+        .light-mode .before\\:bg-gradient-to-b::before {
+          background: linear-gradient(to bottom, #2563eb, #cbd5e1, transparent) !important;
+        }
+        .light-mode .text-slate-700 {
+          color: #94a3b8 !important;
+        }
+        .light-mode header {
+          background-color: rgba(255, 255, 255, 0.9) !important;
+          border-color: #e2e8f0 !important;
+        }
+        .light-mode footer {
+          background-color: #f1f5f9 !important;
+          border-color: #e2e8f0 !important;
+        }
+        .light-mode .fixed.bottom-6.left-6,
+        .light-mode .fixed.bottom-24.left-6 > button {
+          background-color: #ffffff !important;
+          border-color: #cbd5e1 !important;
+          color: #1e293b !important;
+          box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1) !important;
+        }
+      `}</style>
 
       <div className={`w-full min-h-screen ${effectiveTheme === 'light' ? 'bg-slate-50 text-slate-900' : 'bg-slate-950 text-slate-50'} flex flex-col relative overflow-x-hidden font-sans transition-colors duration-300 ${highContrast ? 'contrast-150 saturate-150 brightness-110' : ''}`}>
         
+        {/* Skip Link for Screen Readers */}
         <a 
           href="#main-content" 
           className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 z-50 bg-blue-600 text-white px-4 py-2 rounded-xl font-bold shadow-lg"
@@ -287,6 +342,7 @@ export default function App() {
           Skip to main content
         </a>
 
+        {/* Offline Notification Banner */}
         {!isOnline && (
           <div role="status" aria-live="polite" className="bg-amber-500 text-slate-950 px-4 py-2 font-bold text-xs sm:text-sm text-center flex items-center justify-center gap-2 sticky top-0 z-50 shadow-md">
             <WifiOff size={16} />
@@ -310,6 +366,7 @@ export default function App() {
               </span>
             </Link>
 
+            {/* Desktop Navigation Links */}
             <nav role="navigation" aria-label="Main Navigation" className="hidden md:flex items-center gap-7 font-medium text-sm text-slate-300">
               <Link to="/application" className="hover:text-blue-500 transition">
                 {lang === 'en' ? 'Apply Now' : lang === 'hi' ? 'अभी आवेदन करें' : 'હવે અરજી કરો'}
@@ -325,7 +382,10 @@ export default function App() {
               </Link>
             </nav>
 
+            {/* Top Bar Controls */}
             <div className="flex items-center gap-2">
+              
+              {/* COMPACT SQUARE THEME BUTTON (SUN / MOON ONLY ON PHONES) */}
               <div className="relative" ref={themeMenuRef}>
                 <button
                   onClick={() => setThemeMenuOpen(!themeMenuOpen)}
@@ -354,6 +414,7 @@ export default function App() {
                   <ChevronDown size={14} className={`hidden sm:inline text-slate-400 transition-transform ${themeMenuOpen ? 'rotate-180' : ''}`} />
                 </button>
 
+                {/* Popover Appearance Menu */}
                 <AnimatePresence>
                   {themeMenuOpen && (
                     <motion.div
@@ -424,6 +485,7 @@ export default function App() {
                 </AnimatePresence>
               </div>
 
+              {/* Mobile Drawer Toggle Button */}
               <button
                 onClick={() => setMobileMenuOpen(true)}
                 aria-label="Toggle Menu"
@@ -476,6 +538,7 @@ export default function App() {
                   {lang === 'en' ? 'Settings' : lang === 'hi' ? 'सेटिंग्स' : 'સેટિંગ્સ'}
                 </Link>
 
+                {/* Mobile Drawer Theme Quick Buttons */}
                 <div className={`flex items-center gap-2 p-1.5 rounded-2xl border ${effectiveTheme === 'light' ? 'border-slate-300 bg-slate-100' : 'border-slate-800 bg-slate-900/60'} mt-4`}>
                   <button
                     onClick={() => setTheme('system')}
