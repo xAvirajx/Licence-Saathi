@@ -1,46 +1,66 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" preserveAspectRatio="xMidYMid meet">
   <defs>
-    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#0f172a" />
-      <stop offset="50%" stop-color="#020617" />
+    <!-- Background Canvas Gradient -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0a1128" />
       <stop offset="100%" stop-color="#020617" />
     </linearGradient>
-    <linearGradient id="blueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+
+    <!-- Smart Card Surface Gradient -->
+    <linearGradient id="cardGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+
+    <!-- Electric Blue Border Gradient -->
+    <linearGradient id="cardBorder" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#38bdf8" />
       <stop offset="100%" stop-color="#2563eb" />
     </linearGradient>
-    <linearGradient id="goldChip" x1="0%" y1="0%" x2="100%" y2="100%">
+
+    <!-- Gold Smart Card Chip Gradient -->
+    <linearGradient id="chipGrad" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#fde047" />
       <stop offset="100%" stop-color="#d97706" />
     </linearGradient>
   </defs>
 
-  <!-- Edge-to-edge background for adaptive splash screen & maskable icons -->
-  <rect width="512" height="512" fill="url(#bg)" />
+  <!-- 1. Full-bleed background for Android Adaptive Icon & Splash -->
+  <rect width="512" height="512" fill="url(#bgGrad)" />
 
-  <!-- Outer Protective Halo (Within 66% Safe Area) -->
-  <circle cx="256" cy="256" r="160" fill="#1e293b" fill-opacity="0.3" stroke="#334155" stroke-width="3" />
+  <!-- 2. Large Bold Driving Licence Card (Expanded to fill the 384px safe area) -->
+  <rect x="66" y="126" width="380" height="260" rx="32" fill="url(#cardGrad)" stroke="url(#cardBorder)" stroke-width="12" filter="drop-shadow(0 16px 30px rgba(0, 0, 0, 0.7))" />
 
-  <!-- Driving Licence Smart Card Base -->
-  <rect x="136" y="160" width="240" height="150" rx="20" fill="#0f172a" stroke="url(#blueGrad)" stroke-width="6" filter="drop-shadow(0 12px 24px rgba(0,0,0,0.6))" />
+  <!-- 3. Smart Card EMV Microchip (Enlarged) -->
+  <rect x="108" y="168" width="76" height="56" rx="12" fill="url(#chipGrad)" stroke="#b45309" stroke-width="2.5" />
+  <line x1="108" y1="196" x2="184" y2="196" stroke="#92400e" stroke-width="3" />
+  <line x1="146" y1="168" x2="146" y2="224" stroke="#92400e" stroke-width="3" />
+  <circle cx="146" cy="196" r="6" fill="#78350f" />
 
-  <!-- Smart Card Gold EMV Microchip (Indian DL Symbol) -->
-  <rect x="162" y="184" width="38" height="28" rx="6" fill="url(#goldChip)" />
-  <line x1="162" y1="198" x2="200" y2="198" stroke="#92400e" stroke-width="2" />
-  <line x1="181" y1="184" x2="181" y2="212" stroke="#92400e" stroke-width="2" />
+  <!-- 4. Licence Header Band & Details -->
+  <rect x="206" y="168" width="160" height="18" rx="9" fill="#38bdf8" />
+  <rect x="206" y="198" width="200" height="12" rx="6" fill="#64748b" />
+  <rect x="206" y="218" width="140" height="12" rx="6" fill="#475569" />
 
-  <!-- Driving Licence Detail Lines -->
-  <rect x="214" y="184" width="90" height="8" rx="4" fill="#64748b" />
-  <rect x="214" y="200" width="135" height="6" rx="3" fill="#334155" />
-  <rect x="214" y="214" width="110" height="6" rx="3" fill="#334155" />
+  <!-- 5. Driver Profile & Steering Silhouette inside Card -->
+  <circle cx="146" cy="298" r="38" fill="#1e293b" stroke="#334155" stroke-width="4" />
+  <!-- Steering Rim inside profile frame -->
+  <circle cx="146" cy="298" r="26" fill="none" stroke="#94a3b8" stroke-width="6" />
+  <circle cx="146" cy="298" r="7" fill="#38bdf8" />
+  <line x1="120" y1="298" x2="139" y2="298" stroke="#94a3b8" stroke-width="5" />
+  <line x1="153" y1="298" x2="172" y2="298" stroke="#94a3b8" stroke-width="5" />
+  <line x1="146" y1="305" x2="146" y2="324" stroke="#94a3b8" stroke-width="5" />
 
-  <!-- Indian Highway / Road Trajectory cutting through card -->
-  <path d="M220 310 L242 245 L270 245 L292 310 Z" fill="#1e293b" stroke="#38bdf8" stroke-width="3" />
-  <line x1="256" y1="252" x2="256" y2="270" stroke="#fbbf24" stroke-width="3" stroke-dasharray="4,4" />
-  <line x1="256" y1="280" x2="256" y2="305" stroke="#fbbf24" stroke-width="4" />
+  <!-- Licence Number Emprint Line -->
+  <rect x="206" y="278" width="150" height="14" rx="7" fill="#94a3b8" />
+  <rect x="206" y="302" width="100" height="10" rx="5" fill="#475569" />
 
-  <!-- Steering Wheel & Verified Saathi Badge (Bottom-Right Anchor) -->
-  <circle cx="340" cy="290" r="42" fill="#2563eb" stroke="#ffffff" stroke-width="5" filter="drop-shadow(0 6px 12px rgba(37,99,235,0.4))" />
-  <!-- Checkmark -->
-  <path d="M326 290 L336 300 L356 278" fill="none" stroke="#ffffff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" />
+  <!-- 6. Large Verified Saathi Badge (Bottom-Right Anchor) -->
+  <circle cx="384" cy="338" r="66" fill="#2563eb" stroke="#020617" stroke-width="10" filter="drop-shadow(0 8px 16px rgba(37, 99, 235, 0.5))" />
+  
+  <!-- Outer glowing rim for checkmark badge -->
+  <circle cx="384" cy="338" r="58" fill="none" stroke="#60a5fa" stroke-width="4" />
+
+  <!-- Bold White Checkmark -->
+  <path d="M362 338 L378 354 L410 320" fill="none" stroke="#ffffff" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" />
 </svg>
