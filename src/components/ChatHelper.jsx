@@ -159,14 +159,14 @@ export default function ChatHelper() {
               </button>
             </div>
 
-            {/* Chat History */}
+            {/* Chat History with whitespace-pre-wrap for formatted lists */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-900/50">
               {messages.map((msg, idx) => {
                 const isUser = msg.type === 'user';
                 return (
                   <div key={idx} className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
                     <div
-                      className={`max-w-[85%] rounded-2xl p-3 text-sm leading-relaxed ${
+                      className={`max-w-[85%] rounded-2xl p-3 text-sm leading-relaxed whitespace-pre-wrap ${
                         isUser
                           ? 'bg-blue-600 text-white rounded-br-none'
                           : 'bg-slate-800 text-slate-200 rounded-bl-none border border-slate-700/80 shadow-sm'
@@ -190,8 +190,11 @@ export default function ChatHelper() {
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Quick Replies */}
-            <div className="px-3 py-2 bg-slate-950 border-t border-slate-800/60 flex gap-2 overflow-x-auto no-scrollbar">
+            {/* Quick Replies with Hidden Scrollbar */}
+            <div 
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+              className="px-3 py-2 bg-slate-950 border-t border-slate-800/60 flex gap-2 overflow-x-auto [&::-webkit-scrollbar]:hidden"
+            >
               {quickReplies[lang].map((reply, idx) => (
                 <button
                   key={idx}

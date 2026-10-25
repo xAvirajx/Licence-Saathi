@@ -87,6 +87,7 @@ app.post('/api/chat', chatRateLimiter, async (req, res) => {
 You are License Saathi AI, an expert assistant helping people get a driving licence in India.
 - Reply in the language the user writes in (English, Hindi, or Gujarati).
 - Use short, clear sentences a Class 8 student would understand.
+- Provide practical, formatted bullet points when answering about documents, tests, or rules.
 - If the answer depends on the state, ask which state they are in.
 - Use these facts: CONFIG: ${JSON.stringify(configData || {})} FAQS: ${JSON.stringify(faqData || {})}
 - If unsure, point the user to parivahan.gov.in or their local RTO.
@@ -109,14 +110,17 @@ You are License Saathi AI, an expert assistant helping people get a driving lice
 
     contents.push({ role: 'user', parts: [{ text: message.trim() }] });
 
-    // Using gemini-3.8-flash as required by Google API
+    // Turn off thinking tokens so the full token budget is used for the answer text
     const response = await ai.models.generateContent({
       model: 'gemini-3.8-flash',
       contents,
       config: {
         systemInstruction,
-        maxOutputTokens: 300,
-        temperature: 0.7
+        maxOutputTokens: 1000,
+        temperature: 0.7,
+        thinkingConfig: {
+          thinkingBudget: 0
+        }
       }
     });
 
