@@ -11,7 +11,7 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Native CORS headers without external dependency
+// Universal CORS headers without third-party dependencies
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
@@ -98,7 +98,6 @@ app.get('/api/apisetu/dl-verification', (req, res) => {
 
 // ==========================================
 // 2. GEMINI AI CHAT HELPER WITH MULTI-MODEL FALLBACK
-// Supports English, Hindi, and Gujarati with Zero-PII Guardrails
 // ==========================================
 app.post('/api/chat', async (req, res) => {
   const { message, lang = 'en', history = [] } = req.body;
@@ -193,11 +192,12 @@ Primary Mission:
 });
 
 // ==========================================
-// 3. PRODUCTION STATIC ASSETS & SPA ROUTING
+// 3. PRODUCTION STATIC ASSETS & UNIVERSAL SPA ROUTING
+// Uses app.use to completely eliminate Express 5 path-to-regexp '*' syntax errors
 // ==========================================
 app.use(express.static(path.join(__dirname, 'dist')));
 
-app.get('*', (req, res) => {
+app.use((req, res) => {
   res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 

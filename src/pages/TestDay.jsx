@@ -1,320 +1,361 @@
 import { useState, useContext, useEffect } from 'react';
 import { AppContext } from '../App';
-import { Monitor, Clock, CheckCircle2, XCircle, ArrowRight, RotateCcw, AlertCircle, ShieldAlert } from 'lucide-react';
+import { 
+  Laptop, CheckCircle2, AlertTriangle, Clock, 
+  MapPin, ShieldCheck, ArrowRight, ArrowLeft,
+  FileText, CheckSquare, Square, Info, Calendar,
+  Camera, Fingerprint, AlertCircle, Sparkles,
+  RefreshCw, Award, Compass, HelpCircle
+} from 'lucide-react';
 import { Link } from 'react-router-dom';
 import RtoMap from '../components/RtoMap';
 
 export default function TestDay() {
-  const { lang } = useContext(AppContext);
-  const [currentStep, setCurrentStep] = useState('instructions'); // 'instructions' | 'kiosk' | 'result'
-  const [currentQIndex, setCurrentQIndex] = useState(0);
-  const [selectedAnswer, setSelectedAnswer] = useState(null);
-  const [userScore, setUserScore] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(30);
+  const { lang, effectiveTheme } = useContext(AppContext);
 
-  // 3 high-probability questions formatted for the official RTO kiosk layout
-  const kioskQuestions = [
-    {
-      id: 1,
-      question: {
-        en: "Near a pedestrian crossing, when people are waiting to cross the road, you should:",
-        hi: "पैदल यात्री पार पथ के निकट, जब लोग सड़क पार करने की प्रतीक्षा कर रहे हों, तो आपको:",
-        gu: "જ્યારે લોકો પેડેસ્ટ્રિયન ક્રોસિંગ પર રસ્તો ઓળંગવાની રાહ જોઈ રહ્યા હોય, ત્યારે તમારે:"
-      },
-      options: {
-        en: [
-          "Sound horn and proceed at normal speed",
-          "Slow down, sound horn and pass",
-          "Stop the vehicle, wait until pedestrians cross, then proceed",
-          "Speed up to pass before they cross"
-        ],
-        hi: [
-          "हॉर्न बजाएं और सामान्य गति से आगे बढ़ें",
-          "गति धीमी करें, हॉर्न बजाएं और आगे निकलें",
-          "वाहन रोकें, पदयात्रियों के पार होने तक प्रतीक्षा करें, फिर आगे बढ़ें",
-          "उनके पार करने से पहले तेजी से निकल जाएं"
-        ],
-        gu: [
-          "હોર્ન વગાડીને સામાન્ય ઝડપે આગળ વધવું",
-          "ઝડપ ધીમી કરી, હોર્ન વગાડીને પસાર થવું",
-          "વાહન થોભાવી, પદયાત્રીઓ રસ્તો ઓળંગી લે ત્યાં સુધી રાહ જોઈને આગળ વધવું",
-          "તેઓ રસ્તો ઓળંગે તે પહેલાં ઝડપ વધારવી"
-        ]
-      },
-      correct: 2
-    },
-    {
-      id: 2,
-      question: {
-        en: "On a road without a footpath, pedestrians should walk:",
-        hi: "फुटपाथ रहित सड़क पर, पैदल यात्रियों को चलना चाहिए:",
-        gu: "ફૂટપાથ વગરના રસ્તા પર પદયાત્રીઓએ કઈ બાજુ ચાલવું જોઈએ:"
-      },
-      options: {
-        en: [
-          "On the right side of the road facing oncoming traffic",
-          "On the left side of the road along with traffic",
-          "On whichever side has fewer vehicles",
-          "In the middle of the roadway"
-        ],
-        hi: [
-          "आने वाले यातायात के सामने सड़क की दाईं ओर",
-          "यातायात के साथ सड़क की बाईं ओर",
-          "जिस तरफ कम वाहन हों उस तरफ",
-          "सड़क के बिल्कुल बीच में"
-        ],
-        gu: [
-          "સામેથી આવતા ટ્રાફિકની સામે રસ્તાની જમણી બાજુ",
-          "ટ્રાફિકની સાથે રસ્તાની ડાબી બાજુ",
-          "જે બાજુ ઓછા વાહનો હોય તે બાજુ",
-          "રસ્તાની બરાબર વચ્ચે"
-        ]
-      },
-      correct: 0
-    },
-    {
-      id: 3,
-      question: {
-        en: "Free passage must be mandatorily given to which of the following vehicles?",
-        hi: "निम्नलिखित में से किन वाहनों को अनिवार्य रूप से रास्ता दिया जाना चाहिए?",
-        gu: "નીચેનામાંથી કયા વાહનોને ફરજિયાતપણે રસ્તો આપવો જોઈએ?"
-      },
-      options: {
-        en: [
-          "Express buses and heavy trucks",
-          "Ambulance and fire service vehicles",
-          "VIP motorcades with green flags",
-          "Vehicles carrying government officers"
-        ],
-        hi: [
-          "एक्सप्रेस बसें और भारी ट्रक",
-          "एम्बुलेंस और अग्निशमन सेवा वाहन",
-          "हरे झंडे वाले वीआईपी काफिले",
-          "सरकारी अधिकारियों को ले जाने वाले वाहन"
-        ],
-        gu: [
-          "એક્સપ્રેસ બસો અને મોટા ટ્રક",
-          "એમ્બ્યુલન્સ અને ફાયર બ્રિગેડ વાહનો",
-          "લીલા ઝંડાવાળા વીઆઈપી કાફલા",
-          "સરકારી અધિકારીઓને લઈ જતા વાહનો"
-        ]
-      },
-      correct: 1
-    }
+  // Interactive Document Packing Checklist State
+  const initialDocs = [
+    { id: 'doc1', title: { en: 'Printed Form 2 (Application Form)', hi: 'फॉर्म 2 की प्रिंट कॉपी (आवेदन फॉर्म)', gu: 'ફોર્મ 2 ની પ્રિન્ટેડ કોપી (અરજી ફોર્મ)' }, desc: { en: 'Generated after fee payment with the official barcode.', hi: 'शुल्क भुगतान के बाद बारकोड सहित डाउनलोड किया गया।', gu: 'ફી ભર્યા બાદ બારકોડ સાથે ડાઉનલોડ કરેલ ફોર્મ.' } },
+    { id: 'doc2', title: { en: 'Slot Booking Confirmation Slip', hi: 'स्लॉट बुकिंग पुष्टिकरण पर्ची', gu: 'સ્લોટ બુકિંગ કન્ફર્મેશન સ્લિપ' }, desc: { en: 'Shows designated test date, batch timing, and booth number.', hi: 'परीक्षा की तारीख, समय और आरटीओ कक्ष संख्या दर्शाती है।', gu: 'પરીક્ષાની તારીખ, બેચ સમય અને રૂમ નંબર દર્શાવતી સ્લિપ.' } },
+    { id: 'doc3', title: { en: 'Original Government Age Proof', hi: 'मूल आयु प्रमाण पत्र', gu: 'અસલ ઉંમરનો પુરાવો' }, desc: { en: 'Original 10th marksheet, Birth Certificate, or Passport for officer verification.', hi: 'अधिकारी सत्यापन हेतु मूल 10वीं मार्कशीट या जन्म प्रमाण पत्र।', gu: 'ચકાસણી માટે ૧૦માની માર્કશીટ અથવા જન્મનો દાખલો.' } },
+    { id: 'doc4', title: { en: 'Original Address Proof & Aadhaar', hi: 'मूल पता प्रमाण और आधार कार्ड', gu: 'અસલ સરનામાનો પુરાવો અને આધાર' }, desc: { en: 'Physical Aadhaar Card, Voter ID, or utility bill in your name.', hi: 'भौतिक आधार कार्ड, वोटर आईडी या अपने नाम का बिजली बिल।', gu: 'ઓરિજિનલ આધાર કાર્ડ, ચૂંટણી કાર્ડ અથવા લાઈટ બિલ.' } },
+    { id: 'doc5', title: { en: 'Online Fee Payment Receipt', hi: 'ऑनलाइन शुल्क भुगतान रसीद', gu: 'ઓનલાઇન ફી પેમેન્ટની રસીદ' }, desc: { en: 'Proof of ₹200 LL test fee transaction from Sarathi portal.', hi: 'सारथी पोर्टल से ₹200 लर्नर लाइसेंस टेस्ट शुल्क की रसीद।', gu: 'પરિવહન પોર્ટલ પરથી ₹200 LL ટેસ્ટ ફી ભર્યાની રસીદ.' } },
+    { id: 'doc6', title: { en: 'Medical Certificate (Form 1 / 1A)', hi: 'चिकित्सा प्रमाण पत्र (फॉर्म 1/1A)', gu: 'મેડિકલ સર્ટિફિકેટ (ફોર્મ 1/1A)' }, desc: { en: 'Self-declaration Form 1 for non-transport, or doctor signed Form 1A if age 40+.', hi: 'गैर-परिवहन के लिए फॉर्म 1, अथवा 40 वर्ष से अधिक होने पर डॉक्टर द्वारा हस्ताक्षरित फॉर्म 1A।', gu: 'સામાન્ય વાહન માટે ફોર્મ 1, અથવા 40+ ઉંમર માટે ડોક્ટર સાઇન કરેલ ફોર્મ 1A.' } }
   ];
 
-  // Kiosk countdown timer
-  useEffect(() => {
-    let timer;
-    if (currentStep === 'kiosk' && timeLeft > 0) {
-      timer = setInterval(() => setTimeLeft(prev => prev - 1), 1000);
-    } else if (currentStep === 'kiosk' && timeLeft === 0) {
-      handleConfirmAnswer();
+  const [checkedDocs, setCheckedDocs] = useState(() => {
+    try {
+      const saved = localStorage.getItem('ls_testday_packed_docs');
+      return saved ? JSON.parse(saved) : {};
+    } catch {
+      return {};
     }
-    return () => clearInterval(timer);
-  }, [currentStep, timeLeft]);
+  });
 
-  const handleStartExam = () => {
-    setCurrentStep('kiosk');
-    setCurrentQIndex(0);
-    setSelectedAnswer(null);
-    setUserScore(0);
-    setTimeLeft(30);
+  const toggleDoc = (id) => {
+    const updated = { ...checkedDocs, [id]: !checkedDocs[id] };
+    setCheckedDocs(updated);
+    localStorage.setItem('ls_testday_packed_docs', JSON.stringify(updated));
   };
 
-  const handleConfirmAnswer = () => {
-    let isCorrect = selectedAnswer === kioskQuestions[currentQIndex].correct;
-    let nextScore = isCorrect ? userScore + 1 : userScore;
-
-    if (currentQIndex + 1 < kioskQuestions.length) {
-      setUserScore(nextScore);
-      setCurrentQIndex(prev => prev + 1);
-      setSelectedAnswer(null);
-      setTimeLeft(30);
-    } else {
-      setUserScore(nextScore);
-      setCurrentStep('result');
-    }
-  };
+  const packedCount = Object.values(checkedDocs).filter(Boolean).length;
+  const packedPercentage = Math.round((packedCount / initialDocs.length) * 100);
 
   return (
-    <div className="relative min-h-screen bg-slate-950 text-slate-100 py-10 px-4 sm:px-6 flex flex-col font-sans">
-      <div className="max-w-4xl mx-auto w-full">
-        {/* HEADER */}
-        <div className="flex items-center justify-between border-b border-slate-800 pb-5 mb-8">
-          <div>
-            <span className="text-xs font-bold uppercase tracking-wider text-emerald-400 bg-emerald-950/60 border border-emerald-800/60 px-3 py-1 rounded-full inline-block mb-2">
-              {lang === 'en' ? 'RTO Kiosk Simulator' : lang === 'hi' ? 'आरटीओ कियोस्क सिमुलेटर' : 'આરટીઓ કિયોસ્ક સિમ્યુલેટર'}
-            </span>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-white">
-              {lang === 'en' ? 'Test Day Environment' : lang === 'hi' ? 'परीक्षा दिवस वातावरण' : 'પરીક્ષા દિવસનું વાતાવરણ'}
-            </h1>
-          </div>
+    <div className="relative min-h-screen py-10 px-4 sm:px-6 flex flex-col font-sans">
+      <div className="max-w-4xl mx-auto w-full relative z-10 space-y-12">
+
+        {/* Back Link & Header */}
+        <div className="flex items-center gap-4">
           <Link
-            to="/learn"
-            className="text-xs sm:text-sm font-semibold bg-slate-900 border border-slate-700 hover:border-slate-500 text-slate-300 px-4 py-2 rounded-xl transition"
+            to="/"
+            aria-label="Back to Home"
+            className="w-10 h-10 rounded-2xl bg-slate-900 border border-slate-700 flex items-center justify-center text-slate-300 hover:text-white transition shadow-sm"
           >
-            {lang === 'en' ? 'Exit Simulator' : lang === 'hi' ? 'बाहर निकलें' : 'બહાર નીકળો'}
+            <ArrowLeft size={20} />
           </Link>
+          <div>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-400 font-bold text-xs uppercase tracking-wider mb-1">
+              <Laptop size={14} />
+              <span>Official RTO STALL Kiosk & Track Protocol</span>
+            </div>
+            <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-white">
+              {lang === 'en' ? 'RTO Test Day Protocol & Guide' : lang === 'hi' ? 'आरटीओ टेस्ट दिन प्रोटोकॉल और संपूर्ण गाइड' : 'RTO ટેસ્ટ દિવસ પ્રોટોકોલ અને સંપૂર્ણ ગાઇડ'}
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-400 mt-1">
+              {lang === 'en' 
+                ? 'Everything you need to know from entering the RTO gate to receiving your digital Learner Licence.' 
+                : 'RTO ના દરવાજે પ્રવેશવાથી લઈને ડિજિટલ લાયસન્સ મેળવવા સુધીની તમામ સત્તાવાર માહિતી.'}
+            </p>
+          </div>
         </div>
 
-        {/* 1. INSTRUCTIONS SCREEN */}
-        {currentStep === 'instructions' && (
-          <div className="bg-slate-900/60 border border-slate-800 rounded-3xl p-6 sm:p-10 shadow-2xl">
-            <div className="flex items-center gap-4 mb-6">
-              <div className="w-12 h-12 bg-blue-600/20 text-blue-400 rounded-2xl flex items-center justify-center shrink-0">
-                <Monitor size={28} />
-              </div>
-              <div>
-                <h2 className="text-xl font-bold text-white">
-                  {lang === 'en' ? 'Real Kiosk Layout Simulation' : lang === 'hi' ? 'वास्तविक कियोस्क लेआउट का अनुभव' : 'અસલી કિયોસ્ક લેઆઉટનો અનુભવ'}
-                </h2>
-                <p className="text-sm text-slate-400">
-                  {lang === 'en' ? 'Practice on the interface used at official RTO test centers.' : lang === 'hi' ? 'आरटीओ परीक्षा केंद्रों पर उपयोग किए जाने वाले इंटरफ़ेस पर अभ्यास करें।' : 'સત્તાવાર આરટીઓ કેન્દ્રો પર વપરાતા ઇન્ટરફેસ પર પ્રેક્ટિસ કરો.'}
-                </p>
-              </div>
-            </div>
+        {/* 1. INTERACTIVE LEAFLET + OPENSTREETMAP TRACK LOCATOR */}
+        <div id="rto-map" className="scroll-mt-6">
+          <RtoMap />
+        </div>
 
-            <div className="space-y-4 mb-8 text-sm text-slate-300">
-              <div className="p-4 bg-slate-950/70 rounded-2xl border border-slate-800 flex items-start gap-3">
-                <Clock className="text-amber-400 shrink-0 mt-0.5" size={20} />
-                <p>
-                  {lang === 'en' ? 'You have 30 seconds per question. Unanswered questions count as incorrect.' : lang === 'hi' ? 'प्रत्येक प्रश्न के लिए 30 सेकंड का समय मिलेगा। अनुत्तरित प्रश्न को गलत माना जाएगा।' : 'દરેક પ્રશ્ન માટે 30 સેકન્ડનો સમય મળશે. જવાબ ન આપેલ પ્રશ્ન ખોટો ગણાશે.'}
-                </p>
+        {/* 2. PACKING CHECKLIST WITH PROGRESS METER */}
+        <div className="bg-slate-900/60 backdrop-blur-xl border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-6 shadow-2xl">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-5">
+            <div>
+              <div className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-emerald-400 bg-emerald-950/80 px-2 py-0.5 rounded-full border border-emerald-800 mb-1">
+                ✓ Interactive Checklist
               </div>
-              <div className="p-4 bg-slate-950/70 rounded-2xl border border-slate-800 flex items-start gap-3">
-                <CheckCircle2 className="text-blue-400 shrink-0 mt-0.5" size={20} />
-                <p>
-                  {lang === 'en' ? 'Select an answer using the numbered keys, then press the green Confirm button.' : lang === 'hi' ? 'संख्या कुंजियों से उत्तर चुनें, फिर हरे "पुष्टि करें" बटन को दबाएं।' : 'નંબર બટનથી જવાબ પસંદ કરો, પછી લીલા "પુષ્ટિ કરો" બટન પર ક્લિક કરો.'}
-                </p>
-              </div>
-            </div>
-
-            <button
-              onClick={handleStartExam}
-              className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-4 rounded-xl transition flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/40"
-            >
-              {lang === 'en' ? 'Start 3-Question Kiosk Drill' : lang === 'hi' ? '3-प्रश्नों का कियोस्क अभ्यास शुरू करें' : '3-પ્રશ્નોનું કિયોસ્ક ટેસ્ટ શરૂ કરો'}
-              <ArrowRight size={20} />
-            </button>
-          </div>
-        )}
-
-        {/* 2. THE REAL RTO KIOSK UI */}
-        {currentStep === 'kiosk' && (
-          <div className="bg-slate-100 text-slate-900 rounded-3xl overflow-hidden shadow-2xl border-4 border-slate-700">
-            {/* KIOSK TOP BLUE STATUS BAR */}
-            <div className="bg-[#0f2d59] text-white px-6 py-4 flex flex-wrap items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-slate-800 rounded-lg flex items-center justify-center font-bold text-xs uppercase text-slate-300">
-                  RTO
-                </div>
-                <div>
-                  <p className="text-xs font-semibold text-slate-300">SARATHI LL TEST PORTAL</p>
-                  <p className="text-sm font-bold tracking-wide">STALL KIOSK #04</p>
-                </div>
-              </div>
-
-              {/* Timer Bar */}
-              <div className="flex items-center gap-3 bg-[#0a1e3b] px-4 py-2 rounded-xl border border-blue-900/60">
-                <Clock size={18} className="text-amber-400 animate-pulse" />
-                <span className="font-mono text-lg font-bold text-amber-400">{timeLeft}s</span>
-              </div>
-            </div>
-
-            {/* KIOSK MAIN CONTENT */}
-            <div className="p-6 sm:p-8">
-              <div className="flex justify-between items-center text-xs font-bold text-slate-600 uppercase border-b border-slate-300 pb-3 mb-6">
-                <span>QUESTION {currentQIndex + 1} OF {kioskQuestions.length}</span>
-                <span>LANGUAGE: {lang === 'gu' ? 'GUJARATI' : lang === 'hi' ? 'HINDI' : 'ENGLISH'}</span>
-              </div>
-
-              {/* Question Text */}
-              <h2 className="text-lg sm:text-xl font-bold text-slate-900 mb-6 leading-snug">
-                {kioskQuestions[currentQIndex].question[lang] || kioskQuestions[currentQIndex].question.en}
+              <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                <ShieldCheck size={20} className="text-emerald-400" />
+                <span>{lang === 'en' ? 'Documents to Carry in Your Physical Folder' : 'સાથે લઈ જવાના જરૂરી દસ્તાવેજોનું ચેકલિસ્ટ'}</span>
               </h2>
+              <p className="text-xs text-slate-400">
+                {lang === 'en' ? 'Tap each document as you pack it into your file to ensure zero rejections at the entry counter.' : 'તમારી ફાઇલમાં મુકતી વખતે દરેક દસ્તાવેજ પર ક્લિક કરી ચેક કરો.'}
+              </p>
+            </div>
 
-              {/* Answer Choices in Kiosk Format */}
-              <div className="space-y-3 mb-8">
-                {(kioskQuestions[currentQIndex].options[lang] || kioskQuestions[currentQIndex].options.en).map((opt, idx) => {
-                  const isSelected = selectedAnswer === idx;
-                  return (
-                    <button
-                      key={idx}
-                      onClick={() => setSelectedAnswer(idx)}
-                      className={`w-full text-left p-4 rounded-xl border-2 flex items-center gap-4 transition-all ${
-                        isSelected
-                          ? 'border-blue-700 bg-blue-50 text-blue-950 font-bold shadow-md'
-                          : 'border-slate-300 bg-white hover:border-slate-400 text-slate-800'
-                      }`}
-                    >
-                      <span className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm shrink-0 ${
-                        isSelected ? 'bg-blue-700 text-white' : 'bg-slate-200 text-slate-700'
-                      }`}>
-                        {idx + 1}
-                      </span>
-                      <span className="text-sm sm:text-base leading-relaxed">{opt}</span>
-                    </button>
-                  );
-                })}
+            <div className="text-right shrink-0">
+              <span className="text-xs font-bold text-slate-300">
+                {packedCount} of {initialDocs.length} {lang === 'en' ? 'Packed' : 'તૈયાર'}
+              </span>
+              <div className="w-32 h-2 bg-slate-950 rounded-full border border-slate-800 overflow-hidden mt-1">
+                <div 
+                  className="h-full bg-gradient-to-r from-blue-500 to-emerald-400 transition-all duration-300"
+                  style={{ width: `${packedPercentage}%` }}
+                />
               </div>
+            </div>
+          </div>
 
-              {/* Kiosk Controls */}
-              <div className="flex justify-end gap-3 pt-4 border-t border-slate-200">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {initialDocs.map((doc) => {
+              const isChecked = !!checkedDocs[doc.id];
+              return (
                 <button
-                  onClick={handleConfirmAnswer}
-                  disabled={selectedAnswer === null}
-                  className="bg-[#15803d] hover:bg-[#166534] disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold px-8 py-3.5 rounded-xl transition flex items-center gap-2 shadow-md uppercase tracking-wider text-sm"
+                  key={doc.id}
+                  onClick={() => toggleDoc(doc.id)}
+                  className={`p-4 rounded-2xl border text-left transition-all flex items-start gap-3.5 ${
+                    isChecked
+                      ? 'bg-emerald-950/30 border-emerald-600/50 shadow-md shadow-emerald-950/30'
+                      : 'bg-slate-950 border-slate-800/90 hover:border-slate-700'
+                  }`}
                 >
-                  {lang === 'en' ? 'Confirm Answer' : lang === 'hi' ? 'उत्तर की पुष्टि करें' : 'જવાબની પુષ્ટિ કરો'}
-                  <ArrowRight size={18} />
+                  <div className="mt-0.5 shrink-0">
+                    {isChecked ? (
+                      <CheckSquare size={20} className="text-emerald-400 stroke-[2.5]" />
+                    ) : (
+                      <Square size={20} className="text-slate-500" />
+                    )}
+                  </div>
+                  <div>
+                    <p className={`text-sm font-bold ${isChecked ? 'text-emerald-300 line-through' : 'text-white'}`}>
+                      {doc.title[lang] || doc.title.en}
+                    </p>
+                    <p className="text-xs text-slate-400 mt-0.5 leading-relaxed">
+                      {doc.desc[lang] || doc.desc.en}
+                    </p>
+                  </div>
                 </button>
+              );
+            })}
+          </div>
+
+          <div className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800/80 flex items-center gap-3 text-xs text-slate-400">
+            <Info size={18} className="text-blue-400 shrink-0" />
+            <span>
+              {lang === 'en' 
+                ? 'Original identity proofs are inspected and immediately returned to you on the spot. No originals are retained by the RTO.' 
+                : 'ઓરિજિનલ દસ્તાવેજો માત્ર વેરિફિકેશન માટે જોઈને તરત જ પરત કરી દેવામાં આવે છે. RTO કોઈ અસલ દસ્તાવેજ રાખતું નથી.'}
+            </span>
+          </div>
+        </div>
+
+        {/* 3. CHRONOLOGICAL 4-PHASE TEST DAY TIMELINE */}
+        <div className="bg-slate-900/60 backdrop-blur-xl border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-8 shadow-2xl">
+          <div>
+            <h2 className="text-xl sm:text-2xl font-extrabold text-white">
+              {lang === 'en' ? 'Step-by-Step Test Day Walkthrough' : 'ટેસ્ટ દિવસનું પગલે પગલે સમયપત્રક'}
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-400 mt-1">
+              {lang === 'en' ? 'What actually happens inside the RTO compound from arrival to departure.' : 'RTO પરિસરમાં પહોંચવાથી લઈને ટેસ્ટ પૂર્ણ થવા સુધીની પ્રક્રિયા.'}
+            </p>
+          </div>
+
+          <div className="space-y-6 relative before:absolute before:inset-0 before:left-5 before:top-4 before:bottom-4 before:w-0.5 before:bg-gradient-to-b before:from-blue-500 before:via-emerald-500 before:to-transparent">
+            
+            {/* Phase 1 */}
+            <div className="relative flex items-start gap-4 sm:gap-6 pl-1">
+              <div className="relative z-10 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-blue-950 border-2 border-blue-500 text-blue-300 flex items-center justify-center shrink-0 font-bold text-xs sm:text-sm shadow-md">
+                01
+              </div>
+              <div className="flex-1 pt-1 space-y-1">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-base font-bold text-white">
+                    {lang === 'en' ? 'Arrival & Token Generation' : 'આગમન અને ટોકન મેળવવું'}
+                  </h3>
+                  <span className="text-[10px] text-blue-400 bg-blue-950 px-2 py-0.5 rounded-full border border-blue-800 font-mono">
+                    30 mins before slot
+                  </span>
+                </div>
+                <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
+                  {lang === 'en'
+                    ? 'Report at the security reception counter with your printed Slot Slip. The security operator scans your barcode and issues your electronic queue token for the scrutiny room.'
+                    : 'તમારા સ્લોટ સમયથી 30 મિનિટ પહેલાં RTO પહોંચો. રિસેપ્શન કાઉન્ટર પર તમારી સ્લિપ સ્કેન કરીને સ્ક્રુટિની રૂમ માટેનું ઇલેક્ટ્રોનિક ટોકન મેળવો.'}
+                </p>
               </div>
             </div>
-          </div>
-        )}
 
-        {/* 3. RESULT SCREEN */}
-        {currentStep === 'result' && (
-          <div className="bg-slate-900/60 border border-slate-800 rounded-3xl p-8 sm:p-10 text-center shadow-2xl">
-            <div className={`w-20 h-20 mx-auto rounded-full flex items-center justify-center mb-6 ${
-              userScore >= 2 ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'
-            }`}>
-              {userScore >= 2 ? <CheckCircle2 size={44} /> : <XCircle size={44} />}
+            {/* Phase 2 */}
+            <div className="relative flex items-start gap-4 sm:gap-6 pl-1">
+              <div className="relative z-10 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-indigo-950 border-2 border-indigo-500 text-indigo-300 flex items-center justify-center shrink-0 font-bold text-xs sm:text-sm shadow-md">
+                02
+              </div>
+              <div className="flex-1 pt-1 space-y-1">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-base font-bold text-white">
+                    {lang === 'en' ? 'Biometrics & Document Verification' : 'બાયોમેટ્રિક્સ અને દસ્તાવેજ ચકાસણી'}
+                  </h3>
+                  <span className="text-[10px] text-indigo-400 bg-indigo-950 px-2 py-0.5 rounded-full border border-indigo-800 font-mono">
+                    ~10 mins
+                  </span>
+                </div>
+                <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
+                  {lang === 'en'
+                    ? 'The RTO scrutiny officer checks your physical self-attested documents against online records. You will provide your thumbprint biometric scan and an on-the-spot digital webcam photograph.'
+                    : 'RTO અધિકારી તમારા અસલ દસ્તાવેજો ઓનલાઇન રેકોર્ડ સાથે સરખાવશે. ત્યારબાદ તમારો અંગૂઠાનો બાયોમેટ્રિક સ્કેન અને લાઇવ વેબકેમ ફોટો લેવામાં આવશે.'}
+                </p>
+              </div>
             </div>
 
-            <h2 className="text-3xl font-extrabold text-white mb-2">
-              {userScore >= 2
-                ? (lang === 'en' ? 'Kiosk Drill Completed!' : lang === 'hi' ? 'कियोस्क अभ्यास पूरा हुआ!' : 'કિયોસ્ક ડ્રિલ પૂર્ણ થઈ!')
-                : (lang === 'en' ? 'Needs More Practice' : lang === 'hi' ? 'अधिक अभ्यास की आवश्यकता है' : 'વધુ પ્રેક્ટિસની જરૂર છે')}
+            {/* Phase 3 */}
+            <div className="relative flex items-start gap-4 sm:gap-6 pl-1">
+              <div className="relative z-10 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-amber-950 border-2 border-amber-500 text-amber-300 flex items-center justify-center shrink-0 font-bold text-xs sm:text-sm shadow-md">
+                03
+              </div>
+              <div className="flex-1 pt-1 space-y-1">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-base font-bold text-white">
+                    {lang === 'en' ? 'The STALL Touchscreen Kiosk Exam' : 'STALL કમ્પ્યુટર પરીક્ષા'}
+                  </h3>
+                  <span className="text-[10px] text-amber-400 bg-amber-950 px-2 py-0.5 rounded-full border border-amber-800 font-mono">
+                    7.5 mins maximum
+                  </span>
+                </div>
+                <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
+                  {lang === 'en'
+                    ? 'Enter the designated computer test hall and take your seat at the assigned touchscreen booth. You will enter your Application Number and Date of Birth to launch your 15-question exam in your chosen language.'
+                    : 'નિયુક્ત કમ્પ્યુટર લેબમાં તમારા ટચસ્ક્રીન બૂથ પર બેસો. તમારો એપ્લિકેશન નંબર અને જન્મતારીખ દાખલ કરીને પસંદ કરેલી ભાષામાં 15 પ્રશ્નોની પરીક્ષા શરૂ કરો.'}
+                </p>
+              </div>
+            </div>
+
+            {/* Phase 4 */}
+            <div className="relative flex items-start gap-4 sm:gap-6 pl-1">
+              <div className="relative z-10 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-emerald-950 border-2 border-emerald-500 text-emerald-300 flex items-center justify-center shrink-0 font-bold text-xs sm:text-sm shadow-md">
+                04
+              </div>
+              <div className="flex-1 pt-1 space-y-1">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-base font-bold text-white">
+                    {lang === 'en' ? 'Instant Result & Digital LL Issuance' : 'ત્વરિત પરિણામ અને લાયસન્સ ડાઉનલોડ'}
+                  </h3>
+                  <span className="text-[10px] text-emerald-400 bg-emerald-950 px-2 py-0.5 rounded-full border border-emerald-800 font-mono">
+                    Immediate
+                  </span>
+                </div>
+                <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
+                  {lang === 'en'
+                    ? 'The moment you touch the 9th correct answer, the screen displays a green "PASSED" banner. Your Learner Licence is instantly generated and an SMS link is sent to your registered mobile phone for digital download.'
+                    : 'જેવો તમે 9મો સાચો જવાબ આપશો, તરત જ સ્ક્રીન પર "PASSED" નું બેનર આવી જશે. તમારું ડિજિટલ લર્નર લાયસન્સ તાત્કાલિક જનરેટ થઈ જશે અને SMS દ્વારા લિંક આવી જશે.'}
+                </p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        {/* 4. OFFICIAL STALL KIOSK RULES & TECHNICAL CHEATSHEET */}
+        <div className="bg-slate-900/60 backdrop-blur-xl border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-5 shadow-2xl">
+          <div className="border-b border-slate-800 pb-4">
+            <h2 className="text-xl font-bold text-white flex items-center gap-2">
+              <Clock size={20} className="text-blue-400" />
+              <span>{lang === 'en' ? 'STALL Touchscreen Exam Specifications (CMVR Rule 11)' : 'STALL કમ્પ્યુટર પરીક્ષાના નિયમો'}</span>
             </h2>
-
-            <p className="text-slate-300 mb-6 text-lg">
-              {lang === 'en'
-                ? `You scored ${userScore} out of ${kioskQuestions.length} under strict kiosk timing.`
-                : lang === 'hi'
-                ? `आपने सख्त कियोस्क समय सीमा में ${kioskQuestions.length} में से ${userScore} अंक प्राप्त किए।`
-                : `તમે કિયોસ્ક સમય મર્યાદા હેઠળ ${kioskQuestions.length} માંથી ${userScore} ગુણ મેળવ્યા.`}
+            <p className="text-xs text-slate-400">
+              {lang === 'en' ? 'Exact parameters configured by the National Informatics Centre (NIC) in state RTOs.' : 'સરકારી નિયમો મુજબ કમ્પ્યુટર સિસ્ટમમાં સેટ કરેલા ચોક્કસ માપદંડો.'}
             </p>
+          </div>
 
-            <div className="flex flex-col sm:flex-row justify-center gap-4">
-              <button
-                onClick={handleStartExam}
-                className="bg-slate-800 hover:bg-slate-700 text-white font-bold px-6 py-3.5 rounded-xl transition flex items-center justify-center gap-2"
-              >
-                <RotateCcw size={18} />
-                {lang === 'en' ? 'Retry Drill' : lang === 'hi' ? 'पुनः प्रयास करें' : 'ફરીથી પ્રયાસ કરો'}
-              </button>
-              <Link
-                to="/mock-test"
-                className="bg-blue-600 hover:bg-blue-500 text-white font-bold px-6 py-3.5 rounded-xl transition flex items-center justify-center gap-2 shadow-lg shadow-blue-900/40"
-              >
-                {lang === 'en' ? 'Full 15-Q Mock Test' : lang === 'hi' ? 'पूर्ण 15-प्रश्नों का मॉक टेस्ट' : 'સંપૂર્ણ 15-પ્રશ્નોનો મોક ટેસ્ટ'}
-                <ArrowRight size={18} />
-              </Link>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 text-center space-y-1">
+              <span className="text-2xl font-black text-white font-mono">15</span>
+              <p className="text-xs font-bold text-slate-300">Total Questions</p>
+              <p className="text-[11px] text-slate-500">Selected randomly from MoRTH repository</p>
+            </div>
+            <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 text-center space-y-1">
+              <span className="text-2xl font-black text-emerald-400 font-mono">9 / 15</span>
+              <p className="text-xs font-bold text-slate-300">Passing Cut-off (60%)</p>
+              <p className="text-[11px] text-slate-500">Auto-terminates as soon as you hit 9</p>
+            </div>
+            <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 text-center space-y-1">
+              <span className="text-2xl font-black text-amber-400 font-mono">30s</span>
+              <p className="text-xs font-bold text-slate-300">Timer per Question</p>
+              <p className="text-[11px] text-slate-500">Expiry automatically marks as incorrect</p>
             </div>
           </div>
-        )}
+
+          <div className="p-4 rounded-2xl bg-red-950/20 border border-red-900/50 space-y-2 text-xs text-slate-300">
+            <p className="font-bold text-red-300 flex items-center gap-1.5">
+              <AlertTriangle size={15} />
+              <span>Disqualification Traps to Avoid inside Kiosk Room:</span>
+            </p>
+            <ul className="space-y-1 list-disc pl-4 text-slate-400">
+              <li><strong>Mobile Phones:</strong> Bringing an active phone into the testing booth results in an immediate 6-month ban under Rule 11.</li>
+              <li><strong>Looking at Neighboring Screens:</strong> The overhead AI surveillance cameras automatically flag head turns and terminate the test session.</li>
+              <li><strong>Double Tapping:</strong> Touch each option firmly once; the kiosk hardware locks your answer without confirmation prompts.</li>
+            </ul>
+          </div>
+        </div>
+
+        {/* 5. RETEST PROTOCOL & COOLING PERIOD (CMVR RULE 14) */}
+        <div className="p-6 sm:p-8 rounded-3xl bg-slate-900/40 border border-slate-800 space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-400 flex items-center justify-center shrink-0">
+              <RefreshCw size={20} />
+            </div>
+            <div>
+              <h3 className="text-base font-bold text-white">
+                {lang === 'en' ? 'What if you fail the computer test? (CMVR Rule 14)' : 'જો કમ્પ્યુટર ટેસ્ટમાં નાપાસ થાવ તો શું કરવું?'}
+              </h3>
+              <p className="text-xs text-slate-400">
+                {lang === 'en' ? 'Don’t panic—you do NOT have to restart the application or pay agents.' : 'ગભરાવાની જરૂર નથી—નવી અરજી કરવાની કે એજન્ટને પૈસા આપવાની જરૂર નથી.'}
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-slate-300">
+            <div className="p-3.5 bg-slate-950 rounded-2xl border border-slate-800 space-y-1">
+              <p className="font-bold text-white">1. Mandatory 7-Day Cooling Period</p>
+              <p className="text-slate-400">Under Rule 14 of the Central Motor Vehicles Rules, an applicant who fails can re-attempt the test after 7 days.</p>
+            </div>
+            <div className="p-3.5 bg-slate-950 rounded-2xl border border-slate-800 space-y-1">
+              <p className="font-bold text-white">2. Official ₹50 Retest Fee</p>
+              <p className="text-slate-400">Pay only the ₹50 statutory retest fee online via Parivahan Sarathi. Never pay ₹500–₹1,000 to touts outside the gate.</p>
+            </div>
+          </div>
+        </div>
+
+        {/* 6. PRO-TIPS FOR FIRST-TIMERS & CALL TO ACTION */}
+        <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-blue-950/40 via-slate-900 to-slate-900 border border-blue-900/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 shadow-2xl">
+          <div className="space-y-1.5">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-400 font-bold text-xs uppercase tracking-wider">
+              <Sparkles size={14} />
+              <span>Practice Makes Confident</span>
+            </div>
+            <h3 className="text-xl sm:text-2xl font-extrabold text-white">
+              {lang === 'en' ? 'Ready to Rehearse on the Real Kiosk?' : 'શું તમે અસલી કિયોસ્ક સિમ્યુલેટર પર તૈયારી કરવા તૈયાર છો?'}
+            </h3>
+            <p className="text-xs sm:text-sm text-slate-400 max-w-lg leading-relaxed">
+              {lang === 'en' 
+                ? 'Practice on our authentic 30-second touchscreen simulator with official IRC road signs and question bank.' 
+                : 'વાસ્તવિક 30 સેકન્ડ ટાઈમર અને સત્તાવાર પ્રશ્નો સાથે મોક ટેસ્ટ આપી તમારો આત્મવિશ્વાસ વધારો.'}
+            </p>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto shrink-0">
+            <Link
+              to="/mock-test"
+              className="px-6 py-3.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold text-xs sm:text-sm transition shadow-lg shadow-blue-600/30 flex items-center justify-center gap-2"
+            >
+              <span>Take STALL Mock Test</span>
+              <ArrowRight size={16} />
+            </Link>
+            <Link
+              to="/learn"
+              className="px-5 py-3.5 bg-slate-950 hover:bg-slate-800 border border-slate-700 text-white rounded-xl font-bold text-xs sm:text-sm transition text-center"
+            >
+              <span>Review Road Signs</span>
+            </Link>
+          </div>
+        </div>
+
       </div>
     </div>
   );

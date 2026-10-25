@@ -3,7 +3,7 @@ import { AppContext } from '../App';
 import { Link } from 'react-router-dom';
 import { 
   CheckCircle2, ArrowRight, Clock, ShieldAlert, 
-  FileText, BookOpen, Laptop
+  FileText, BookOpen, Laptop, MapPin, Compass
 } from 'lucide-react';
 import InstallModal from '../components/InstallModal';
 
@@ -131,7 +131,7 @@ export default function Home() {
 
       <div className="max-w-4xl mx-auto w-full relative z-10 space-y-12">
 
-        {/* 1. HERO SECTION (Image 2 Headline & Gradient Text) */}
+        {/* 1. HERO SECTION */}
         <section className="text-center pt-4 sm:pt-6 space-y-5">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-950/40 border border-emerald-500/30 text-emerald-400 font-medium text-xs sm:text-sm tracking-wide shadow-sm">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
@@ -181,18 +181,17 @@ export default function Home() {
             </button>
 
             <Link
-              to="/mock-test"
-              className="w-full sm:w-auto px-7 py-3.5 bg-slate-900/80 hover:bg-slate-800 border border-slate-700/80 text-white rounded-2xl font-bold transition text-sm sm:text-base text-center backdrop-blur-md"
+              to="/test-day#rto-map"
+              className="w-full sm:w-auto px-7 py-3.5 bg-slate-900/80 hover:bg-slate-800 border border-slate-700/80 text-white rounded-2xl font-bold transition text-sm sm:text-base flex items-center justify-center gap-2 backdrop-blur-md"
             >
-              {lang === 'en' ? 'Take Mock Test' : lang === 'hi' ? 'मॉक टेस्ट दें' : 'મોક ટેસ્ટ આપો'}
+              <MapPin size={17} className="text-blue-400" />
+              <span>{lang === 'en' ? 'Find Nearest RTO Track' : lang === 'hi' ? 'निकटतम आरटीओ ट्रैक खोजें' : 'નજીકનો RTO ટ્રેક શોધો'}</span>
             </Link>
           </div>
         </section>
 
-        {/* 2. WHERE ARE YOU IN YOUR LICENCE JOURNEY? (With Ambient Green/Teal Backlight) */}
+        {/* 2. WHERE ARE YOU IN YOUR LICENCE JOURNEY? */}
         <section className="space-y-4 relative">
-          
-          {/* 🌿 Exact Emerald/Teal Ambient Gradient positioned directly behind the Options & Journey Map */}
           {effectiveTheme !== 'light' && (
             <div className="pointer-events-none absolute -top-8 -bottom-16 left-1/2 -translate-x-1/2 w-[120%] max-w-3xl bg-[radial-gradient(ellipse_at_center,_rgba(16,185,129,0.18)_0%,_rgba(6,182,212,0.12)_35%,_transparent_70%)] blur-3xl -z-10" />
           )}
@@ -207,55 +206,23 @@ export default function Home() {
             {[
               {
                 stage: 1,
-                title: { 
-                  en: 'Just starting', 
-                  hi: 'अभी शुरुआत', 
-                  gu: 'હમણાં શરૂઆત' 
-                },
-                sub: { 
-                  en: 'I need to check rules & apply', 
-                  hi: 'मुझे नियम जांचने और आवेदन करने की आवश्यकता है', 
-                  gu: 'મારે નિયમો ચકાસવા અને અરજી કરવી છે' 
-                }
+                title: { en: 'Just starting', hi: 'अभी शुरुआत', gu: 'હમણાં શરૂઆત' },
+                sub: { en: 'I need to check rules & apply', hi: 'मुझे नियम जांचने और आवेदन करने की आवश्यकता है', gu: 'મારે નિયમો ચકાસવા અને અરજી કરવી છે' }
               },
               {
                 stage: 4,
-                title: { 
-                  en: "I have a learner's licence", 
-                  hi: 'मेरे पास लर्नर लाइसेंस है', 
-                  gu: 'મારી પાસે લર્નર લાયસન્સ છે' 
-                },
-                sub: { 
-                  en: 'I am waiting to get my permanent DL', 
-                  hi: 'मैं स्थायी डीएल प्राप्त करने की प्रतीक्षा कर रहा हूँ', 
-                  gu: 'હું કાયમી DL મેળવવાની રાહ જોઈ રહ્યો છું' 
-                }
+                title: { en: "I have a learner's licence", hi: 'मेरे पास लर्नर लाइसेंस है', gu: 'મારી પાસે લર્નર લાયસન્સ છે' },
+                sub: { en: 'I am waiting to get my permanent DL', hi: 'मैं स्थायी डीएल प्राप्त करने की प्रतीक्षा कर रहा हूँ', gu: 'હું કાયમી DL મેળવવાની રાહ જોઈ રહ્યો છું' }
               },
               {
                 stage: 5,
-                title: { 
-                  en: "I've booked my driving test", 
-                  hi: 'मैंने ड्राइविंग टेस्ट बुक कर लिया है', 
-                  gu: 'મેં ડ્રાઇવિંગ ટેસ્ટ બુક કર્યો છે' 
-                },
-                sub: { 
-                  en: 'I need to prepare for the test day', 
-                  hi: 'मुझे टेस्ट के दिन की तैयारी करनी है', 
-                  gu: 'મારે ટેસ્ટના દિવસની તૈયારી કરવી છે' 
-                }
+                title: { en: "I've booked my driving test", hi: 'मैंने ड्राइविंग टेस्ट बुक कर लिया है', gu: 'મેં ડ્રાઇવિંગ ટેસ્ટ બુક કર્યો છે' },
+                sub: { en: 'I need to prepare for the test day', hi: 'मुझे टेस्ट के दिन की तैयारी करनी है', gu: 'મારે ટેસ્ટના દિવસની તૈયારી કરવી છે' }
               },
               {
                 stage: 6,
-                title: { 
-                  en: "I've applied & waiting", 
-                  hi: 'मैंने आवेदन कर दिया है और प्रतीक्षा में हूँ', 
-                  gu: 'મેં અરજી કરી છે અને રાહ જોઈ રહ્યો છું' 
-                },
-                sub: { 
-                  en: 'I want to track my DL status', 
-                  hi: 'मैं अपने डीएल की स्थिति ट्रैक करना चाहता हूँ', 
-                  gu: 'હું મારા DL નું સ્ટેટસ ટ્રેક કરવા માંગુ છું' 
-                }
+                title: { en: "I've applied & waiting", hi: 'मैंने आवेदन कर दिया है और प्रतीक्षा में हूँ', gu: 'મેં અરજી કરી છે અને રાહ જોઈ રહ્યો છું' },
+                sub: { en: 'I want to track my DL status', hi: 'मैं अपने डीएल की स्थिति ट्रैक करना चाहता हूँ', gu: 'હું મારા DL નું સ્ટેટસ ટ્રેક કરવા માંગુ છું' }
               }
             ].map((choice) => {
               const isSelected = currentStage === choice.stage;
@@ -282,10 +249,8 @@ export default function Home() {
           </div>
         </section>
 
-        {/* 3. YOUR JOURNEY MAP (6-Step Stepper with Emerald Accent) */}
+        {/* 3. YOUR JOURNEY MAP */}
         <section ref={journeyRef} className="bg-slate-900/60 backdrop-blur-xl border border-slate-800/80 rounded-3xl p-6 sm:p-10 shadow-2xl relative overflow-hidden">
-          
-          {/* Subtle green ambient reflection on Journey Map top rim */}
           {effectiveTheme !== 'light' && (
             <div className="pointer-events-none absolute -top-16 left-1/4 w-96 h-32 bg-emerald-500/10 blur-3xl rounded-full" />
           )}
@@ -308,7 +273,6 @@ export default function Home() {
 
               return (
                 <div key={step.num} className="relative flex items-start gap-4 sm:gap-6 pl-1">
-                  {/* Step Marker Circle */}
                   <div className={`relative z-10 w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center shrink-0 border-2 transition-all ${
                     isPast
                       ? 'bg-emerald-950/80 border-emerald-500 text-emerald-400 shadow-md shadow-emerald-950/50'
@@ -323,7 +287,6 @@ export default function Home() {
                     )}
                   </div>
 
-                  {/* Step Details & Action */}
                   <div className="flex-1 pt-1">
                     <h3 className={`text-base sm:text-lg font-bold transition-colors ${isCurrent ? 'text-white' : 'text-slate-300'}`}>
                       {step.title[lang] || step.title.en}
@@ -332,7 +295,6 @@ export default function Home() {
                       {step.desc[lang] || step.desc.en}
                     </p>
 
-                    {/* Active Action Button */}
                     {isCurrent && (
                       <div className="mt-4">
                         <Link
@@ -379,7 +341,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* 5. PRACTICE & PREPARATION TOOLS GRID */}
+        {/* 5. PRACTICE & PREPARATION TOOLS GRID (Includes RTO ADTT Track Locator) */}
         <section className="space-y-6">
           <div className="text-center">
             <h2 className="text-2xl sm:text-3xl font-extrabold text-white">
@@ -391,6 +353,33 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            
+            {/* TOOL 1: RTO TRACK LOCATOR (Leaflet + OpenStreetMap) */}
+            <Link
+              to="/test-day#rto-map"
+              className="p-6 rounded-2xl bg-blue-950/20 border border-blue-500/40 hover:border-blue-400 hover:bg-blue-950/30 transition flex items-start gap-4 group shadow-lg shadow-blue-950/20 md:col-span-2"
+            >
+              <div className="w-12 h-12 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform shadow-md shadow-blue-500/30">
+                <MapPin size={24} />
+              </div>
+              <div className="space-y-1 flex-1">
+                <div className="flex items-center gap-2">
+                  <h4 className="text-lg font-bold text-white group-hover:text-blue-400 transition-colors">
+                    {lang === 'en' ? 'Automated RTO Test Track Locator (ADTT)' : lang === 'hi' ? 'स्वचालित आरटीओ टेस्ट ट्रैक लोकेटर' : 'ઓટોમેટેડ RTO ટેસ્ટ ટ્રેક લોકેટર'}
+                  </h4>
+                  <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold">
+                    Leaflet & OpenStreetMap
+                  </span>
+                </div>
+                <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
+                  {lang === 'en' 
+                    ? 'Find sensor-equipped Automated Driving Test Tracks (ADTT) in your city with timings, daily capacity, and live GPS map pins.' 
+                    : 'તમારા શહેરનો સેન્સરથી સજ્જ RTO ડ્રાઇવિંગ ટ્રેક, સમય અને સ્લોટ્સ ઓપનસ્ટ્રીટમેપ પર શોધો.'}
+                </p>
+              </div>
+              <ArrowRight size={20} className="text-blue-400 self-center hidden sm:block group-hover:translate-x-1 transition-transform" />
+            </Link>
+
             <Link
               to="/test-day"
               className="p-6 rounded-2xl bg-slate-900/50 border border-slate-800 hover:border-blue-500/60 hover:bg-slate-900 transition flex items-start gap-4 group"
