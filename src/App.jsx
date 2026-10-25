@@ -206,14 +206,12 @@ export default function App() {
           .light-mode .text-slate-300 {
             color: #334155 !important;
           }
-          /* Rich readable contrast for descriptions */
           .light-mode .text-slate-400 {
             color: #475569 !important;
           }
           .light-mode .text-slate-500 {
             color: #64748b !important;
           }
-          /* Form Inputs */
           .light-mode input[type="text"],
           .light-mode input[type="tel"],
           .light-mode input[type="date"],
@@ -225,7 +223,6 @@ export default function App() {
           .light-mode input::placeholder {
             color: #94a3b8 !important;
           }
-          /* Journey Stepper Light-Mode Improvements */
           .light-mode .bg-emerald-950\\/50 {
             background-color: #dcfce7 !important;
             color: #16a34a !important;
@@ -263,15 +260,12 @@ export default function App() {
           .light-mode .text-blue-100 {
             color: #1e40af !important;
           }
-          /* Stepper Connecting Line */
           .light-mode .before\\:bg-gradient-to-b::before {
             background: linear-gradient(to bottom, #2563eb, #cbd5e1, transparent) !important;
           }
-          /* Inactive step circle */
           .light-mode .text-slate-700 {
             color: #94a3b8 !important;
           }
-          /* Navigation and Bottom Floating Buttons */
           .light-mode header {
             background-color: rgba(255, 255, 255, 0.9) !important;
             border-color: #e2e8f0 !important;
@@ -312,17 +306,19 @@ export default function App() {
           </div>
         )}
 
-        {/* 1. GLOBAL HEADER WITH UNMISTAKABLE THEME BUTTON */}
+        {/* 1. GLOBAL HEADER */}
         <header role="banner" className={`relative z-30 w-full border-b ${effectiveTheme === 'light' ? 'border-slate-200 bg-white/90' : 'border-slate-800/80 bg-slate-950/80'} backdrop-blur-md`}>
-          <div className="max-w-5xl mx-auto p-4 sm:px-6 flex items-center justify-between">
-            <Link to="/" aria-label="Licence Saathi Home" className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
-                <Car size={24} className="text-white" />
+          <div className="max-w-5xl mx-auto p-3.5 sm:px-6 flex items-center justify-between">
+            <Link to="/" aria-label="Licence Saathi Home" className="flex items-center gap-2.5 sm:gap-3">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20 shrink-0">
+                <Car size={22} className="text-white" />
               </div>
-              <span className={`text-xl font-bold tracking-tight ${effectiveTheme === 'light' ? 'text-slate-900' : 'text-white'}`}>Licence Saathi</span>
+              <span className={`text-lg sm:text-xl font-bold tracking-tight ${effectiveTheme === 'light' ? 'text-slate-900' : 'text-white'}`}>
+                Licence Saathi
+              </span>
             </Link>
 
-            {/* Desktop Navigation */}
+            {/* Desktop Navigation Links */}
             <nav role="navigation" aria-label="Main Navigation" className="hidden md:flex items-center gap-7 font-medium text-sm text-slate-300">
               <Link to="/application" className="hover:text-blue-500 transition">
                 {lang === 'en' ? 'Apply Now' : lang === 'hi' ? 'अभी आवेदन करें' : 'હવે અરજી કરો'}
@@ -341,47 +337,35 @@ export default function App() {
             {/* Top Bar Controls */}
             <div className="flex items-center gap-2">
               
-              {/* CLEAR & UNMISTAKABLE THEME TOGGLE BUTTON */}
+              {/* COMPACT SQUARE THEME BUTTON (SUN / MOON ONLY ON PHONES) */}
               <div className="relative" ref={themeMenuRef}>
                 <button
                   onClick={() => setThemeMenuOpen(!themeMenuOpen)}
                   aria-label="Theme Appearance Settings"
                   title="Change Theme Mode"
-                  className={`flex items-center gap-2 py-2 px-3 rounded-xl border text-xs font-bold transition-all shadow-sm ${
+                  className={`w-10 h-10 sm:w-auto sm:px-3 rounded-xl border flex items-center justify-center gap-2 transition-all shadow-sm ${
                     effectiveTheme === 'light'
                       ? 'bg-white hover:bg-slate-100 border-slate-300 text-slate-800'
                       : 'bg-slate-900 hover:bg-slate-800 border-slate-700 text-slate-100'
                   }`}
                 >
-                  {/* Dynamic Visual Indicator */}
-                  {theme === 'system' ? (
-                    <div className="w-5 h-5 rounded-lg bg-blue-500/10 text-blue-500 flex items-center justify-center">
-                      <Monitor size={14} />
-                    </div>
-                  ) : theme === 'light' ? (
-                    <div className="w-5 h-5 rounded-lg bg-amber-500/10 text-amber-500 flex items-center justify-center">
-                      <Sun size={14} />
-                    </div>
+                  {/* Dynamic Sun or Moon Icon */}
+                  {effectiveTheme === 'dark' ? (
+                    <Moon size={18} className="text-indigo-400 shrink-0" />
                   ) : (
-                    <div className="w-5 h-5 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center">
-                      <Moon size={14} />
-                    </div>
+                    <Sun size={18} className="text-amber-500 shrink-0" />
                   )}
 
-                  {/* Explicit "Theme" text so users immediately recognize it */}
-                  <span className="font-semibold">
-                    {lang === 'en' ? 'Theme:' : lang === 'hi' ? 'थीम:' : 'થીમ:'}
+                  {/* Text only on tablet/desktop (NEVER says 'Auto') */}
+                  <span className="hidden sm:inline text-xs font-bold">
+                    {theme === 'system'
+                      ? (lang === 'en' ? 'System Default' : lang === 'hi' ? 'सिस्टम डिफ़ॉल्ट' : 'સિસ્ટમ ડિફોલ્ટ')
+                      : theme === 'light'
+                      ? (lang === 'en' ? 'Light' : lang === 'hi' ? 'लाइट' : 'લાઇટ')
+                      : (lang === 'en' ? 'Dark' : lang === 'hi' ? 'डार्क' : 'ડાર્ક')}
                   </span>
 
-                  <span className="capitalize font-bold text-blue-500">
-                    {theme === 'system' 
-                      ? (lang === 'en' ? 'Auto' : lang === 'hi' ? 'ऑटो' : 'ઓટો') 
-                      : (theme === 'light' 
-                        ? (lang === 'en' ? 'Light' : lang === 'hi' ? 'लाइट' : 'લાઇટ') 
-                        : (lang === 'en' ? 'Dark' : lang === 'hi' ? 'डार्क' : 'ડાર્ક'))}
-                  </span>
-
-                  <ChevronDown size={14} className={`text-slate-400 transition-transform ${themeMenuOpen ? 'rotate-180' : ''}`} />
+                  <ChevronDown size={14} className={`hidden sm:inline text-slate-400 transition-transform ${themeMenuOpen ? 'rotate-180' : ''}`} />
                 </button>
 
                 {/* Popover Appearance Menu */}
@@ -455,13 +439,17 @@ export default function App() {
                 </AnimatePresence>
               </div>
 
-              {/* Mobile Drawer Toggle */}
+              {/* Mobile Drawer Toggle Button */}
               <button
                 onClick={() => setMobileMenuOpen(true)}
                 aria-label="Toggle Menu"
-                className="md:hidden text-slate-400 hover:text-white p-2 rounded-xl transition"
+                className={`w-10 h-10 rounded-xl border flex items-center justify-center md:hidden transition ${
+                  effectiveTheme === 'light'
+                    ? 'border-slate-300 text-slate-700 hover:bg-slate-100'
+                    : 'border-slate-800 text-slate-300 hover:bg-slate-900 hover:text-white'
+                }`}
               >
-                <Menu size={26} />
+                <Menu size={22} />
               </button>
             </div>
           </div>
@@ -510,7 +498,7 @@ export default function App() {
                     onClick={() => setTheme('system')}
                     className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 ${theme === 'system' ? 'bg-blue-600 text-white shadow' : 'text-slate-400'}`}
                   >
-                    <Monitor size={14} /> Auto
+                    <Monitor size={14} /> System
                   </button>
                   <button
                     onClick={() => setTheme('light')}
