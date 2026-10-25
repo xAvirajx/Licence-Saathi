@@ -1,6 +1,9 @@
-import { useState, createContext, useEffect, Suspense, lazy } from 'react';
+import { useState, createContext, useEffect, Suspense, lazy, useRef } from 'react';
 import { Routes, Route, Link, useLocation } from 'react-router-dom';
-import { Settings as SettingsIcon, WifiOff, Car, Menu, X, Share2, Languages, Check } from 'lucide-react';
+import { 
+  Settings as SettingsIcon, WifiOff, Car, Menu, X, Share2, 
+  Languages, Check, Sun, Moon, Monitor 
+} from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { en } from './i18n/en';
 import { hi } from './i18n/hi';
@@ -46,15 +49,59 @@ export default function App() {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
+  // Theme state: 'system' | 'light' | 'dark' (Default is 'system')
+  const [theme, setTheme] = useState(() => localStorage.getItem('ls_theme') || 'system');
+  const [effectiveTheme, setEffectiveTheme] = useState('dark');
+  const [themeMenuOpen, setThemeMenuOpen] = useState(false);
+  const themeMenuRef = useRef(null);
+
   // Floating language switcher menu state
   const [langMenuOpen, setLangMenuOpen] = useState(false);
 
   const location = useLocation();
 
+  // Track page views locally
   useEffect(() => {
     trackPageView(location.pathname);
   }, [location.pathname]);
 
+  // System Theme Detector & Listener
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    
+    const computeTheme = () => {
+      if (theme === 'system') {
+        setEffectiveTheme(mediaQuery.matches ? 'dark' : 'light');
+      } else {
+        setEffectiveTheme(theme);
+      }
+    };
+
+    computeTheme();
+    localStorage.setItem('ls_theme', theme);
+
+    const handleSystemThemeChange = () => {
+      if (theme === 'system') {
+        computeTheme();
+      }
+    };
+
+    mediaQuery.addEventListener('change', handleSystemThemeChange);
+    return () => mediaQuery.removeEventListener('change', handleSystemThemeChange);
+  }, [theme]);
+
+  // Close menus when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (themeMenuRef.current && !themeMenuRef.current.contains(e.target)) {
+        setThemeMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Online / Offline listener
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
@@ -69,6 +116,7 @@ export default function App() {
   const dictionaries = { en, hi, gu };
   const t = dictionaries[lang] || en;
 
+  // Sync settings & font scaling to root HTML document
   useEffect(() => {
     localStorage.setItem('ls_lang', lang);
     localStorage.setItem('ls_textSize', textSize);
@@ -79,7 +127,15 @@ export default function App() {
     if (textSize === 'large') html.style.fontSize = '18px';
     else if (textSize === 'extra') html.style.fontSize = '20px';
     else html.style.fontSize = '16px'; 
-  }, [lang, textSize, highContrast, readAloud]);
+
+    if (effectiveTheme === 'light') {
+      html.classList.add('light-mode');
+      html.classList.remove('dark-mode');
+    } else {
+      html.classList.add('dark-mode');
+      html.classList.remove('light-mode');
+    }
+  }, [lang, textSize, highContrast, readAloud, effectiveTheme]);
 
   // Global WhatsApp referral message for footer
   const footerShareText = 
@@ -92,8 +148,90 @@ export default function App() {
   const footerWhatsappUrl = `https://wa.me/?text=${encodeURIComponent(footerShareText)}`;
 
   return (
-    <AppContext.Provider value={{ lang, setLang, textSize, setTextSize, highContrast, setHighContrast, readAloud, setReadAloud, t }}>
-      <div className={`w-full min-h-screen bg-slate-950 flex flex-col relative overflow-x-hidden text-slate-50 font-sans transition-all duration-300 ${highContrast ? 'contrast-150 saturate-150 brightness-110' : ''}`}>
+    <AppContext.Provider value={{ 
+      lang, setLang, 
+      textSize, setTextSize, 
+      highContrast, setHighContrast, 
+      readAloud, setReadAloud, 
+      theme, setTheme,
+      effectiveTheme,
+      t 
+    }}>
+      {/* Light Theme Dynamic Stylesheet */}
+      {effectiveTheme === 'light' && (
+        <style>{`
+          .light-mode {
+            background-color: #f8fafc !important;
+            color: #0f172a !important;
+          }
+          .light-mode .bg-slate-950 {
+            background-color: #f8fafc !important;
+            color: #0f172a !important;
+          }
+          .light-mode .bg-slate-900 {
+            background-color: #ffffff !important;
+            color: #0f172a !important;
+          }
+          .light-mode .bg-slate-900\\/50,
+          .light-mode .bg-slate-900\\/60,
+          .light-mode .bg-slate-900\\/80 {
+            background-color: rgba(255, 255, 255, 0.85) !important;
+            color: #0f172a !important;
+          }
+          .light-mode .bg-slate-950\\/50,
+          .light-mode .bg-slate-950\\/60,
+          .light-mode .bg-slate-950\\/70,
+          .light-mode .bg-slate-950\\/80 {
+            background-color: #f1f5f9 !important;
+            color: #0f172a !important;
+          }
+          .light-mode .bg-slate-800 {
+            background-color: #e2e8f0 !important;
+            color: #1e293b !important;
+          }
+          .light-mode .border-slate-800,
+          .light-mode .border-slate-800\\/80,
+          .light-mode .border-slate-700 {
+            border-color: #e2e8f0 !important;
+          }
+          .light-mode .text-white,
+          .light-mode .text-slate-50 {
+            color: #0f172a !important;
+          }
+          .light-mode .text-slate-200,
+          .light-mode .text-slate-300 {
+            color: #334155 !important;
+          }
+          .light-mode .text-slate-400 {
+            color: #64748b !important;
+          }
+          .light-mode input[type="text"],
+          .light-mode input[type="tel"],
+          .light-mode input[type="date"],
+          .light-mode select {
+            background-color: #ffffff !important;
+            color: #0f172a !important;
+            border-color: #cbd5e1 !important;
+          }
+          .light-mode header {
+            background-color: rgba(255, 255, 255, 0.85) !important;
+            border-color: #e2e8f0 !important;
+          }
+          .light-mode footer {
+            background-color: #f1f5f9 !important;
+            border-color: #e2e8f0 !important;
+          }
+          .light-mode .fixed.bottom-6.left-6,
+          .light-mode .fixed.bottom-24.left-6 > button {
+            background-color: #ffffff !important;
+            border-color: #cbd5e1 !important;
+            color: #1e293b !important;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1) !important;
+          }
+        `}</style>
+      )}
+
+      <div className={`w-full min-h-screen ${effectiveTheme === 'light' ? 'bg-slate-50 text-slate-900' : 'bg-slate-950 text-slate-50'} flex flex-col relative overflow-x-hidden font-sans transition-colors duration-300 ${highContrast ? 'contrast-150 saturate-150 brightness-110' : ''}`}>
         
         {/* Skip Link for Screen Readers */}
         <a 
@@ -115,40 +253,130 @@ export default function App() {
           </div>
         )}
 
-        {/* 1. GLOBAL HEADER & BANNER LANDMARK */}
-        <header role="banner" className="relative z-30 w-full border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-md">
+        {/* 1. GLOBAL HEADER WITH TOP THEME TOGGLE & NAVIGATION */}
+        <header role="banner" className={`relative z-30 w-full border-b ${effectiveTheme === 'light' ? 'border-slate-200 bg-white/80' : 'border-slate-800/80 bg-slate-950/80'} backdrop-blur-md`}>
           <div className="max-w-5xl mx-auto p-4 sm:px-6 flex items-center justify-between">
             <Link to="/" aria-label="Licence Saathi Home" className="flex items-center gap-3">
               <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
                 <Car size={24} className="text-white" />
               </div>
-              <span className="text-xl font-bold tracking-tight text-white">Licence Saathi</span>
+              <span className={`text-xl font-bold tracking-tight ${effectiveTheme === 'light' ? 'text-slate-900' : 'text-white'}`}>Licence Saathi</span>
             </Link>
 
             {/* Desktop Navigation */}
-            <nav role="navigation" aria-label="Main Navigation" className="hidden md:flex items-center gap-8 font-medium text-sm text-slate-300">
-              <Link to="/application" className="hover:text-white transition">
+            <nav role="navigation" aria-label="Main Navigation" className="hidden md:flex items-center gap-7 font-medium text-sm text-slate-300">
+              <Link to="/application" className="hover:text-blue-500 transition">
                 {lang === 'en' ? 'Apply Now' : lang === 'hi' ? 'अभी आवेदन करें' : 'હવે અરજી કરો'}
               </Link>
-              <Link to="/learn" className="hover:text-white transition">
+              <Link to="/learn" className="hover:text-blue-500 transition">
                 {lang === 'en' ? 'Learn Signs' : lang === 'hi' ? 'संकेत सीखें' : 'સાઇન શીખો'}
               </Link>
-              <Link to="/permanent-licence" className="hover:text-white transition">
+              <Link to="/permanent-licence" className="hover:text-blue-500 transition">
                 {lang === 'en' ? 'Permanent DL' : lang === 'hi' ? 'स्थायी डीएल' : 'કાયમી DL'}
               </Link>
-              <Link to="/mock-test" className="hover:text-white transition">
+              <Link to="/mock-test" className="hover:text-blue-500 transition">
                 {lang === 'en' ? 'Mock Test' : lang === 'hi' ? 'मॉक टेस्ट' : 'મોક ટેસ્ટ'}
               </Link>
             </nav>
 
-            {/* Mobile Menu Button */}
-            <button
-              onClick={() => setMobileMenuOpen(true)}
-              aria-label="Toggle Menu"
-              className="md:hidden text-slate-300 hover:text-white p-2"
-            >
-              <Menu size={28} />
-            </button>
+            {/* Top Controls: Theme Switcher & Mobile Menu Button */}
+            <div className="flex items-center gap-2">
+              
+              {/* THEME SWITCHER DROPDOWN (TOP BAR) */}
+              <div className="relative" ref={themeMenuRef}>
+                <button
+                  onClick={() => setThemeMenuOpen(!themeMenuOpen)}
+                  aria-label="Toggle Theme Mode"
+                  title="Theme: System / Light / Dark"
+                  className={`flex items-center gap-1.5 py-2 px-3 rounded-xl border text-xs font-bold transition-all shadow-sm ${
+                    effectiveTheme === 'light'
+                      ? 'bg-slate-100 hover:bg-slate-200 border-slate-300 text-slate-800'
+                      : 'bg-slate-900 hover:bg-slate-800 border-slate-700 text-slate-200'
+                  }`}
+                >
+                  {theme === 'system' && <Monitor size={16} className="text-blue-400" />}
+                  {theme === 'light' && <Sun size={16} className="text-amber-500" />}
+                  {theme === 'dark' && <Moon size={16} className="text-indigo-400" />}
+                  
+                  <span className="hidden sm:inline capitalize">
+                    {theme === 'system' 
+                      ? (lang === 'en' ? 'Auto' : lang === 'hi' ? 'सिस्टम' : 'ઓટો') 
+                      : (theme === 'light' 
+                        ? (lang === 'en' ? 'Light' : lang === 'hi' ? 'लाइट' : 'લાઇટ') 
+                        : (lang === 'en' ? 'Dark' : lang === 'hi' ? 'डार्क' : 'ડાર્ક'))}
+                  </span>
+                </button>
+
+                {/* Popover Menu */}
+                <AnimatePresence>
+                  {themeMenuOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                      transition={{ duration: 0.15 }}
+                      className={`absolute right-0 top-12 w-48 rounded-2xl p-1.5 shadow-2xl border z-50 backdrop-blur-xl ${
+                        effectiveTheme === 'light'
+                          ? 'bg-white/95 border-slate-200 text-slate-800'
+                          : 'bg-slate-900/95 border-slate-700 text-slate-100'
+                      }`}
+                    >
+                      <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-700/40">
+                        {lang === 'en' ? 'Appearance' : lang === 'hi' ? 'थीम मोड' : 'થીમ મોડ'}
+                      </div>
+
+                      {[
+                        { 
+                          id: 'system', 
+                          icon: <Monitor size={15} />, 
+                          title: { en: 'System Default', hi: 'सिस्टम डिफ़ॉल्ट', gu: 'સિસ્ટમ ડિફોલ્ટ' } 
+                        },
+                        { 
+                          id: 'light', 
+                          icon: <Sun size={15} />, 
+                          title: { en: 'Light Mode', hi: 'लाइट मोड', gu: 'લાઇટ મોડ' } 
+                        },
+                        { 
+                          id: 'dark', 
+                          icon: <Moon size={15} />, 
+                          title: { en: 'Dark Mode', hi: 'डार्क मोड', gu: 'ડાર્ક મોડ' } 
+                        }
+                      ].map((item) => (
+                        <button
+                          key={item.id}
+                          onClick={() => {
+                            setTheme(item.id);
+                            setThemeMenuOpen(false);
+                          }}
+                          className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
+                            theme === item.id
+                              ? 'bg-blue-600 text-white font-bold shadow-md'
+                              : effectiveTheme === 'light'
+                              ? 'hover:bg-slate-100 text-slate-700'
+                              : 'hover:bg-slate-800 text-slate-300'
+                          }`}
+                        >
+                          <span className="flex items-center gap-2.5">
+                            {item.icon}
+                            <span>{item.title[lang] || item.title.en}</span>
+                          </span>
+                          {theme === item.id && <Check size={14} className="stroke-[3]" />}
+                        </button>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* Mobile Menu Button */}
+              <button
+                onClick={() => setMobileMenuOpen(true)}
+                aria-label="Toggle Menu"
+                className="md:hidden text-slate-300 hover:text-white p-2 rounded-xl transition"
+              >
+                <Menu size={26} />
+              </button>
+            </div>
           </div>
         </header>
 
@@ -160,34 +388,56 @@ export default function App() {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="fixed inset-0 z-50 bg-slate-950 flex flex-col p-6"
+              className={`fixed inset-0 z-50 flex flex-col p-6 ${effectiveTheme === 'light' ? 'bg-white text-slate-900' : 'bg-slate-950 text-white'}`}
             >
               <div className="flex justify-end">
                 <button
                   onClick={() => setMobileMenuOpen(false)}
                   aria-label="Close Menu"
-                  className="text-slate-300 hover:text-white p-2"
+                  className="p-2 text-slate-400 hover:text-white transition"
                 >
                   <X size={32} />
                 </button>
               </div>
 
-              <nav role="navigation" aria-label="Mobile Navigation" className="flex flex-col items-center justify-center flex-1 gap-8 text-2xl font-bold">
-                <Link to="/application" onClick={() => setMobileMenuOpen(false)} className="text-white hover:text-blue-400 transition">
+              <nav role="navigation" aria-label="Mobile Navigation" className="flex flex-col items-center justify-center flex-1 gap-7 text-xl font-bold">
+                <Link to="/application" onClick={() => setMobileMenuOpen(false)} className="hover:text-blue-500 transition">
                   {lang === 'en' ? 'Apply Now' : lang === 'hi' ? 'अभी आवेदन करें' : 'હવે અરજી કરો'}
                 </Link>
-                <Link to="/learn" onClick={() => setMobileMenuOpen(false)} className="text-white hover:text-blue-400 transition">
+                <Link to="/learn" onClick={() => setMobileMenuOpen(false)} className="hover:text-blue-500 transition">
                   {lang === 'en' ? 'Learn Signs' : lang === 'hi' ? 'संकेत सीखें' : 'સાઇન શીખો'}
                 </Link>
-                <Link to="/permanent-licence" onClick={() => setMobileMenuOpen(false)} className="text-white hover:text-blue-400 transition">
+                <Link to="/permanent-licence" onClick={() => setMobileMenuOpen(false)} className="hover:text-blue-500 transition">
                   {lang === 'en' ? 'Permanent DL' : lang === 'hi' ? 'स्थायी डीएल' : 'કાયમી DL'}
                 </Link>
-                <Link to="/mock-test" onClick={() => setMobileMenuOpen(false)} className="text-white hover:text-blue-400 transition">
+                <Link to="/mock-test" onClick={() => setMobileMenuOpen(false)} className="hover:text-blue-500 transition">
                   {lang === 'en' ? 'Mock Test' : lang === 'hi' ? 'मॉक टेस्ट' : 'મોક ટેસ્ટ'}
                 </Link>
-                <Link to="/settings" onClick={() => setMobileMenuOpen(false)} className="text-white hover:text-blue-400 transition">
+                <Link to="/settings" onClick={() => setMobileMenuOpen(false)} className="hover:text-blue-500 transition">
                   {lang === 'en' ? 'Settings' : lang === 'hi' ? 'सेटिंग्स' : 'સેટિંગ્સ'}
                 </Link>
+
+                {/* Mobile Drawer Theme Quick Buttons */}
+                <div className="flex items-center gap-2 p-1.5 rounded-2xl border border-slate-800 bg-slate-900/60 mt-4">
+                  <button
+                    onClick={() => setTheme('system')}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 ${theme === 'system' ? 'bg-blue-600 text-white' : 'text-slate-400'}`}
+                  >
+                    <Monitor size={14} /> Auto
+                  </button>
+                  <button
+                    onClick={() => setTheme('light')}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 ${theme === 'light' ? 'bg-blue-600 text-white' : 'text-slate-400'}`}
+                  >
+                    <Sun size={14} /> Light
+                  </button>
+                  <button
+                    onClick={() => setTheme('dark')}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 ${theme === 'dark' ? 'bg-blue-600 text-white' : 'text-slate-400'}`}
+                  >
+                    <Moon size={14} /> Dark
+                  </button>
+                </div>
               </nav>
             </motion.div>
           )}
@@ -229,7 +479,11 @@ export default function App() {
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 10, scale: 0.95 }}
                 transition={{ duration: 0.15 }}
-                className="absolute bottom-16 left-0 bg-slate-900 border border-slate-700/90 rounded-2xl p-1.5 shadow-2xl backdrop-blur-xl w-40 space-y-1 mb-1"
+                className={`absolute bottom-16 left-0 rounded-2xl p-1.5 shadow-2xl backdrop-blur-xl w-40 space-y-1 mb-1 border ${
+                  effectiveTheme === 'light'
+                    ? 'bg-white border-slate-300 text-slate-800'
+                    : 'bg-slate-900 border-slate-700/90 text-slate-100'
+                }`}
               >
                 <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-800">
                   {lang === 'en' ? 'Select Language' : lang === 'hi' ? 'भाषा चुनें' : 'ભાષા પસંદ કરો'}
@@ -248,6 +502,8 @@ export default function App() {
                     className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition-all ${
                       lang === item.code
                         ? 'bg-blue-600 text-white shadow-md'
+                        : effectiveTheme === 'light'
+                        ? 'text-slate-700 hover:bg-slate-100'
                         : 'text-slate-300 hover:bg-slate-800 hover:text-white'
                     }`}
                   >
@@ -282,19 +538,21 @@ export default function App() {
         </Link>
 
         {/* 4. CONTENTINFO FOOTER WITH WHATSAPP REFERRAL BUTTON */}
-        <footer role="contentinfo" className="relative z-10 border-t border-slate-800/80 w-full mt-auto py-8 px-6 bg-slate-950/60">
+        <footer role="contentinfo" className={`relative z-10 border-t w-full mt-auto py-8 px-6 transition-colors ${
+          effectiveTheme === 'light' ? 'border-slate-200 bg-slate-100/90' : 'border-slate-800/80 bg-slate-950/60'
+        }`}>
           <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-2">
               <Car size={20} className="text-blue-500" />
-              <span className="font-bold text-white tracking-tight">Licence Saathi</span>
+              <span className={`font-bold tracking-tight ${effectiveTheme === 'light' ? 'text-slate-900' : 'text-white'}`}>Licence Saathi</span>
             </div>
 
             <div className="flex items-center gap-4 sm:gap-6 text-xs text-slate-400 font-medium">
-              <Link to="/privacy" className="hover:text-blue-400 transition-colors">
+              <Link to="/privacy" className="hover:text-blue-500 transition-colors">
                 {lang === 'en' ? 'Privacy Policy' : lang === 'hi' ? 'गोपनीयता नीति' : 'પ્રાઇવસી પોલિસી'}
               </Link>
               <span className="text-slate-700">•</span>
-              <Link to="/terms" className="hover:text-blue-400 transition-colors">
+              <Link to="/terms" className="hover:text-blue-500 transition-colors">
                 {lang === 'en' ? 'Terms & Disclaimer' : lang === 'hi' ? 'नियम और अस्वीकरण' : 'નિયમો અને શરતો'}
               </Link>
             </div>
