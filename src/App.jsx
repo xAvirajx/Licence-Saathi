@@ -2,7 +2,8 @@ import { useState, createContext, useEffect, Suspense, lazy, useRef } from 'reac
 import { Routes, Route, Link, useLocation } from 'react-router-dom';
 import { 
   Settings as SettingsIcon, WifiOff, Car, Menu, X, Share2, 
-  Languages, Check, Sun, Moon, Monitor, ChevronDown, ShieldAlert 
+  Languages, Check, Sun, Moon, Monitor, ChevronDown, ShieldAlert,
+  Download, Sparkles
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { en } from './i18n/en';
@@ -59,11 +60,70 @@ export default function App() {
   // Floating language switcher menu state
   const [langMenuOpen, setLangMenuOpen] = useState(false);
 
+  // PWA Install Prompt & Standalone Mode Detection
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [isInstalled, setIsInstalled] = useState(false);
+  const [showInstallBanner, setShowInstallBanner] = useState(false);
+
   const location = useLocation();
 
   useEffect(() => {
     trackPageView(location.pathname);
   }, [location.pathname]);
+
+  // Check if already running in installed standalone mode
+  useEffect(() => {
+    const checkStandalone = () => {
+      const isStandalone = 
+        window.matchMedia('(display-mode: standalone)').matches || 
+        window.navigator.standalone === true || 
+        document.referrer.includes('android-app://');
+      
+      setIsInstalled(isStandalone);
+    };
+
+    checkStandalone();
+
+    const handleBeforeInstallPrompt = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      // Only show banner if user is on browser and hasn't dismissed it
+      const dismissed = sessionStorage.getItem('pwa_banner_dismissed');
+      if (!dismissed) {
+        setShowInstallBanner(true);
+      }
+    };
+
+    const handleAppInstalled = () => {
+      setIsInstalled(true);
+      setDeferredPrompt(null);
+      setShowInstallBanner(false);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    window.addEventListener('appinstalled', handleAppInstalled);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('appinstalled', handleAppInstalled);
+    };
+  }, []);
+
+  const triggerInstallPrompt = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      setIsInstalled(true);
+      setShowInstallBanner(false);
+    }
+    setDeferredPrompt(null);
+  };
+
+  const dismissInstallBanner = () => {
+    setShowInstallBanner(false);
+    sessionStorage.setItem('pwa_banner_dismissed', 'true');
+  };
 
   // System Theme Detector & Listener
   useEffect(() => {
@@ -155,6 +215,9 @@ export default function App() {
       readAloud, setReadAloud, 
       theme, setTheme,
       effectiveTheme,
+      isInstalled,
+      deferredPrompt,
+      triggerInstallPrompt,
       t 
     }}>
       {/* Global Adaptive Scrollbars & Light Mode Stylesheet */}
@@ -537,7 +600,6 @@ export default function App() {
                   {lang === 'en' ? 'Settings' : lang === 'hi' ? 'सेटिंग्स' : 'સેટિંગ્સ'}
                 </Link>
 
-                {/* Mobile Drawer Theme Quick Buttons */}
                 <div className={`flex items-center gap-2 p-1.5 rounded-2xl border ${effectiveTheme === 'light' ? 'border-slate-300 bg-slate-100' : 'border-slate-800 bg-slate-900/60'} mt-4`}>
                   <button
                     onClick={() => setTheme('system')}
@@ -654,7 +716,49 @@ export default function App() {
           <SettingsIcon size={24} />
         </Link>
 
-        {/* 4. FOOTER */}
+        {/* 4. SMART WEB INSTALL POPUP BANNER (Shows ONLY in browser when NOT installed) */}
+        <AnimatePresence>
+          {showInstallBanner && !isInstalled && deferredPrompt && (
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 50 }}
+              className="fixed bottom-6 left-4 right-4 sm:left-auto sm:right-24 z-50 max-w-md bg-slate-900/95 border border-blue-500/50 rounded-3xl p-4 shadow-2xl backdrop-blur-xl flex items-center justify-between gap-3 text-white"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-blue-600 flex items-center justify-center shrink-0 shadow-md shadow-blue-500/20">
+                  <Download size={20} className="text-white" />
+                </div>
+                <div>
+                  <p className="text-xs font-bold leading-tight">
+                    {lang === 'en' ? 'Install License Saathi' : lang === 'hi' ? 'लाइसेंस साथी ऐप इंस्टॉल करें' : 'લાયસન્સ સાથી એપ ઇન્સ્ટોલ કરો'}
+                  </p>
+                  <p className="text-[11px] text-slate-400 leading-tight mt-0.5">
+                    {lang === 'en' ? 'Get 100% offline access & faster tests' : 'ઓફલાઇન એક્સેસ અને ઝડપી પરિણામો માટે'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  onClick={triggerInstallPrompt}
+                  className="px-3.5 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-md transition"
+                >
+                  {lang === 'en' ? 'Install' : lang === 'hi' ? 'इंस्टॉल' : 'ઇન્સ્ટોલ'}
+                </button>
+                <button
+                  onClick={dismissInstallBanner}
+                  aria-label="Dismiss"
+                  className="p-1.5 text-slate-400 hover:text-white transition"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* 5. FOOTER */}
         <footer role="contentinfo" className={`relative z-10 border-t w-full mt-auto py-8 px-6 transition-colors ${
           effectiveTheme === 'light' ? 'border-slate-200 bg-slate-100/90' : 'border-slate-800/80 bg-slate-950/60'
         }`}>

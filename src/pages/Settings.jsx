@@ -1,372 +1,446 @@
-import { useContext, useState, useEffect } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import { AppContext } from '../App';
-import { Settings as SettingsIcon, Type, Languages, Eye, Volume2, ArrowLeft, Download, Trash2, CheckCircle2, BarChart2 } from 'lucide-react';
+import { 
+  Languages, Type, SunMoon, Volume2, Download, 
+  Trash2, ShieldCheck, CheckCircle2, Check, ArrowLeft,
+  Smartphone, HardDrive, Sun, Moon, Monitor, Info,
+  VolumeX, Play, RotateCcw, AlertTriangle, FileText
+} from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { getAnalyticsSummary, clearAnalytics } from '../utils/analytics';
 
 export default function Settings() {
-  const {
-    lang, setLang,
-    textSize, setTextSize,
-    highContrast, setHighContrast,
-    readAloud, setReadAloud
+  const { 
+    lang, setLang, 
+    textSize, setTextSize, 
+    highContrast, setHighContrast, 
+    readAloud, setReadAloud,
+    theme, setTheme,
+    effectiveTheme,
+    isInstalled,
+    deferredPrompt,
+    triggerInstallPrompt
   } = useContext(AppContext);
 
-  const [installPrompt, setInstallPrompt] = useState(null);
-  const [isInstalled, setIsInstalled] = useState(false);
-  const [showResetConfirm, setShowResetConfirm] = useState(false);
-  const [resetSuccess, setResetSuccess] = useState(false);
-  const [analytics, setAnalytics] = useState({ totalViews: 0, totalEvents: 0, topPages: [] });
+  const [storageSize, setStorageSize] = useState('0 KB');
+  const [testVoicePlaying, setTestVoicePlaying] = useState(false);
 
+  // Calculate local storage footprint in KB
   useEffect(() => {
-    setAnalytics(getAnalyticsSummary());
-
-    const handleBeforeInstall = (e) => {
-      e.preventDefault();
-      setInstallPrompt(e);
-    };
-    window.addEventListener('beforeinstallprompt', handleBeforeInstall);
-
-    if (window.matchMedia('(display-mode: standalone)').matches) {
-      setIsInstalled(true);
+    let totalBytes = 0;
+    for (let key in localStorage) {
+      if (localStorage.hasOwnProperty(key)) {
+        totalBytes += (localStorage[key].length + key.length) * 2;
+      }
     }
-    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
+    setStorageSize((totalBytes / 1024).toFixed(1) + ' KB');
   }, []);
 
-  const handleInstallClick = async () => {
-    if (!installPrompt) return;
-    installPrompt.prompt();
-    const result = await installPrompt.userChoice;
-    if (result.outcome === 'accepted') {
-      setInstallPrompt(null);
-      setIsInstalled(true);
+  // Voice Test Function
+  const handleTestVoice = () => {
+    if (!('speechSynthesis' in window)) {
+      alert('Speech synthesis is not supported on this device.');
+      return;
     }
+    window.speechSynthesis.cancel();
+    setTestVoicePlaying(true);
+
+    const testText = 
+      lang === 'gu'
+        ? 'નમસ્તે! લાયસન્સ સાથી વૉઇસ સહાયક યોગ્ય રીતે કાર્ય કરી રહ્યો છે.'
+        : lang === 'hi'
+        ? 'नमस्ते! लाइसेंस साथी वॉइस असिस्टेंट सही ढंग से काम कर रहा है।'
+        : 'Hello! License Saathi voice guidance is working properly.';
+
+    const utterance = new SpeechSynthesisUtterance(testText);
+    utterance.lang = lang === 'gu' ? 'gu-IN' : lang === 'hi' ? 'hi-IN' : 'en-IN';
+    utterance.rate = 0.95;
+
+    utterance.onend = () => setTestVoicePlaying(false);
+    utterance.onerror = () => setTestVoicePlaying(false);
+
+    window.speechSynthesis.speak(utterance);
   };
 
   const handleClearData = () => {
-    // Clear all persistent user state & analytics
-    localStorage.removeItem('licenceJourneyStage');
-    localStorage.removeItem('mockTestHistory');
-    localStorage.removeItem('ls_doc_checks');
-    clearAnalytics();
-    
-    setShowResetConfirm(false);
-    setResetSuccess(true);
-    setTimeout(() => {
-      setResetSuccess(false);
-      window.location.href = '/';
-    }, 1200);
+    if (window.confirm(
+      lang === 'en' 
+        ? 'Are you sure you want to reset all mock test scores and journey history?' 
+        : lang === 'hi' 
+        ? 'क्या आप सभी मॉक टेस्ट स्कोर और यात्रा डेटा रीसेट करना चाहते हैं?' 
+        : 'શું તમે તમામ મોક ટેસ્ટ સ્કોર અને પ્રવાસ ડેટા રીસેટ કરવા માંગો છો?'
+    )) {
+      localStorage.removeItem('licenceJourneyStage');
+      localStorage.removeItem('mockTestHistory');
+      window.location.reload();
+    }
   };
 
   return (
-    <div className="relative min-h-screen bg-slate-950 text-slate-50 py-12 px-6 flex flex-col font-sans overflow-hidden">
-      <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none"></div>
+    <div className="relative min-h-screen py-10 px-4 sm:px-6 flex flex-col font-sans">
+      <div className="max-w-2xl mx-auto w-full relative z-10 space-y-6">
 
-      <div className="max-w-2xl mx-auto w-full relative z-10">
-        {/* Header */}
-        <div className="flex items-center gap-4 mb-10">
-          <Link to="/" aria-label="Go Home" className="w-12 h-12 bg-slate-900 border border-slate-800 rounded-full flex items-center justify-center text-slate-300 hover:text-white hover:bg-slate-800 transition">
-            <ArrowLeft size={24} />
+        {/* Back Button & Header */}
+        <div className="flex items-center gap-4">
+          <Link
+            to="/"
+            aria-label="Back to Home"
+            className="w-10 h-10 rounded-2xl bg-slate-900 border border-slate-700 flex items-center justify-center text-slate-300 hover:text-white transition shadow-sm"
+          >
+            <ArrowLeft size={20} />
           </Link>
           <div>
-            <h1 className="text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
-              <SettingsIcon className="text-blue-400" size={32} />
-              {lang === 'en' && 'App Settings'}
-              {lang === 'hi' && 'ऐप सेटिंग्स'}
-              {lang === 'gu' && 'એપ સેટિંગ્સ'}
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+              {lang === 'en' ? 'App Settings' : lang === 'hi' ? 'ऐप सेटिंग्स' : 'એપ સેટિંગ્સ'}
             </h1>
-            <p className="text-slate-400 mt-1">
-              {lang === 'en' && 'Customize your experience, offline options, and data.'}
-              {lang === 'hi' && 'अपने अनुभव, ऑफ़लाइन विकल्पों और डेटा को अनुकूलित करें।'}
-              {lang === 'gu' && 'તમારો અનુભવ, ઓફલાઇન વિકલ્પો અને ડેટા કસ્ટમાઇઝ કરો.'}
+            <p className="text-xs sm:text-sm text-slate-400">
+              {lang === 'en' ? 'Customize your experience, offline options, and data.' : 'તમારી પસંદગી મુજબ સેટિંગ્સ બદલો.'}
             </p>
           </div>
         </div>
 
-        <div className="space-y-6">
-          {/* 1. PWA Install Button */}
-          {(installPrompt || isInstalled) && (
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-blue-950/40 border border-blue-800/60 rounded-3xl p-6 shadow-xl flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-blue-500/10 text-blue-400 rounded-2xl flex items-center justify-center shrink-0">
-                  <Download size={24} />
+        {/* 1. Language Setting */}
+        <div className="p-5 sm:p-6 rounded-3xl bg-slate-900/50 border border-slate-800 space-y-4 shadow-xl">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-blue-500/10 text-blue-400 flex items-center justify-center shrink-0">
+              <Languages size={20} />
+            </div>
+            <div>
+              <h2 className="text-base font-bold text-white">
+                {lang === 'en' ? 'Language' : lang === 'hi' ? 'भाषा' : 'ભાષા'}
+              </h2>
+              <p className="text-xs text-slate-400">
+                {lang === 'en' ? 'Choose your preferred language across all screens' : 'તમામ સ્ક્રીન માટે પસંદગીની ભાષા પસંદ કરો'}
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-3 gap-2">
+            {[
+              { code: 'en', label: 'English', sub: 'Default' },
+              { code: 'hi', label: 'हिंदी', sub: 'Hindi' },
+              { code: 'gu', label: 'ગુજરાતી', sub: 'Gujarati' }
+            ].map(item => (
+              <button
+                key={item.code}
+                onClick={() => setLang(item.code)}
+                className={`p-3 rounded-2xl font-bold text-xs sm:text-sm transition flex flex-col items-center justify-center gap-0.5 ${
+                  lang === item.code
+                    ? 'bg-blue-600 text-white shadow-md'
+                    : 'bg-slate-950 border border-slate-800 text-slate-300 hover:border-slate-700'
+                }`}
+              >
+                <div className="flex items-center gap-1.5">
+                  <span>{item.label}</span>
+                  {lang === item.code && <Check size={14} className="stroke-[3]" />}
                 </div>
-                <div>
-                  <h2 className="text-lg font-bold text-white">
-                    {lang === 'en' && 'Install App'}
-                    {lang === 'hi' && 'ऐप इंस्टॉल करें'}
-                    {lang === 'gu' && 'એપ ઇન્સ્ટોલ કરો'}
-                  </h2>
-                  <p className="text-sm text-slate-300">
-                    {isInstalled && lang === 'en' && 'App is installed on your device.'}
-                    {isInstalled && lang === 'hi' && 'ऐप आपके डिवाइस पर इंस्टॉल है।'}
-                    {isInstalled && lang === 'gu' && 'એપ તમારા ઉપકરણ પર ઇન્સ્ટોલ કરેલી છે.'}
-                    {!isInstalled && lang === 'en' && 'Install License Saathi for fast offline access.'}
-                    {!isInstalled && lang === 'hi' && 'तेज़ ऑफ़लाइन एक्सेस के लिए लाइसेंस साथी इंस्टॉल करें।'}
-                    {!isInstalled && lang === 'gu' && 'ઝડપી ઓફલાઇન ઉપયોગ માટે લાઇસન્સ સાથી ઇન્સ્ટોલ કરો.'}
-                  </p>
+                <span className={`text-[10px] ${lang === item.code ? 'text-blue-100' : 'text-slate-500'}`}>
+                  {item.sub}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* 2. Theme Mode Setting */}
+        <div className="p-5 sm:p-6 rounded-3xl bg-slate-900/50 border border-slate-800 space-y-4 shadow-xl">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center shrink-0">
+              <SunMoon size={20} />
+            </div>
+            <div>
+              <h2 className="text-base font-bold text-white">
+                {lang === 'en' ? 'Appearance Theme' : lang === 'hi' ? 'थीम मोड' : 'થીમ અને દેખાવ'}
+              </h2>
+              <p className="text-xs text-slate-400">
+                {lang === 'en' ? 'Switch between light, dark, or system default' : 'લાઇટ, ડાર્ક અથવા સિસ્ટમ ડિફોલ્ટ થીમ પસંદ કરો'}
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-3 gap-2">
+            {[
+              { 
+                id: 'system', 
+                icon: <Monitor size={16} />, 
+                title: { en: 'System Default', hi: 'सिस्टम', gu: 'સિસ્ટમ' } 
+              },
+              { 
+                id: 'light', 
+                icon: <Sun size={16} />, 
+                title: { en: 'Light', hi: 'लाइट', gu: 'લાઇટ' } 
+              },
+              { 
+                id: 'dark', 
+                icon: <Moon size={16} />, 
+                title: { en: 'Dark', hi: 'डार्क', gu: 'ડાર્ક' } 
+              }
+            ].map(item => (
+              <button
+                key={item.id}
+                onClick={() => setTheme(item.id)}
+                className={`py-3 px-2 rounded-2xl font-bold text-xs sm:text-sm transition flex items-center justify-center gap-1.5 ${
+                  theme === item.id
+                    ? 'bg-blue-600 text-white shadow-md'
+                    : 'bg-slate-950 border border-slate-800 text-slate-300 hover:border-slate-700'
+                }`}
+              >
+                <span>{item.icon}</span>
+                <span>{item.title[lang] || item.title.en}</span>
+                {theme === item.id && <Check size={14} className="stroke-[3]" />}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* 3. Text Size Setting */}
+        <div className="p-5 sm:p-6 rounded-3xl bg-slate-900/50 border border-slate-800 space-y-4 shadow-xl">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center shrink-0">
+              <Type size={20} />
+            </div>
+            <div>
+              <h2 className="text-base font-bold text-white">
+                {lang === 'en' ? 'Text Size' : lang === 'hi' ? 'अक्षर का आकार' : 'અક્ષરનું કદ'}
+              </h2>
+              <p className="text-xs text-slate-400">
+                {lang === 'en' ? 'Scale font size for easier reading' : 'વાંચવામાં સરળતા માટે ફોન્ટ સાઇઝ બદલો'}
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-3 gap-2">
+            {[
+              { id: 'normal', size: '16px', label: { en: 'Normal', hi: 'सामान्य', gu: 'સામાન્ય' } },
+              { id: 'large', size: '18px', label: { en: 'Large', hi: 'बड़ा', gu: 'મોટા' } },
+              { id: 'extra', size: '20px', label: { en: 'Extra', hi: 'अति बड़ा', gu: 'વધુ મોટા' } }
+            ].map(item => (
+              <button
+                key={item.id}
+                onClick={() => setTextSize(item.id)}
+                className={`py-3 rounded-2xl font-bold text-xs sm:text-sm transition flex flex-col items-center justify-center gap-0.5 ${
+                  textSize === item.id
+                    ? 'bg-emerald-600 text-white shadow-md'
+                    : 'bg-slate-950 border border-slate-800 text-slate-300 hover:border-slate-700'
+                }`}
+              >
+                <div className="flex items-center gap-1.5">
+                  <span>{item.label[lang] || item.label.en}</span>
+                  {textSize === item.id && <Check size={14} className="stroke-[3]" />}
                 </div>
-              </div>
-              {!isInstalled && installPrompt && (
-                <button
-                  onClick={handleInstallClick}
-                  className="bg-blue-600 hover:bg-blue-500 text-white font-bold px-5 py-3 rounded-xl transition shadow-lg shrink-0 ml-4"
-                >
-                  {lang === 'en' && 'Install'}
-                  {lang === 'hi' && 'इंस्टॉल'}
-                  {lang === 'gu' && 'ઇન્સ્ટોલ'}
-                </button>
-              )}
-            </motion.div>
-          )}
+                <span className={`text-[10px] ${textSize === item.id ? 'text-emerald-100' : 'text-slate-500'}`}>
+                  {item.size}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
 
-          {/* 2. Language Picker */}
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-slate-900/50 backdrop-blur-md border border-slate-800 rounded-3xl p-6 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-blue-500/10 text-blue-400 rounded-2xl flex items-center justify-center shrink-0">
-                <Languages size={24} />
+        {/* 4. Accessibility: High Contrast & Voice Read-Aloud */}
+        <div className="p-5 sm:p-6 rounded-3xl bg-slate-900/50 border border-slate-800 space-y-4 shadow-xl">
+          <div className="border-b border-slate-800 pb-3">
+            <h2 className="text-base font-bold text-white">
+              {lang === 'en' ? 'Accessibility Enhancements' : lang === 'hi' ? 'सुलભતા सुविधाएं' : 'સરળતા અને સુલભતા'}
+            </h2>
+            <p className="text-xs text-slate-400">
+              {lang === 'en' ? 'High contrast visuals and text-to-speech audio' : 'દ્રશ્ય સ્પષ્ટતા અને ઓડિયો સહાય'}
+            </p>
+          </div>
+
+          {/* High Contrast Toggle */}
+          <div className="flex items-center justify-between py-1">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center">
+                <SunMoon size={18} />
               </div>
               <div>
-                <h2 className="text-lg font-bold text-white">
-                  {lang === 'en' && 'Language'}
-                  {lang === 'hi' && 'भाषा'}
-                  {lang === 'gu' && 'ભાષા'}
-                </h2>
-                <p className="text-sm text-slate-400">
-                  {lang === 'en' && 'Choose preferred language'}
-                  {lang === 'hi' && 'पसंदीदा भाषा चुनें'}
-                  {lang === 'gu' && 'પસંદગીની ભાષા પસંદ કરો'}
+                <p className="text-sm font-bold text-white">
+                  {lang === 'en' ? 'High Contrast Mode' : lang === 'hi' ? 'उच्च कंट्रास्ट' : 'હાઇ કોન્ટ્રાસ્ટ'}
+                </p>
+                <p className="text-[11px] text-slate-400">
+                  {lang === 'en' ? 'Deepen borders and boost element saturation' : 'બોર્ડર્સ અને રંગો વધુ સ્પષ્ટ બનાવો'}
                 </p>
               </div>
             </div>
-            <div className="grid grid-cols-3 bg-slate-950 border border-slate-800 rounded-xl p-1 gap-1 w-full sm:w-auto">
-              <button
-                onClick={() => setLang('en')}
-                className={`py-2 px-3 rounded-lg font-bold text-xs sm:text-sm transition ${lang === 'en' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white'}`}
-              >
-                English
-              </button>
-              <button
-                onClick={() => setLang('hi')}
-                className={`py-2 px-3 rounded-lg font-bold text-xs sm:text-sm transition ${lang === 'hi' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white'}`}
-              >
-                हिंदी
-              </button>
-              <button
-                onClick={() => setLang('gu')}
-                className={`py-2 px-3 rounded-lg font-bold text-xs sm:text-sm transition ${lang === 'gu' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white'}`}
-              >
-                ગુજરાતી
-              </button>
-            </div>
-          </motion.div>
 
-          {/* 3. Text Size */}
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-slate-900/50 backdrop-blur-md border border-slate-800 rounded-3xl p-6 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-emerald-500/10 text-emerald-400 rounded-2xl flex items-center justify-center shrink-0">
-                <Type size={24} />
-              </div>
-              <div>
-                <h2 className="text-lg font-bold text-white">
-                  {lang === 'en' && 'Text Size'}
-                  {lang === 'hi' && 'पाठ का आकार'}
-                  {lang === 'gu' && 'ટેક્સ્ટ સાઈઝ'}
-                </h2>
-                <p className="text-sm text-slate-400">
-                  {lang === 'en' && 'Make text easier to read'}
-                  {lang === 'hi' && 'पाठ को पढ़ने में आसान बनाएं'}
-                  {lang === 'gu' && 'વાંચવામાં સરળતા માટે'}
-                </p>
-              </div>
-            </div>
-            <div className="flex bg-slate-950 border border-slate-800 rounded-xl p-1 w-full sm:w-auto">
-              <button
-                onClick={() => setTextSize('normal')}
-                className={`flex-1 sm:flex-initial px-4 py-2 rounded-lg font-bold text-sm transition ${textSize === 'normal' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'}`}
-              >
-                {lang === 'en' && 'Normal'}
-                {lang === 'hi' && 'सामान्य'}
-                {lang === 'gu' && 'સામાન્ય'}
-              </button>
-              <button
-                onClick={() => setTextSize('large')}
-                className={`flex-1 sm:flex-initial px-4 py-2 rounded-lg font-bold text-sm transition ${textSize === 'large' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'}`}
-              >
-                {lang === 'en' && 'Large'}
-                {lang === 'hi' && 'बड़ा'}
-                {lang === 'gu' && 'મોટું'}
-              </button>
-              <button
-                onClick={() => setTextSize('extra')}
-                className={`flex-1 sm:flex-initial px-4 py-2 rounded-lg font-bold text-sm transition ${textSize === 'extra' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'}`}
-              >
-                {lang === 'en' && 'Extra'}
-                {lang === 'hi' && 'विशाल'}
-                {lang === 'gu' && 'વિશાળ'}
-              </button>
-            </div>
-          </motion.div>
-
-          {/* 4. High Contrast */}
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-slate-900/50 backdrop-blur-md border border-slate-800 rounded-3xl p-6 shadow-xl flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-amber-500/10 text-amber-400 rounded-2xl flex items-center justify-center shrink-0">
-                <Eye size={24} />
-              </div>
-              <div>
-                <h2 className="text-lg font-bold text-white">
-                  {lang === 'en' && 'High Contrast'}
-                  {lang === 'hi' && 'उच्च कंट्रास्ट'}
-                  {lang === 'gu' && 'હાઈ કોન્ટ્રાસ્ટ'}
-                </h2>
-                <p className="text-sm text-slate-400">
-                  {lang === 'en' && 'Increase screen visibility'}
-                  {lang === 'hi' && 'स्क्रीन दृश्यता बढ़ाएं'}
-                  {lang === 'gu' && 'દેખાવ સ્પષ્ટ કરો'}
-                </p>
-              </div>
-            </div>
             <button
               onClick={() => setHighContrast(!highContrast)}
               aria-label="Toggle High Contrast"
-              className={`w-14 h-8 rounded-full p-1 transition-colors duration-300 ease-in-out shrink-0 ${highContrast ? 'bg-amber-500' : 'bg-slate-800'}`}
+              className={`w-12 h-7 rounded-full transition-colors relative p-1 ${highContrast ? 'bg-amber-500' : 'bg-slate-800'}`}
             >
-              <motion.div layout className="w-6 h-6 bg-white rounded-full shadow-md" initial={false} animate={{ x: highContrast ? 24 : 0 }} />
+              <div className={`w-5 h-5 rounded-full bg-white transition-transform ${highContrast ? 'translate-x-5' : 'translate-x-0'}`} />
             </button>
-          </motion.div>
+          </div>
 
-          {/* 5. Read Aloud */}
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="bg-slate-900/50 backdrop-blur-md border border-slate-800 rounded-3xl p-6 shadow-xl flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-purple-500/10 text-purple-400 rounded-2xl flex items-center justify-center shrink-0">
-                <Volume2 size={24} />
+          {/* Voice Read Aloud Toggle */}
+          <div className="flex items-center justify-between py-1 border-t border-slate-800/80 pt-3">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center">
+                <Volume2 size={18} />
               </div>
               <div>
-                <h2 className="text-lg font-bold text-white">
-                  {lang === 'en' && 'Read Aloud'}
-                  {lang === 'hi' && 'जोर से पढ़ें'}
-                  {lang === 'gu' && 'મોટેથી વાંચો'}
-                </h2>
-                <p className="text-sm text-slate-400">
-                  {lang === 'en' && 'Enable voice assistance features'}
-                  {lang === 'hi' && 'वॉयस सहायता सुविधाएँ सक्षम करें'}
-                  {lang === 'gu' && 'અવાજ સહાયતા ચાલુ કરો'}
+                <p className="text-sm font-bold text-white">
+                  {lang === 'en' ? 'Voice Read Aloud' : lang === 'hi' ? 'ऑडियो वाचन' : 'અવાજમાં સાંભળો'}
                 </p>
-              </div>
-            </div>
-            <button
-              onClick={() => setReadAloud(!readAloud)}
-              aria-label="Toggle Read Aloud"
-              className={`w-14 h-8 rounded-full p-1 transition-colors duration-300 ease-in-out shrink-0 ${readAloud ? 'bg-purple-600' : 'bg-slate-800'}`}
-            >
-              <motion.div layout className="w-6 h-6 bg-white rounded-full shadow-md" initial={false} animate={{ x: readAloud ? 24 : 0 }} />
-            </button>
-          </motion.div>
-
-          {/* 6. Local Analytics & Usage Insights (Item 14) */}
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }} className="bg-slate-900/50 backdrop-blur-md border border-slate-800 rounded-3xl p-6 shadow-xl">
-            <div className="flex items-center gap-4 mb-4">
-              <div className="w-12 h-12 bg-blue-500/10 text-blue-400 rounded-2xl flex items-center justify-center shrink-0">
-                <BarChart2 size={24} />
-              </div>
-              <div>
-                <h2 className="text-lg font-bold text-white">
-                  {lang === 'en' && 'Local Usage Insights'}
-                  {lang === 'hi' && 'स्थानीय उपयोग आँकड़े'}
-                  {lang === 'gu' && 'લોકલ વપરાશ આંકડા'}
-                </h2>
-                <p className="text-sm text-slate-400">
-                  {lang === 'en' && 'Zero tracking cookies. Private metrics stored only on your device.'}
-                  {lang === 'hi' && 'शून्य ट्रैकिंग कुकीज़। निजी डेटा केवल आपके डिवाइस पर सुरक्षित है।'}
-                  {lang === 'gu' && 'કોઈ ટ્રેકિંગ કૂકીઝ નથી. ખાનગી ડેટા માત્ર તમારા ઉપકરણ પર છે.'}
+                <p className="text-[11px] text-slate-400">
+                  {lang === 'en' ? 'Read test questions and road signs aloud' : 'પ્રશ્નો અને રોડ સાઇન અવાજમાં સાંભળો'}
                 </p>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 mt-4">
-              <div className="bg-slate-950/60 p-4 rounded-2xl border border-slate-800/80 text-center">
-                <p className="text-2xl font-bold font-mono text-blue-400">{analytics.totalViews}</p>
-                <p className="text-xs text-slate-400 uppercase tracking-wider font-semibold mt-1">
-                  {lang === 'en' ? 'Pages Viewed' : lang === 'hi' ? 'देखे गए पृष्ठ' : 'જોયેલા પેજ'}
-                </p>
-              </div>
-              <div className="bg-slate-950/60 p-4 rounded-2xl border border-slate-800/80 text-center">
-                <p className="text-2xl font-bold font-mono text-emerald-400">{analytics.totalEvents}</p>
-                <p className="text-xs text-slate-400 uppercase tracking-wider font-semibold mt-1">
-                  {lang === 'en' ? 'Actions Taken' : lang === 'hi' ? 'किए गए कार्य' : 'કરેલી ક્રિયાઓ'}
-                </p>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* 7. Reset Journey & Clear Data */}
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="bg-red-950/20 border border-red-900/40 rounded-3xl p-6 shadow-xl">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-red-500/10 text-red-400 rounded-2xl flex items-center justify-center shrink-0">
-                  <Trash2 size={24} />
-                </div>
-                <div>
-                  <h2 className="text-lg font-bold text-white">
-                    {lang === 'en' && 'Reset Journey & Data'}
-                    {lang === 'hi' && 'यात्रा और डेटा रीसेट करें'}
-                    {lang === 'gu' && 'પ્રવાસ અને ડેટા રીસેટ કરો'}
-                  </h2>
-                  <p className="text-sm text-slate-400">
-                    {lang === 'en' && 'Erase mock test scores, application forms, checklist, and stats.'}
-                    {lang === 'hi' && 'मॉक टेस्ट स्कोर, आवेदन फॉर्म, चेकलिस्ट और आंकड़े हटाएं।'}
-                    {lang === 'gu' && 'મોક ટેસ્ટ સ્કોર, અરજી વિગતો, ચેકલિસ્ટ અને આંકડા દૂર કરો.'}
-                  </p>
-                </div>
-              </div>
-
-              {!showResetConfirm ? (
+            <div className="flex items-center gap-2">
+              {readAloud && (
                 <button
-                  onClick={() => setShowResetConfirm(true)}
-                  className="bg-red-900/30 hover:bg-red-800/50 text-red-300 border border-red-800 font-bold px-5 py-2.5 rounded-xl transition text-sm shrink-0"
+                  onClick={handleTestVoice}
+                  disabled={testVoicePlaying}
+                  className="px-2.5 py-1 rounded-lg bg-blue-950 border border-blue-800/80 text-blue-300 text-[10px] font-bold hover:bg-blue-900 transition flex items-center gap-1"
                 >
-                  {lang === 'en' && 'Clear Progress'}
-                  {lang === 'hi' && 'प्रगति हटाएं'}
-                  {lang === 'gu' && 'ડેટા સાફ કરો'}
+                  <Play size={10} />
+                  <span>{testVoicePlaying ? 'Playing...' : 'Test Voice'}</span>
                 </button>
-              ) : (
-                <div className="flex items-center gap-2 shrink-0">
-                  <button
-                    onClick={handleClearData}
-                    className="bg-red-600 hover:bg-red-500 text-white font-bold px-4 py-2 rounded-xl transition text-sm shadow-md"
-                  >
-                    {lang === 'en' && 'Yes, Reset'}
-                    {lang === 'hi' && 'हाँ, रीसेट करें'}
-                    {lang === 'gu' && 'હા, રીસેટ કરો'}
-                  </button>
-                  <button
-                    onClick={() => setShowResetConfirm(false)}
-                    className="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold px-4 py-2 rounded-xl transition text-sm"
-                  >
-                    {lang === 'en' && 'Cancel'}
-                    {lang === 'hi' && 'रद्द करें'}
-                    {lang === 'gu' && 'રદ કરો'}
-                  </button>
-                </div>
               )}
+
+              <button
+                onClick={() => setReadAloud(!readAloud)}
+                aria-label="Toggle Read Aloud"
+                className={`w-12 h-7 rounded-full transition-colors relative p-1 ${readAloud ? 'bg-blue-600' : 'bg-slate-800'}`}
+              >
+                <div className={`w-5 h-5 rounded-full bg-white transition-transform ${readAloud ? 'translate-x-5' : 'translate-x-0'}`} />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* 5. SMART PWA INSTALLATION STATUS & ACTION CARD */}
+        {isInstalled ? (
+          /* INSIDE INSTALLED APP: Verified Standalone Status Badge */
+          <div className="p-5 sm:p-6 rounded-3xl bg-emerald-950/20 border border-emerald-900/50 flex items-center justify-between shadow-xl">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+                <CheckCircle2 size={22} />
+              </div>
+              <div>
+                <div className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-emerald-400 bg-emerald-950 px-2 py-0.5 rounded-full border border-emerald-800 mb-1">
+                  ✓ Installed & Active
+                </div>
+                <h2 className="text-base font-bold text-white">
+                  {lang === 'en' ? 'Running as PWA App' : lang === 'hi' ? 'ऐप मोड में चल रहा है' : 'PWA એપ મોડમાં કાર્યરત'}
+                </h2>
+                <p className="text-xs text-slate-400">
+                  {lang === 'en' ? '100% offline ready with zero-PII local caching.' : 'સંપૂર્ણ ઓફલાઇન સપોર્ટ ઉપલબ્ધ છે.'}
+                </p>
+              </div>
+            </div>
+          </div>
+        ) : (
+          /* IN BROWSER WEB: Functional Install Prompt with instructions */
+          <div className="p-5 sm:p-6 rounded-3xl bg-slate-900/50 border border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xl">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-blue-500/10 text-blue-400 flex items-center justify-center shrink-0">
+                <Smartphone size={20} />
+              </div>
+              <div>
+                <h2 className="text-base font-bold text-white">
+                  {lang === 'en' ? 'Install App on Phone' : lang === 'hi' ? 'फोन पर ऐप इंस्टॉल करें' : 'ફોન પર એપ ઇન્સ્ટોલ કરો'}
+                </h2>
+                <p className="text-xs text-slate-400">
+                  {lang === 'en' 
+                    ? 'Add to home screen for instant offline access and kiosk test practice.' 
+                    : 'ઝડપી ઑફલાઇન એક્સેસ માટે હોમ સ્ક્રીન પર ઉમેરો.'}
+                </p>
+              </div>
             </div>
 
-            <AnimatePresence>
-              {resetSuccess && (
-                <motion.div initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="mt-4 p-3 bg-emerald-950/40 border border-emerald-800 text-emerald-300 rounded-xl text-sm flex items-center gap-2">
-                  <CheckCircle2 size={16} />
-                  <span>
-                    {lang === 'en' && 'All local progress cleared. Redirecting to home...'}
-                    {lang === 'hi' && 'सभी स्थानीय प्रगति हटा दी गई। होम पेज पर पुनः निर्देशित किया जा रहा है...'}
-                    {lang === 'gu' && 'બધો લોકલ ડેટા સાફ થઈ ગયો છે. હોમ પેજ પર લઈ જઈ રહ્યા છીએ...'}
-                  </span>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </motion.div>
+            {deferredPrompt ? (
+              <button
+                onClick={triggerInstallPrompt}
+                className="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold text-xs sm:text-sm transition shadow-lg shadow-blue-600/30 shrink-0"
+              >
+                {lang === 'en' ? 'Install App' : lang === 'hi' ? 'ऐप इंस्टॉल करें' : 'ઇન્સ્ટોલ કરો'}
+              </button>
+            ) : (
+              <span className="text-[11px] text-slate-400 bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800">
+                {lang === 'en' ? 'Chrome/Android: Menu (⋮) → Add to Home' : 'Chrome: મેનૂ (⋮) → Add to Home'}
+              </span>
+            )}
+          </div>
+        )}
+
+        {/* 6. Offline Storage & Cache Info */}
+        <div className="p-5 sm:p-6 rounded-3xl bg-slate-900/50 border border-slate-800 space-y-3 shadow-xl">
+          <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-400">
+              <HardDrive size={15} className="text-emerald-400" />
+              <span>{lang === 'en' ? 'Offline Storage & Cache Status' : 'ઓફલાઇન સ્ટોરેજ સ્ટેટસ'}</span>
+            </div>
+            <span className="text-xs font-mono font-bold text-emerald-400">{storageSize} used</span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs text-slate-300 pt-1">
+            <div className="p-2.5 bg-slate-950 rounded-xl border border-slate-800/80 flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+              <span>RTO Questions (Cached)</span>
+            </div>
+            <div className="p-2.5 bg-slate-950 rounded-xl border border-slate-800/80 flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+              <span>IRC Road Signs (Cached)</span>
+            </div>
+            <div className="p-2.5 bg-slate-950 rounded-xl border border-slate-800/80 flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+              <span>Kiosk Simulator (Cached)</span>
+            </div>
+          </div>
         </div>
+
+        {/* 7. Privacy & Data Reset */}
+        <div className="p-5 sm:p-6 rounded-3xl bg-slate-900/50 border border-slate-800 space-y-4 shadow-xl">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-red-500/10 text-red-400 flex items-center justify-center shrink-0">
+                <Trash2 size={20} />
+              </div>
+              <div>
+                <h2 className="text-base font-bold text-white">
+                  {lang === 'en' ? 'Reset App Data' : lang === 'hi' ? 'डेटा रीसेट करें' : 'ડેટા રીસેટ કરો'}
+                </h2>
+                <p className="text-xs text-slate-400">
+                  {lang === 'en' ? 'Clear scores & journey progress stored on this device' : 'તમામ ટેસ્ટ સ્કોર અને સ્ટેજ હિસ્ટ્રી સાફ કરો'}
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={handleClearData}
+              className="px-4 py-2 bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white border border-red-500/30 rounded-xl font-bold text-xs transition shrink-0"
+            >
+              {lang === 'en' ? 'Reset' : lang === 'hi' ? 'रीसेट' : 'રીસેટ'}
+            </button>
+          </div>
+
+          <div className="p-3 bg-slate-950 rounded-2xl border border-slate-800/80 flex items-center gap-2.5 text-xs text-slate-400">
+            <ShieldCheck size={16} className="text-emerald-400 shrink-0" />
+            <span>
+              {lang === 'en' && 'Zero-PII Guarantee: All data remains securely on your local device only. No personal information is ever transmitted to a server.'}
+              {lang === 'hi' && 'शून्य-पीआईआई गारंटी: सभी डेटा केवल आपके फोन पर स्थानीय रूप से संग्रहीत है। कोई भी डेटा सर्वर पर नहीं भेजा जाता।'}
+              {lang === 'gu' && 'ઝીરો-PII ગેરંટી: તમામ ડેટા માત્ર તમારા ફોન પર લોકલ સ્ટોરેજમાં રહે છે. કોઈ ડેટા સર્વર પર મોકલવામાં આવતો નથી.'}
+            </span>
+          </div>
+        </div>
+
+        {/* 8. About & Legal Disclaimer */}
+        <div className="p-5 rounded-3xl bg-slate-900/40 border border-slate-800 space-y-3 text-center sm:text-left text-xs text-slate-400">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-2 border-b border-slate-800/60 pb-2">
+            <span className="font-bold text-slate-300">License Saathi v1.0.0 (Hackathon Edition)</span>
+            <div className="flex items-center gap-3 text-xs">
+              <Link to="/privacy" className="hover:text-blue-400 transition">Privacy Policy</Link>
+              <span>•</span>
+              <Link to="/terms" className="hover:text-blue-400 transition">Terms & Disclaimer</Link>
+            </div>
+          </div>
+          <p className="text-[11px] text-slate-500 leading-relaxed">
+            License Saathi is an independent educational and procedural assistance portal designed to help Indian citizens prepare for their RTO tests. It is not affiliated with the Ministry of Road Transport and Highways (MoRTH) or state RTOs. Official applications are processed via parivahan.gov.in.
+          </p>
+        </div>
+
       </div>
     </div>
   );
