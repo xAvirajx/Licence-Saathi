@@ -2,7 +2,7 @@ import { useState, createContext, useEffect, Suspense, lazy, useRef } from 'reac
 import { Routes, Route, Link, useLocation } from 'react-router-dom';
 import { 
   Settings as SettingsIcon, WifiOff, Car, Menu, X, Share2, 
-  Languages, Check, Sun, Moon, Monitor 
+  Languages, Check, Sun, Moon, Monitor, ChevronDown 
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { en } from './i18n/en';
@@ -157,7 +157,7 @@ export default function App() {
       effectiveTheme,
       t 
     }}>
-      {/* Light Theme Dynamic Stylesheet */}
+      {/* High-Contrast, Crystal-Clear Light Mode CSS Rules */}
       {effectiveTheme === 'light' && (
         <style>{`
           .light-mode {
@@ -174,9 +174,12 @@ export default function App() {
           }
           .light-mode .bg-slate-900\\/50,
           .light-mode .bg-slate-900\\/60,
+          .light-mode .bg-slate-900\\/70,
           .light-mode .bg-slate-900\\/80 {
-            background-color: rgba(255, 255, 255, 0.85) !important;
+            background-color: #ffffff !important;
             color: #0f172a !important;
+            border-color: #cbd5e1 !important;
+            box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.06) !important;
           }
           .light-mode .bg-slate-950\\/50,
           .light-mode .bg-slate-950\\/60,
@@ -184,15 +187,16 @@ export default function App() {
           .light-mode .bg-slate-950\\/80 {
             background-color: #f1f5f9 !important;
             color: #0f172a !important;
+            border-color: #e2e8f0 !important;
           }
           .light-mode .bg-slate-800 {
             background-color: #e2e8f0 !important;
-            color: #1e293b !important;
+            color: #0f172a !important;
           }
           .light-mode .border-slate-800,
           .light-mode .border-slate-800\\/80,
           .light-mode .border-slate-700 {
-            border-color: #e2e8f0 !important;
+            border-color: #cbd5e1 !important;
           }
           .light-mode .text-white,
           .light-mode .text-slate-50 {
@@ -202,9 +206,14 @@ export default function App() {
           .light-mode .text-slate-300 {
             color: #334155 !important;
           }
+          /* Rich readable contrast for descriptions */
           .light-mode .text-slate-400 {
+            color: #475569 !important;
+          }
+          .light-mode .text-slate-500 {
             color: #64748b !important;
           }
+          /* Form Inputs */
           .light-mode input[type="text"],
           .light-mode input[type="tel"],
           .light-mode input[type="date"],
@@ -213,8 +222,58 @@ export default function App() {
             color: #0f172a !important;
             border-color: #cbd5e1 !important;
           }
+          .light-mode input::placeholder {
+            color: #94a3b8 !important;
+          }
+          /* Journey Stepper Light-Mode Improvements */
+          .light-mode .bg-emerald-950\\/50 {
+            background-color: #dcfce7 !important;
+            color: #16a34a !important;
+          }
+          .light-mode .fill-blue-900\\/50 {
+            fill: #dbeafe !important;
+          }
+          .light-mode .bg-blue-950\\/40 {
+            background-color: #eff6ff !important;
+            border-color: #3b82f6 !important;
+          }
+          .light-mode .text-blue-200 {
+            color: #1d4ed8 !important;
+          }
+          .light-mode .bg-emerald-950\\/20,
+          .light-mode .bg-emerald-950\\/30,
+          .light-mode .bg-emerald-950\\/40 {
+            background-color: #ecfdf5 !important;
+            border-color: #a7f3d0 !important;
+          }
+          .light-mode .bg-red-950\\/20,
+          .light-mode .bg-red-950\\/30,
+          .light-mode .bg-red-950\\/40 {
+            background-color: #fef2f2 !important;
+            border-color: #fecaca !important;
+          }
+          .light-mode .text-red-200,
+          .light-mode .text-red-300 {
+            color: #b91c1c !important;
+          }
+          .light-mode .text-emerald-100,
+          .light-mode .text-emerald-200 {
+            color: #065f46 !important;
+          }
+          .light-mode .text-blue-100 {
+            color: #1e40af !important;
+          }
+          /* Stepper Connecting Line */
+          .light-mode .before\\:bg-gradient-to-b::before {
+            background: linear-gradient(to bottom, #2563eb, #cbd5e1, transparent) !important;
+          }
+          /* Inactive step circle */
+          .light-mode .text-slate-700 {
+            color: #94a3b8 !important;
+          }
+          /* Navigation and Bottom Floating Buttons */
           .light-mode header {
-            background-color: rgba(255, 255, 255, 0.85) !important;
+            background-color: rgba(255, 255, 255, 0.9) !important;
             border-color: #e2e8f0 !important;
           }
           .light-mode footer {
@@ -253,8 +312,8 @@ export default function App() {
           </div>
         )}
 
-        {/* 1. GLOBAL HEADER WITH TOP THEME TOGGLE & NAVIGATION */}
-        <header role="banner" className={`relative z-30 w-full border-b ${effectiveTheme === 'light' ? 'border-slate-200 bg-white/80' : 'border-slate-800/80 bg-slate-950/80'} backdrop-blur-md`}>
+        {/* 1. GLOBAL HEADER WITH UNMISTAKABLE THEME BUTTON */}
+        <header role="banner" className={`relative z-30 w-full border-b ${effectiveTheme === 'light' ? 'border-slate-200 bg-white/90' : 'border-slate-800/80 bg-slate-950/80'} backdrop-blur-md`}>
           <div className="max-w-5xl mx-auto p-4 sm:px-6 flex items-center justify-between">
             <Link to="/" aria-label="Licence Saathi Home" className="flex items-center gap-3">
               <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
@@ -279,35 +338,53 @@ export default function App() {
               </Link>
             </nav>
 
-            {/* Top Controls: Theme Switcher & Mobile Menu Button */}
+            {/* Top Bar Controls */}
             <div className="flex items-center gap-2">
               
-              {/* THEME SWITCHER DROPDOWN (TOP BAR) */}
+              {/* CLEAR & UNMISTAKABLE THEME TOGGLE BUTTON */}
               <div className="relative" ref={themeMenuRef}>
                 <button
                   onClick={() => setThemeMenuOpen(!themeMenuOpen)}
-                  aria-label="Toggle Theme Mode"
-                  title="Theme: System / Light / Dark"
-                  className={`flex items-center gap-1.5 py-2 px-3 rounded-xl border text-xs font-bold transition-all shadow-sm ${
+                  aria-label="Theme Appearance Settings"
+                  title="Change Theme Mode"
+                  className={`flex items-center gap-2 py-2 px-3 rounded-xl border text-xs font-bold transition-all shadow-sm ${
                     effectiveTheme === 'light'
-                      ? 'bg-slate-100 hover:bg-slate-200 border-slate-300 text-slate-800'
-                      : 'bg-slate-900 hover:bg-slate-800 border-slate-700 text-slate-200'
+                      ? 'bg-white hover:bg-slate-100 border-slate-300 text-slate-800'
+                      : 'bg-slate-900 hover:bg-slate-800 border-slate-700 text-slate-100'
                   }`}
                 >
-                  {theme === 'system' && <Monitor size={16} className="text-blue-400" />}
-                  {theme === 'light' && <Sun size={16} className="text-amber-500" />}
-                  {theme === 'dark' && <Moon size={16} className="text-indigo-400" />}
-                  
-                  <span className="hidden sm:inline capitalize">
+                  {/* Dynamic Visual Indicator */}
+                  {theme === 'system' ? (
+                    <div className="w-5 h-5 rounded-lg bg-blue-500/10 text-blue-500 flex items-center justify-center">
+                      <Monitor size={14} />
+                    </div>
+                  ) : theme === 'light' ? (
+                    <div className="w-5 h-5 rounded-lg bg-amber-500/10 text-amber-500 flex items-center justify-center">
+                      <Sun size={14} />
+                    </div>
+                  ) : (
+                    <div className="w-5 h-5 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center">
+                      <Moon size={14} />
+                    </div>
+                  )}
+
+                  {/* Explicit "Theme" text so users immediately recognize it */}
+                  <span className="font-semibold">
+                    {lang === 'en' ? 'Theme:' : lang === 'hi' ? 'थीम:' : 'થીમ:'}
+                  </span>
+
+                  <span className="capitalize font-bold text-blue-500">
                     {theme === 'system' 
-                      ? (lang === 'en' ? 'Auto' : lang === 'hi' ? 'सिस्टम' : 'ઓટો') 
+                      ? (lang === 'en' ? 'Auto' : lang === 'hi' ? 'ऑटो' : 'ઓટો') 
                       : (theme === 'light' 
                         ? (lang === 'en' ? 'Light' : lang === 'hi' ? 'लाइट' : 'લાઇટ') 
                         : (lang === 'en' ? 'Dark' : lang === 'hi' ? 'डार्क' : 'ડાર્ક'))}
                   </span>
+
+                  <ChevronDown size={14} className={`text-slate-400 transition-transform ${themeMenuOpen ? 'rotate-180' : ''}`} />
                 </button>
 
-                {/* Popover Menu */}
+                {/* Popover Appearance Menu */}
                 <AnimatePresence>
                   {themeMenuOpen && (
                     <motion.div
@@ -315,31 +392,36 @@ export default function App() {
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 8, scale: 0.95 }}
                       transition={{ duration: 0.15 }}
-                      className={`absolute right-0 top-12 w-48 rounded-2xl p-1.5 shadow-2xl border z-50 backdrop-blur-xl ${
+                      className={`absolute right-0 top-12 w-60 rounded-2xl p-2 shadow-2xl border z-50 backdrop-blur-xl ${
                         effectiveTheme === 'light'
-                          ? 'bg-white/95 border-slate-200 text-slate-800'
-                          : 'bg-slate-900/95 border-slate-700 text-slate-100'
+                          ? 'bg-white border-slate-300 text-slate-800'
+                          : 'bg-slate-900 border-slate-700 text-slate-100'
                       }`}
                     >
-                      <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-700/40">
-                        {lang === 'en' ? 'Appearance' : lang === 'hi' ? 'थीम मोड' : 'થીમ મોડ'}
+                      <div className="px-3 py-1.5 border-b border-slate-700/40 mb-1">
+                        <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                          {lang === 'en' ? 'Display Appearance' : lang === 'hi' ? 'थीम और रंग मोड' : 'થીમ અને દેખાવ'}
+                        </p>
                       </div>
 
                       {[
                         { 
                           id: 'system', 
-                          icon: <Monitor size={15} />, 
-                          title: { en: 'System Default', hi: 'सिस्टम डिफ़ॉल्ट', gu: 'સિસ્ટમ ડિફોલ્ટ' } 
+                          icon: <Monitor size={16} className="text-blue-500" />, 
+                          title: { en: 'System Default', hi: 'सिस्टम डिफ़ॉल्ट', gu: 'સિસ્ટમ ડિફોલ્ટ' },
+                          sub: { en: 'Follows device settings', hi: 'डिवाइस सेटिंग का पालन करता है', gu: 'તમારા ઉપકરણ મુજબ બદલાશે' }
                         },
                         { 
                           id: 'light', 
-                          icon: <Sun size={15} />, 
-                          title: { en: 'Light Mode', hi: 'लाइट मोड', gu: 'લાઇટ મોડ' } 
+                          icon: <Sun size={16} className="text-amber-500" />, 
+                          title: { en: 'Light Mode', hi: 'लाइट मोड', gu: 'લાઇટ મોડ' },
+                          sub: { en: 'Clean, high-contrast bright theme', hi: 'स्पष्ट, उच्च-कंट्रास्ट दिन का मोड', gu: 'સ્પષ્ટ અને વાંચવામાં સરળ લાઇટ થીમ' }
                         },
                         { 
                           id: 'dark', 
-                          icon: <Moon size={15} />, 
-                          title: { en: 'Dark Mode', hi: 'डार्क मोड', gu: 'ડાર્ક મોડ' } 
+                          icon: <Moon size={16} className="text-indigo-400" />, 
+                          title: { en: 'Dark Mode', hi: 'डार्क मोड', gu: 'ડાર્ક મોડ' },
+                          sub: { en: 'Midnight dark theme for night', hi: 'आँखों के लिए आरामदायक रात्रि मोड', gu: 'રાત્રિના સમયે આંખો માટે અનુકૂળ' }
                         }
                       ].map((item) => (
                         <button
@@ -348,19 +430,24 @@ export default function App() {
                             setTheme(item.id);
                             setThemeMenuOpen(false);
                           }}
-                          className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
+                          className={`w-full flex items-center justify-between p-2.5 rounded-xl transition-all text-left ${
                             theme === item.id
                               ? 'bg-blue-600 text-white font-bold shadow-md'
                               : effectiveTheme === 'light'
-                              ? 'hover:bg-slate-100 text-slate-700'
-                              : 'hover:bg-slate-800 text-slate-300'
+                              ? 'hover:bg-slate-100 text-slate-800'
+                              : 'hover:bg-slate-800 text-slate-200'
                           }`}
                         >
-                          <span className="flex items-center gap-2.5">
-                            {item.icon}
-                            <span>{item.title[lang] || item.title.en}</span>
-                          </span>
-                          {theme === item.id && <Check size={14} className="stroke-[3]" />}
+                          <div className="flex items-start gap-2.5">
+                            <span className="mt-0.5">{item.icon}</span>
+                            <div>
+                              <p className="text-xs font-bold leading-tight">{item.title[lang] || item.title.en}</p>
+                              <p className={`text-[10px] mt-0.5 leading-tight ${theme === item.id ? 'text-blue-100' : 'text-slate-400'}`}>
+                                {item.sub[lang] || item.sub.en}
+                              </p>
+                            </div>
+                          </div>
+                          {theme === item.id && <Check size={14} className="stroke-[3] shrink-0 ml-2" />}
                         </button>
                       ))}
                     </motion.div>
@@ -368,11 +455,11 @@ export default function App() {
                 </AnimatePresence>
               </div>
 
-              {/* Mobile Menu Button */}
+              {/* Mobile Drawer Toggle */}
               <button
                 onClick={() => setMobileMenuOpen(true)}
                 aria-label="Toggle Menu"
-                className="md:hidden text-slate-300 hover:text-white p-2 rounded-xl transition"
+                className="md:hidden text-slate-400 hover:text-white p-2 rounded-xl transition"
               >
                 <Menu size={26} />
               </button>
@@ -418,22 +505,22 @@ export default function App() {
                 </Link>
 
                 {/* Mobile Drawer Theme Quick Buttons */}
-                <div className="flex items-center gap-2 p-1.5 rounded-2xl border border-slate-800 bg-slate-900/60 mt-4">
+                <div className={`flex items-center gap-2 p-1.5 rounded-2xl border ${effectiveTheme === 'light' ? 'border-slate-300 bg-slate-100' : 'border-slate-800 bg-slate-900/60'} mt-4`}>
                   <button
                     onClick={() => setTheme('system')}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 ${theme === 'system' ? 'bg-blue-600 text-white' : 'text-slate-400'}`}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 ${theme === 'system' ? 'bg-blue-600 text-white shadow' : 'text-slate-400'}`}
                   >
                     <Monitor size={14} /> Auto
                   </button>
                   <button
                     onClick={() => setTheme('light')}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 ${theme === 'light' ? 'bg-blue-600 text-white' : 'text-slate-400'}`}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 ${theme === 'light' ? 'bg-blue-600 text-white shadow' : 'text-slate-400'}`}
                   >
                     <Sun size={14} /> Light
                   </button>
                   <button
                     onClick={() => setTheme('dark')}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 ${theme === 'dark' ? 'bg-blue-600 text-white' : 'text-slate-400'}`}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 ${theme === 'dark' ? 'bg-blue-600 text-white shadow' : 'text-slate-400'}`}
                   >
                     <Moon size={14} /> Dark
                   </button>
@@ -485,7 +572,7 @@ export default function App() {
                     : 'bg-slate-900 border-slate-700/90 text-slate-100'
                 }`}
               >
-                <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-800">
+                <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-700/40">
                   {lang === 'en' ? 'Select Language' : lang === 'hi' ? 'भाषा चुनें' : 'ભાષા પસંદ કરો'}
                 </div>
                 {[
