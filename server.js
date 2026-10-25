@@ -76,13 +76,16 @@ app.post('/api/chat', chatRateLimiter, async (req, res) => {
     return res.status(400).json({ error: 'Message text is required' });
   }
 
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
+  const rawKey = process.env.GEMINI_API_KEY;
+  if (!rawKey) {
     console.error('[AI CONFIG ERROR] GEMINI_API_KEY is not set in environment variables.');
     return res.status(500).json({ 
       error: 'GEMINI_API_KEY is missing on Render. Please add it to Render Dashboard -> Environment tab.' 
     });
   }
+
+  // Strip leading/trailing quotes and whitespace
+  const apiKey = rawKey.trim().replace(/^["']|["']$/g, '');
 
   try {
     const ai = new GoogleGenAI({ apiKey });
@@ -98,7 +101,7 @@ You are Licence Saathi AI, an expert assistant helping people get a driving lice
 - User journey stage progress index: ${stage || '1'}. Suggest their next step.
     `.trim();
 
-    // GEMINI FIX: Filter history so conversation strictly starts with a USER turn
+    // Ensure multiturn chat begins with a user turn
     let validHistory = [];
     if (Array.isArray(history)) {
       const firstUserIndex = history.findIndex((h) => h.type === 'user');
@@ -112,10 +115,9 @@ You are Licence Saathi AI, an expert assistant helping people get a driving lice
       parts: [{ text: h.text }]
     }));
 
-    // Add current user prompt
     contents.push({ role: 'user', parts: [{ text: message.trim() }] });
 
-    // Try gemini-2.0-flash first; fall back to gemini-1.5-flash if needed
+    // Primary model: gemini-2.0-flash, fallback: gemini-1.5-flash
     let response;
     try {
       response = await ai.models.generateContent({
@@ -127,8 +129,8 @@ You are Licence Saathi AI, an expert assistant helping people get a driving lice
           temperature: 0.7
         }
       });
-    } catch (primaryModelError) {
-      console.warn('[MODEL RETRY] gemini-2.0-flash failed, falling back to gemini-1.5-flash:', primaryModelError.message);
+    } catch (primaryError) {
+      console.warn('[MODEL RETRY] Primary model failed, trying gemini-1.5-flash:', primaryError.message);
       response = await ai.models.generateContent({
         model: 'gemini-1.5-flash',
         contents,
