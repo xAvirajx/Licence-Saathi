@@ -1,306 +1,282 @@
-import { useContext, useState, useRef } from 'react';
+import { useState, useContext, useEffect, useRef } from 'react';
 import { AppContext } from '../App';
 import { Link } from 'react-router-dom';
-import { FileText, CheckCircle, Navigation, PlayCircle, ArrowRight, CheckCircle2, Circle } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
+import { 
+  Car, CheckCircle2, ArrowRight, Clock, ShieldAlert, 
+  FileText, BookOpen, Sparkles, Compass, Check, ExternalLink,
+  Laptop, ShieldCheck, HelpCircle
+} from 'lucide-react';
 
 export default function Home() {
   const { lang } = useContext(AppContext);
+  const journeyRef = useRef(null);
 
-  // Journey Map State & Ref for Auto-Scrolling
-  const journeyMapRef = useRef(null);
-  const [journeyStage, setJourneyStage] = useState(() => {
-    return parseInt(localStorage.getItem('licenceJourneyStage') || '0');
+  // Active Journey Stage (1 to 6)
+  const [currentStage, setCurrentStage] = useState(() => {
+    return parseInt(localStorage.getItem('licenceJourneyStage') || '1', 10);
   });
 
-  const handleJourneyClick = (stageNum) => {
-    setJourneyStage(stageNum);
+  const handleSelectJourney = (stageNum) => {
+    setCurrentStage(stageNum);
     localStorage.setItem('licenceJourneyStage', stageNum.toString());
-    setTimeout(() => {
-      if (journeyMapRef.current) {
-        journeyMapRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
-    }, 150);
+    if (journeyRef.current) {
+      journeyRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
   };
 
-  const features = [
-    {
-      icon: <CheckCircle size={24} />,
-      path: "/eligibility",
-      title: { en: "Eligibility Check", hi: "पात्रता जांच", gu: "પાત્રતા તપાસ" },
-      desc: { 
-        en: "See if you meet age & vehicle rules.", 
-        hi: "देखें कि क्या आप उम्र और वाहन नियमों को पूरा करते हैं।", 
-        gu: "ઉંમર અને વાહનના નિયમો તપાસો." 
-      }
-    },
-    {
-      icon: <FileText size={24} />,
-      path: "/documents",
-      title: { en: "Documents Needed", hi: "आवश्यक दस्तावेज़", gu: "જરૂરી દસ્તાવેજો" },
-      desc: { 
-        en: "Get the exact list of required proofs.", 
-        hi: "आवश्यक प्रमाणों की सटीक सूची प्राप्त करें।", 
-        gu: "જરૂરી પુરાવાઓની ચોક્કસ સૂચિ મેળવો." 
-      }
-    },
-    {
-      icon: <PlayCircle size={24} />,
-      path: "/mock-test",
-      title: { en: "Mock Test", hi: "मॉक टेस्ट", gu: "મોક ટેસ્ટ" },
-      desc: { 
-        en: "Practice the 15-question LL test.", 
-        hi: "15-प्रश्नों वाले एलएल टेस्ट का अभ्यास करें।", 
-        gu: "15-પ્રશ્નોવાળા LL ટેસ્ટની પ્રેક્ટિસ કરો." 
-      }
-    },
-    {
-      icon: <Navigation size={24} />,
-      path: "/track-app",
-      title: { en: "Track Status", hi: "स्थिति ट्रैक करें", gu: "સ્ટેટસ ટ્રેક કરો" },
-      desc: { 
-        en: "Track your real-time RTO application.", 
-        hi: "अपने रीयल-टाइम आरटीओ आवेदन को ट्रैक करें।", 
-        gu: "તમારી RTO અરજીનું સ્ટેટસ તપાસો." 
-      }
+  const scrollToJourney = () => {
+    if (journeyRef.current) {
+      journeyRef.current.scrollIntoView({ behavior: 'smooth' });
     }
-  ];
+  };
 
   const journeySteps = [
     {
-      id: 1,
-      path: "/eligibility",
-      text: { 
-        en: "Check you can apply", 
-        hi: "जांचें कि क्या आप आवेदन कर सकते हैं", 
-        gu: "તપાસો કે તમે અરજી કરી શકો છો" 
+      num: 1,
+      title: { 
+        en: '1. Check you can apply', 
+        hi: '1. पात्रता की जांच करें', 
+        gu: '1. તમે અરજી કરી શકો છો તે તપાસો' 
       },
-      btnText: { en: "Check Eligibility", hi: "पात्रता जांचें", gu: "પાત્રતા તપાસો" }
+      desc: { 
+        en: 'Verify your age, vehicle category, and medical requirements.', 
+        hi: 'अपनी आयु, वाहन श्रेणी और चिकित्सा आवश्यकताओं को सत्यापित करें।', 
+        gu: 'તમારી ઉંમર, વાહન કેટેગરી અને મેડિકલ નિયમો ચકાસો.' 
+      },
+      link: '/eligibility',
+      btnText: { en: 'Check Eligibility', hi: 'पात्रता जांचें', gu: 'પાત્રતા તપાસો' }
     },
     {
-      id: 2,
-      path: "/application",
-      text: { 
-        en: "Apply for a learner's licence", 
-        hi: "लर्नर लाइसेंस के लिए आवेदन करें", 
-        gu: "લર્નર લાઇસન્સ માટે અરજી કરો" 
+      num: 2,
+      title: { 
+        en: "2. Apply for a learner's licence", 
+        hi: '2. लर्नर लाइसेंस के लिए आवेदन करें', 
+        gu: '2. લર્નર લાયસન્સ માટે અરજી કરો' 
       },
-      btnText: { en: "Apply Now", hi: "अभी आवेदन करें", gu: "હવે અરજી કરો" }
+      desc: { 
+        en: 'Complete online form rehearsal, verify documents, and simulate payment.', 
+        hi: 'ऑनलाइन फॉर्म रिहर्सल पूरा करें, दस्तावेज सत्यापित करें और शुल्क सिमुलेट करें।', 
+        gu: 'ઓનલાઇન ફોર્મ ભરો, દસ્તાવેજો ચકાસો અને ફી સિમ્યુલેટ કરો.' 
+      },
+      link: '/application',
+      btnText: { en: 'Apply Now', hi: 'आवेदन करें', gu: 'અરજી કરો' }
     },
     {
-      id: 3,
-      path: "/mock-test",
-      text: { 
-        en: "Pass the learner's test", 
-        hi: "लर्नर टेस्ट पास करें", 
-        gu: "લર્નર ટેસ્ટ પાસ કરો" 
+      num: 3,
+      title: { 
+        en: "3. Pass the learner's test", 
+        hi: '3. लर्नर टेस्ट पास करें', 
+        gu: '3. લર્નર કમ્પ્યુટર ટેસ્ટ પાસ કરો' 
       },
-      btnText: { en: "Take Mock Test", hi: "मॉक टेस्ट लें", gu: "મોક ટેસ્ટ આપો" }
+      desc: { 
+        en: 'Rehearse on the authentic RTO touchscreen kiosk simulator with IRC road signs.', 
+        hi: 'IRC सड़क संकेतों के साथ वास्तविक आरटीओ टचस्क्रीन कियोस्क सिम्युलेटर पर अभ्यास करें।', 
+        gu: 'અસલી RTO ટચસ્ક્રીન કિયોસ્ક સિમ્યુલેટર પર પરીક્ષાની પ્રેક્ટિસ કરો.' 
+      },
+      link: '/mock-test',
+      btnText: { en: 'Take Mock Test', hi: 'मॉक टेस्ट दें', gu: 'મોક ટેસ્ટ આપો' }
     },
     {
-      id: 4,
-      path: "/permanent-licence",
-      text: { 
-        en: "Wait 30 days & apply for permanent", 
-        hi: "30 दिन प्रतीक्षा करें और स्थायी के लिए आवेदन करें", 
-        gu: "30 દિવસ રાહ જુઓ અને કાયમી માટે અરજી કરો" 
+      num: 4,
+      title: { 
+        en: '4. Wait 30 days & apply for permanent', 
+        hi: '4. 30 दिन प्रतीक्षा करें और स्थायी डीएल हेतु आवेदन करें', 
+        gu: '4. 30 દિવસ રાહ જુઓ અને કાયમી DL માટે અરજી કરો' 
       },
-      btnText: { en: "Check Dates", hi: "तारीखें जांचें", gu: "તારીખો તપાસો" }
+      desc: { 
+        en: 'Motor Vehicles Act requires holding LL for 30 days before taking driving test.', 
+        hi: 'ड्राइविंग टेस्ट देने से पहले 30 दिनों तक लर्नर लाइसेंस होना अनिवार्य है।', 
+        gu: 'ડ્રાઇવિંગ ટેસ્ટ આપતા પહેલા 30 દિવસ સુધી લર્નર લાયસન્સ રાખવું ફરજિયાત છે.' 
+      },
+      link: '/permanent-licence',
+      btnText: { en: 'Check Dates', hi: 'तिथियां जांचें', gu: 'તારીખો તપાસો' }
     },
     {
-      id: 5,
-      path: "/driving-test",
-      text: { 
-        en: "Pass the driving test", 
-        hi: "ड्राइविंग टेस्ट पास करें", 
-        gu: "ડ્રાઇવિંગ ટેસ્ટ પાસ કરો" 
+      num: 5,
+      title: { 
+        en: '5. Pass the driving test', 
+        hi: '5. ड्राइविंग टेस्ट पास करें', 
+        gu: '5. પ્રેક્ટિકલ ડ્રાઇવિંગ ટેસ્ટ પાસ કરો' 
       },
-      btnText: { en: "Prepare for Test", hi: "टेस्ट की तैयारी करें", gu: "ટેસ્ટ માટે તૈયારી કરો" }
+      desc: { 
+        en: 'Learn track maneuvers: Track 8, Parallel Parking, and Gradient hill starts.', 
+        hi: 'ट्रैक तकनीकें सीखें: ट्रैक 8, पैरेलल पार्किंग और चढ़ाई पर वाहन नियंत्रण।', 
+        gu: 'RTO ટ્રેકની તૈયારી કરો: 8 આકાર, રિવર્સ પાર્કિંગ અને ચઢાણ ટેસ્ટ.' 
+      },
+      link: '/driving-test',
+      btnText: { en: 'Track Guide', hi: 'ट्रैक गाइड', gu: 'ટ્રેક ગાઇડ' }
     },
     {
-      id: 6,
-      path: "/track-app",
-      text: { 
-        en: "Receive your licence", 
-        hi: "अपना लाइसेंस प्राप्त करें", 
-        gu: "તમારું લાઇસન્સ મેળવો" 
+      num: 6,
+      title: { 
+        en: '6. Receive your licence', 
+        hi: '6. अपना लाइसेंस प्राप्त करें', 
+        gu: '6. તમારું સ્માર્ટ કાર્ડ લાયસન્સ મેળવો' 
       },
-      btnText: { en: "Track Application", hi: "आवेदन ट्रैक करें", gu: "અરજી ટ્રેક કરો" }
+      desc: { 
+        en: 'Track your dispatched smart card or download virtual DL on DigiLocker.', 
+        hi: 'अपने भेजे गए स्मार्ट कार्ड को ट्रैक करें या डिजिलॉकर पर वर्चुअल डीएल डाउनलोड करें।', 
+        gu: 'તમારું સ્પીડ પોસ્ટ સ્ટેટસ ટ્રેક કરો અથવા DigiLocker પરથી ડાઉનલોડ કરો.' 
+      },
+      link: '/track-app',
+      btnText: { en: 'Track Status', hi: 'स्थिति ट्रैक करें', gu: 'સ્ટેટસ ટ્રેક કરો' }
     }
   ];
 
   return (
-    <div className="relative overflow-hidden pb-12 flex flex-col items-center">
-      {/* Background Gradients */}
-      <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-blue-600/20 rounded-full blur-[120px] pointer-events-none"></div>
-      <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-emerald-600/20 rounded-full blur-[120px] pointer-events-none"></div>
+    <div className="relative min-h-screen py-12 px-4 sm:px-6 flex flex-col font-sans">
+      <div className="max-w-4xl mx-auto w-full relative z-10 space-y-16">
 
-      {/* Main Content Area */}
-      <div className="relative z-10 w-full max-w-4xl mx-auto px-6 mt-8 flex flex-col">
-        {/* HERO SECTION */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="text-center mb-16">
-          {/* Green Pulse Badge */}
-          <span className="inline-flex items-center gap-2 py-2 px-4 rounded-full bg-slate-900/80 border border-emerald-500/30 text-emerald-400 text-xs sm:text-sm font-bold mb-6 shadow-lg">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-            </span>
-            {lang === 'en' && 'Stress-free mParivahan assistance'}
-            {lang === 'hi' && 'तनाव मुक्त एम-परिवहन सहायता'}
-            {lang === 'gu' && 'તણાવ મુક્ત પરિવહન સહાય'}
-          </span>
+        {/* 1. HERO SECTION */}
+        <section className="text-center pt-4 sm:pt-8 space-y-6">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold text-xs uppercase tracking-wider">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span>{lang === 'en' ? 'Stress-free mParivahan assistance' : lang === 'hi' ? 'तनाव-मुक्त एम-परिवहन सहायता' : 'તણાવમુક્ત mParivahan માર્ગદર્શિકા'}</span>
+          </div>
 
-          <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight text-white leading-[1.15] mb-6">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-white leading-tight">
             {lang === 'en' && "Getting your driving licence shouldn't feel like a test."}
-            {lang === 'hi' && "ड्राइविंग लाइसेंस प्राप्त करना एक परीक्षा जैसा नहीं लगना चाहिए।"}
-            {lang === 'gu' && "ડ્રાઇવિંગ લાઇસન્સ મેળવવું મુશ્કેલ ન હોવું જોઈએ."}
+            {lang === 'hi' && "ड्राइविंग लाइसेंस पाना किसी परीक्षा जैसा नहीं लगना चाहिए।"}
+            {lang === 'gu' && "ડ્રાઇવિંગ લાયસન્સ મેળવવું મુશ્કેલ પરીક્ષા જેવું ન લાગવું જોઈએ."}
           </h1>
 
-          <p className="text-lg text-slate-400 mb-10 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-slate-400 text-base sm:text-lg max-w-2xl mx-auto leading-relaxed">
             {lang === 'en' && 'Navigate the Indian RTO process with ease. Check eligibility, gather documents, practice mock tests, and track your status.'}
-            {lang === 'hi' && 'भारतीय आरटीओ प्रक्रिया को आसानी से नेविगेट करें। पात्रता जांचें, दस्तावेज़ एकत्र करें, अभ्यास परीक्षण करें, और अपनी स्थिति ट्रैक करें।'}
-            {lang === 'gu' && 'ભારતીય RTO પ્રક્રિયાને સરળતાથી સમજો. પાત્રતા તપાસો, દસ્તાવેજો એકત્ર કરો, પ્રેક્ટિસ ટેસ્ટ આપો અને તમારું સ્ટેટસ ટ્રેક કરો.'}
+            {lang === 'hi' && 'भारतीय आरटीओ प्रक्रिया को आसानी से पूरा करें। पात्रता जांचें, दस्तावेज एकत्र करें, मॉक टेस्ट दें और अपनी स्थिति ट्रैक करें।'}
+            {lang === 'gu' && 'ભારતીય RTO પ્રક્રિયા સરળતાથી સમજો. પાત્રતા ચકાસો, દસ્તાવેજ તૈયાર કરો, મોક ટેસ્ટ આપો અને સ્ટેટસ ટ્રેક કરો.'}
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-8">
-            <Link to="/application" className="w-full sm:w-auto bg-blue-600 hover:bg-blue-500 text-white px-8 py-4 rounded-xl font-bold transition flex items-center justify-center gap-2 shadow-lg shadow-blue-600/30">
-              {lang === 'en' && 'Start Journey'}
-              {lang === 'hi' && 'यात्रा शुरू करें'}
-              {lang === 'gu' && 'શરૂઆત કરો'}
-              <ArrowRight size={20} />
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-2">
+            <button
+              onClick={scrollToJourney}
+              className="w-full sm:w-auto px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl font-bold flex items-center justify-center gap-2 transition shadow-lg shadow-blue-600/30 text-base"
+            >
+              <span>{lang === 'en' ? 'Start Journey' : lang === 'hi' ? 'यात्रा शुरू करें' : 'પ્રવાસ શરૂ કરો'}</span>
+              <ArrowRight size={18} />
+            </button>
+
+            <Link
+              to="/mock-test"
+              className="w-full sm:w-auto px-8 py-4 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-white rounded-2xl font-bold transition text-base text-center"
+            >
+              {lang === 'en' ? 'Take Mock Test' : lang === 'hi' ? 'मॉक टेस्ट दें' : 'મોક ટેસ્ટ આપો'}
             </Link>
-            <Link to="/mock-test" className="w-full sm:w-auto bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 px-8 py-4 rounded-xl font-bold transition">
-              {lang === 'en' && 'Take Mock Test'}
-              {lang === 'hi' && 'मॉक टेस्ट लें'}
-              {lang === 'gu' && 'મોક ટેસ્ટ આપો'}
-            </Link>
-          </div>
-        </motion.div>
-
-        {/* WHERE ARE YOU IN YOUR JOURNEY (4 BUTTONS) */}
-        <section aria-label="Journey Stage Selection" className="mb-12">
-          <h2 className="text-2xl md:text-3xl font-bold text-white mb-6 text-center md:text-left">
-            {lang === 'en' && 'Where are you in your licence journey?'}
-            {lang === 'hi' && 'आप अपनी लाइसेंस यात्रा में कहाँ हैं?'}
-            {lang === 'gu' && 'તમે તમારી લાઇસન્સ યાત્રામાં ક્યાં છો?'}
-          </h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Button 1: Stage 0 */}
-            <button onClick={() => handleJourneyClick(0)} className={`p-6 rounded-2xl border text-left transition-all ${journeyStage < 3 ? 'bg-blue-950/40 border-blue-500' : 'bg-slate-900/50 border-slate-800 hover:border-slate-700'}`}>
-              <div className={`text-lg font-bold mb-1 ${journeyStage < 3 ? 'text-white' : 'text-slate-200'}`}>
-                {lang === 'en' && 'Just starting'}
-                {lang === 'hi' && 'अभी शुरुआत कर रहे हैं'}
-                {lang === 'gu' && 'હમણાં જ શરૂઆત કરી છે'}
-              </div>
-              <div className={`text-sm ${journeyStage < 3 ? 'text-blue-200' : 'text-slate-400'}`}>
-                {lang === 'en' && 'I need to check rules & apply'}
-                {lang === 'hi' && 'मुझे नियमों की जांच करनी है और आवेदन करना है'}
-                {lang === 'gu' && 'મારે નિયમો તપાસીને અરજી કરવી છે'}
-              </div>
-            </button>
-
-            {/* Button 2: Stage 3 */}
-            <button onClick={() => handleJourneyClick(3)} className={`p-6 rounded-2xl border text-left transition-all ${journeyStage === 3 ? 'bg-blue-950/40 border-blue-500' : 'bg-slate-900/50 border-slate-800 hover:border-slate-700'}`}>
-              <div className={`text-lg font-bold mb-1 ${journeyStage === 3 ? 'text-white' : 'text-slate-200'}`}>
-                {lang === 'en' && "I have a learner's licence"}
-                {lang === 'hi' && "मेरे पास लर्नर लाइसेंस है"}
-                {lang === 'gu' && "મારી પાસે લર્નર લાઇસન્સ છે"}
-              </div>
-              <div className={`text-sm ${journeyStage === 3 ? 'text-blue-200' : 'text-slate-400'}`}>
-                {lang === 'en' && 'I am waiting to get my permanent DL'}
-                {lang === 'hi' && 'मैं स्थायी डीएल का इंतजार कर रहा हूं'}
-                {lang === 'gu' && 'હું કાયમી DL ની રાહ જોઈ રહ્યો છું'}
-              </div>
-            </button>
-
-            {/* Button 3: Stage 4 */}
-            <button onClick={() => handleJourneyClick(4)} className={`p-6 rounded-2xl border text-left transition-all ${journeyStage === 4 ? 'bg-blue-950/40 border-blue-500' : 'bg-slate-900/50 border-slate-800 hover:border-slate-700'}`}>
-              <div className={`text-lg font-bold mb-1 ${journeyStage === 4 ? 'text-white' : 'text-slate-200'}`}>
-                {lang === 'en' && "I've booked my driving test"}
-                {lang === 'hi' && "मैंने ड्राइविंग टेस्ट बुक कर लिया है"}
-                {lang === 'gu' && "મેં ડ્રાઇવિંગ ટેસ્ટ બુક કર્યો છે"}
-              </div>
-              <div className={`text-sm ${journeyStage === 4 ? 'text-blue-200' : 'text-slate-400'}`}>
-                {lang === 'en' && 'I need to prepare for the test day'}
-                {lang === 'hi' && 'मुझे टेस्ट के दिन के लिए तैयारी करनी है'}
-                {lang === 'gu' && 'મારે ટેસ્ટના દિવસ માટે તૈયારી કરવી છે'}
-              </div>
-            </button>
-
-            {/* Button 4: Stage 5 */}
-            <button onClick={() => handleJourneyClick(5)} className={`p-6 rounded-2xl border text-left transition-all ${journeyStage === 5 ? 'bg-blue-950/40 border-blue-500' : 'bg-slate-900/50 border-slate-800 hover:border-slate-700'}`}>
-              <div className={`text-lg font-bold mb-1 ${journeyStage === 5 ? 'text-white' : 'text-slate-200'}`}>
-                {lang === 'en' && "I've applied & waiting"}
-                {lang === 'hi' && "मैंने आवेदन कर दिया है और इंतजार कर रहा हूं"}
-                {lang === 'gu' && "મેં અરજી કરી છે અને રાહ જોઈ રહ્યો છું"}
-              </div>
-              <div className={`text-sm ${journeyStage === 5 ? 'text-blue-200' : 'text-slate-400'}`}>
-                {lang === 'en' && 'I want to track my DL status'}
-                {lang === 'hi' && 'मैं अपने डीएल की स्थिति ट्रैक करना चाहता हूं'}
-                {lang === 'gu' && 'મારે મારા DL નું સ્ટેટસ ટ્રેક કરવું છે'}
-              </div>
-            </button>
           </div>
         </section>
 
-        {/* JOURNEY MAP STEPPER */}
-        <section aria-label="Your Journey Stepper" ref={journeyMapRef} className="bg-slate-900/50 p-6 md:p-10 rounded-3xl border border-slate-800 mb-16 backdrop-blur-md shadow-2xl">
-          <h2 className="text-2xl font-bold text-white mb-8">
-            {lang === 'en' && 'Your Journey Map'}
-            {lang === 'hi' && 'आपका यात्रा मानचित्र'}
-            {lang === 'gu' && 'તમારો પ્રવાસ નકશો'}
-          </h2>
+        {/* 2. WHERE ARE YOU IN YOUR JOURNEY? (4-CHOICE ENTRY SELECTOR) */}
+        <section className="space-y-6">
+          <div className="text-center">
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-white">
+              {lang === 'en' ? 'Where are you in your licence journey?' : lang === 'hi' ? 'आप अपनी लाइसेंस यात्रा में कहाँ हैं?' : 'તમે તમારી લાયસન્સ યાત્રામાં ક્યાં છો?'}
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-400 mt-1">
+              {lang === 'en' ? 'Select your current status to personalize your step-by-step checklist.' : 'પોતાનો સ્ટેપ પસંદ કરો જેથી યોગ્ય ગાઇડ મળી શકે.'}
+            </p>
+          </div>
 
-          <div className="space-y-6 relative before:absolute before:inset-0 before:ml-[15px] before:h-full before:w-0.5 before:bg-gradient-to-b before:from-blue-600 before:via-slate-700 before:to-transparent">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+            {[
+              {
+                stage: 1,
+                title: { en: 'Just Starting', hi: 'अभी शुरुआत', gu: 'હમણાં શરૂઆત' },
+                sub: { en: 'Check rules & eligibility', hi: 'नियम और पात्रता जांचें', gu: 'નિયમો અને પાત્રતા તપાસો' }
+              },
+              {
+                stage: 2,
+                title: { en: 'Applied for LL', hi: 'एलएल आवेदन किया', gu: 'LL માટે અરજી કરી' },
+                sub: { en: 'Prepare for computer test', hi: 'कियोस्क टेस्ट की तैयारी करें', gu: 'કમ્પ્યુટર ટેસ્ટની તૈયારી' }
+              },
+              {
+                stage: 4,
+                title: { en: 'Holding Learner DL', hi: 'लर्नर लाइसेंस मिल गया', gu: 'લર્નર લાયસન્સ છે' },
+                sub: { en: '30-day wait & driving practice', hi: '30 दिन प्रतीक्षा और अभ्यास', gu: '30 દિવસ રાહ અને પ્રેક્ટિસ' }
+              },
+              {
+                stage: 5,
+                title: { en: 'Ready for Permanent', hi: 'स्थायी डीएल की तैयारी', gu: 'કાયમી DL ની તૈયારી' },
+                sub: { en: 'Track test & final card', hi: 'ड्राइविंग ट्रैक टेस्ट दें', gu: 'ડ્રાઇવિંગ ટ્રેક ટેસ્ટ' }
+              }
+            ].map((choice) => (
+              <button
+                key={choice.stage}
+                onClick={() => handleSelectJourney(choice.stage)}
+                className={`p-5 rounded-2xl border text-left transition-all ${
+                  currentStage === choice.stage
+                    ? 'bg-blue-950/40 border-blue-500 shadow-lg shadow-blue-900/30 scale-[1.02]'
+                    : 'bg-slate-900/50 border-slate-800 hover:border-slate-700 hover:bg-slate-900'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <span className={`text-xs font-bold uppercase tracking-wider ${currentStage === choice.stage ? 'text-blue-400' : 'text-slate-500'}`}>
+                    {lang === 'en' ? `Option 0${choice.stage === 4 ? 3 : choice.stage === 5 ? 4 : choice.stage}` : `विकल्प`}
+                  </span>
+                  {currentStage === choice.stage && <Check size={16} className="text-blue-400 stroke-[3]" />}
+                </div>
+                <p className="text-base font-bold text-white mb-1">{choice.title[lang] || choice.title.en}</p>
+                <p className="text-xs text-slate-400">{choice.sub[lang] || choice.sub.en}</p>
+              </button>
+            ))}
+          </div>
+        </section>
+
+        {/* 3. YOUR JOURNEY MAP (INTERACTIVE STEPPER) */}
+        <section ref={journeyRef} className="bg-slate-900/50 backdrop-blur-xl border border-slate-800 rounded-3xl p-6 sm:p-10 shadow-2xl">
+          <div className="mb-8">
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-white">
+              {lang === 'en' ? 'Your Journey Map' : lang === 'hi' ? 'आपका यात्रा मानचित्र' : 'તમારો પ્રવાસ નકશો'}
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-400 mt-1">
+              {lang === 'en' 
+                ? 'Follow these 6 legal stages to secure your permanent smart card licence without bribes or touts.'
+                : 'કોઈ પણ એજન્ટ વગર ડ્રાઇવિંગ લાયસન્સ મેળવવા માટેના 6 સત્તાવાર પગલાં.'}
+            </p>
+          </div>
+
+          <div className="space-y-6 relative before:absolute before:inset-0 before:left-5 before:top-4 before:bottom-4 before:w-0.5 before:bg-gradient-to-b before:from-blue-600 before:via-slate-700 before:to-transparent">
             {journeySteps.map((step) => {
-              const isCompleted = journeyStage >= step.id;
-              const isCurrent = journeyStage === step.id - 1;
+              const isPast = step.num < currentStage;
+              const isCurrent = step.num === currentStage;
 
               return (
-                <div key={step.id} className="relative flex items-start gap-5">
-                  {/* Circle Indicator */}
-                  <div className="z-10 bg-slate-950 rounded-full mt-1 shrink-0">
-                    {isCompleted ? (
-                      <CheckCircle2 className="text-emerald-500 bg-emerald-950/50 rounded-full" size={32} />
-                    ) : isCurrent ? (
-                      <div className="relative flex items-center justify-center w-8 h-8">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-500 opacity-75"></span>
-                        <Circle className="text-blue-500 fill-blue-900/50 relative" size={32} />
-                      </div>
+                <div key={step.num} className="relative flex items-start gap-4 sm:gap-6 pl-1">
+                  {/* Step Marker Circle */}
+                  <div className={`relative z-10 w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center shrink-0 border-2 transition-all ${
+                    isPast
+                      ? 'bg-emerald-950 border-emerald-500 text-emerald-400 shadow-md shadow-emerald-950/40'
+                      : isCurrent
+                      ? 'bg-blue-600 border-blue-400 text-white shadow-lg shadow-blue-600/40 ring-4 ring-blue-500/20'
+                      : 'bg-slate-950 border-slate-700 text-slate-500'
+                  }`}>
+                    {isPast ? (
+                      <CheckCircle2 size={20} className="stroke-[2.5]" />
                     ) : (
-                      <Circle className="text-slate-700" size={32} />
+                      <span className="font-bold text-xs sm:text-sm">{step.num}</span>
                     )}
                   </div>
 
-                  {/* Step Details */}
+                  {/* Step Details & Action */}
                   <div className="flex-1 pt-1">
-                    <h3 className={`text-lg font-bold mb-2 ${isCompleted || isCurrent ? 'text-white' : 'text-slate-500'}`}>
-                      {step.id}. {step.text[lang]}
+                    <h3 className={`text-base sm:text-lg font-bold transition-colors ${isCurrent ? 'text-white' : 'text-slate-300'}`}>
+                      {step.title[lang] || step.title.en}
                     </h3>
+                    <p className="text-xs sm:text-sm text-slate-400 mt-1 max-w-xl leading-relaxed">
+                      {step.desc[lang] || step.desc.en}
+                    </p>
 
-                    {/* Step Action Button */}
-                    <AnimatePresence>
-                      {isCurrent && (
-                        <motion.div
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: 'auto' }}
-                          className="mb-4 overflow-hidden"
+                    {/* Active Action Button */}
+                    {isCurrent && (
+                      <div className="mt-4">
+                        <Link
+                          to={step.link}
+                          className="inline-flex items-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold text-xs sm:text-sm transition shadow-md shadow-blue-600/30"
                         >
-                          <p className="text-slate-400 mb-4 text-sm">
-                            {lang === 'en' && "This is your next step. Let's get it done."}
-                            {lang === 'hi' && "यह आपका अगला कदम है। चलिए इसे पूरा करते हैं।"}
-                            {lang === 'gu' && "આ તમારું આગળનું પગલું છે. ચાલો તેને પૂર્ણ કરીએ."}
-                          </p>
-                          <Link
-                            to={step.path}
-                            className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-bold px-6 py-3 rounded-xl transition shadow-lg shadow-blue-600/30 text-sm"
-                          >
-                            {step.btnText[lang]} <ArrowRight size={18} />
-                          </Link>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
+                          <span>{step.btnText[lang] || step.btnText.en}</span>
+                          <ArrowRight size={15} />
+                        </Link>
+                      </div>
+                    )}
                   </div>
                 </div>
               );
@@ -308,28 +284,116 @@ export default function Home() {
           </div>
         </section>
 
-        {/* FEATURE GRID */}
-        <section aria-label="Feature Highlights" className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full mb-8">
-          {features.map((feature, idx) => (
-            <Link
-              key={idx}
-              to={feature.path}
-              className="bg-slate-900/50 backdrop-blur-sm border border-slate-800 hover:border-slate-700 p-6 rounded-3xl transition flex items-start gap-4 group shadow-lg"
-            >
-              <div className="w-12 h-12 bg-slate-800 border border-slate-700 rounded-xl flex items-center justify-center text-blue-400 group-hover:scale-110 transition-transform shrink-0">
-                {feature.icon}
+        {/* 4. EMERGENCY: LOST LICENCE SOS BANNER */}
+        <section className="p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-red-950/40 via-slate-900/80 to-slate-900 border border-red-900/40 relative overflow-hidden shadow-2xl">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 relative z-10">
+            <div className="space-y-1.5">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-500/10 border border-red-500/30 text-red-400 font-bold text-xs uppercase tracking-wider">
+                <ShieldAlert size={14} />
+                <span>{lang === 'en' ? 'Emergency Assistance' : lang === 'hi' ? 'आपातकालीन सहायता' : 'ઇમરજન્સી સહાય'}</span>
               </div>
-              <div>
-                <h3 className="text-lg font-bold text-white mb-1 group-hover:text-blue-400 transition-colors">
-                  {feature.title[lang] || feature.title.en}
-                </h3>
-                <p className="text-sm text-slate-400 leading-relaxed">
-                  {feature.desc[lang] || feature.desc.en}
+              <h3 className="text-xl sm:text-2xl font-extrabold text-white">
+                {lang === 'en' ? 'Lost or Damaged Driving Licence?' : lang === 'hi' ? 'ड्राइविंग लाइसेंस खो गया या टूट गया?' : 'ડ્રાઇવિંગ લાયસન્સ ખોવાઈ ગયું છે?'}
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-400 max-w-xl leading-relaxed">
+                {lang === 'en' && 'No driving re-test required! File an online police NCR in 5 minutes and apply for a duplicate card for just ₹400 official fee.'}
+                {lang === 'hi' && 'दोबारा टेस्ट की जरूरत नहीं! 5 मिनट में ऑनलाइन पुलिस रिपोर्ट दर्ज करें और ₹400 सरकारी शुल्क में डुप्लीकेट कार्ड प्राप्त करें।'}
+                {lang === 'gu' && 'કોઈ નવો ટેસ્ટ આપવો નહીં પડે! 5 મિનિટમાં ઓનલાઇન પોલીસ રિપોર્ટ કરી માત્ર ₹400 સરકારી ફીમાં નવું કાર્ડ મેળવો.'}
+              </p>
+            </div>
+
+            <Link
+              to="/lost-licence"
+              className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs sm:text-sm transition shadow-lg shadow-red-900/40 shrink-0"
+            >
+              <span>{lang === 'en' ? 'Recover Licence' : lang === 'hi' ? 'लाइसेंस पुनः प्राप्त करें' : 'લાયસન્સ પુનઃપ્રાપ્ત કરો'}</span>
+              <ArrowRight size={16} />
+            </Link>
+          </div>
+        </section>
+
+        {/* 5. ESSENTIAL TOOLS & PREPARATION GRID */}
+        <section className="space-y-6">
+          <div className="text-center">
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-white">
+              {lang === 'en' ? 'Practice & Preparation Tools' : lang === 'hi' ? 'अभ्यास और तैयारी उपकरण' : 'પ્રેક્ટિસ અને તૈયારી માટેના સાધનો'}
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-400 mt-1">
+              {lang === 'en' ? 'Interactive simulators designed to pass your RTO exams on the first attempt.' : 'પ્રથમ પ્રયાસે RTO પરીક્ષા પાસ કરવા માટેના ખાસ ટૂલ્સ.'}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Link
+              to="/test-day"
+              className="p-6 rounded-2xl bg-slate-900/50 border border-slate-800 hover:border-blue-500/60 hover:bg-slate-900 transition flex items-start gap-4 group"
+            >
+              <div className="w-12 h-12 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                <Laptop size={24} />
+              </div>
+              <div className="space-y-1">
+                <h4 className="text-lg font-bold text-white group-hover:text-blue-400 transition-colors">
+                  {lang === 'en' ? 'RTO STALL Kiosk Simulator' : lang === 'hi' ? 'आरटीओ कियोस्क सिम्युलेटर' : 'RTO કિયોસ્ક સિમ્યુલેટર'}
+                </h4>
+                <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
+                  {lang === 'en' ? 'Experience the exact touchscreen computer test with real 30s timer and controls.' : 'વાસ્તવિક 30 સેકન્ડ ટાઈમર સાથે અસલી RTO કમ્પ્યુટર પરીક્ષાનો અનુભવ.'}
                 </p>
               </div>
             </Link>
-          ))}
+
+            <Link
+              to="/learn"
+              className="p-6 rounded-2xl bg-slate-900/50 border border-slate-800 hover:border-emerald-500/60 hover:bg-slate-900 transition flex items-start gap-4 group"
+            >
+              <div className="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                <BookOpen size={24} />
+              </div>
+              <div className="space-y-1">
+                <h4 className="text-lg font-bold text-white group-hover:text-emerald-400 transition-colors">
+                  {lang === 'en' ? 'IRC Road Signs Flashcards' : lang === 'hi' ? 'आईआरसी सड़क संकेत' : 'IRC ટ્રાફિક રોડ સાઇન'}
+                </h4>
+                <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
+                  {lang === 'en' ? 'Master mandatory, cautionary, and informatory Indian road signs.' : 'ફરજિયાત, ચેતવણી અને માહિતી આપતા તમામ રોડ સાઇન શીખો.'}
+                </p>
+              </div>
+            </Link>
+
+            <Link
+              to="/documents"
+              className="p-6 rounded-2xl bg-slate-900/50 border border-slate-800 hover:border-indigo-500/60 hover:bg-slate-900 transition flex items-start gap-4 group"
+            >
+              <div className="w-12 h-12 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                <FileText size={24} />
+              </div>
+              <div className="space-y-1">
+                <h4 className="text-lg font-bold text-white group-hover:text-indigo-400 transition-colors">
+                  {lang === 'en' ? 'Document Advisor' : lang === 'hi' ? 'दस्तावेज़ सलाहकार' : 'જરૂરી દસ્તાવેજ માર્ગદર્શિકા'}
+                </h4>
+                <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
+                  {lang === 'en' ? 'Get an exact checklist based on your age, vehicle category, and residence.' : 'તમારી ઉંમર અને વાહન મુજબ કયા દસ્તાવેજો જોઈશે તેનું ચેકલિસ્ટ.'}
+                </p>
+              </div>
+            </Link>
+
+            <Link
+              to="/track-app"
+              className="p-6 rounded-2xl bg-slate-900/50 border border-slate-800 hover:border-amber-500/60 hover:bg-slate-900 transition flex items-start gap-4 group"
+            >
+              <div className="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                <Clock size={24} />
+              </div>
+              <div className="space-y-1">
+                <h4 className="text-lg font-bold text-white group-hover:text-amber-400 transition-colors">
+                  {lang === 'en' ? 'Track Application Status' : lang === 'hi' ? 'आवेदन स्थिति ट्रैक करें' : 'અરજી સ્ટેટસ ટ્રેક કરો'}
+                </h4>
+                <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
+                  {lang === 'en' ? 'Check your RTO verification, dispatch, and physical card delivery status.' : 'તમારા લાયસન્સનું RTO વેરિફિકેશન અને સ્પીડ પોસ્ટ ટ્રેકિંગ જુઓ.'}
+                </p>
+              </div>
+            </Link>
+          </div>
         </section>
+
       </div>
     </div>
   );

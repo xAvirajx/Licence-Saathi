@@ -2,7 +2,7 @@ import { useState, createContext, useEffect, Suspense, lazy, useRef } from 'reac
 import { Routes, Route, Link, useLocation } from 'react-router-dom';
 import { 
   Settings as SettingsIcon, WifiOff, Car, Menu, X, Share2, 
-  Languages, Check, Sun, Moon, Monitor, ChevronDown 
+  Languages, Check, Sun, Moon, Monitor, ChevronDown, ShieldAlert 
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { en } from './i18n/en';
@@ -22,6 +22,7 @@ const TrackApp = lazy(() => import('./pages/TrackApp'));
 const PermanentLicence = lazy(() => import('./pages/PermanentLicence'));
 const Learn = lazy(() => import('./pages/Learn'));
 const DrivingTest = lazy(() => import('./pages/DrivingTest'));
+const LostLicence = lazy(() => import('./pages/LostLicence'));
 const Settings = lazy(() => import('./pages/Settings'));
 const Privacy = lazy(() => import('./pages/Privacy'));
 const Terms = lazy(() => import('./pages/Terms'));
@@ -49,7 +50,7 @@ export default function App() {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
-  // Theme state: 'system' | 'light' | 'dark' (Default is 'system')
+  // Theme state: 'system' | 'light' | 'dark'
   const [theme, setTheme] = useState(() => localStorage.getItem('ls_theme') || 'system');
   const [effectiveTheme, setEffectiveTheme] = useState('dark');
   const [themeMenuOpen, setThemeMenuOpen] = useState(false);
@@ -156,14 +157,12 @@ export default function App() {
       effectiveTheme,
       t 
     }}>
-      {/* Global Adaptive Scrollbar & Light-Mode Stylesheet */}
+      {/* Global Adaptive Scrollbars & Light Mode Stylesheet */}
       <style>{`
-        /* Universal Modern Scrollbar Base */
         * {
           scrollbar-width: thin;
         }
 
-        /* 🌙 Dark Mode Scrollbars (Chat Window, Modal, Full Page) */
         .dark-mode, 
         body:not(.light-mode),
         .dark-mode * {
@@ -188,7 +187,6 @@ export default function App() {
           background-color: #475569;
         }
 
-        /* ☀️ Light Mode Scrollbars */
         .light-mode,
         .light-mode * {
           scrollbar-color: #cbd5e1 transparent;
@@ -208,7 +206,6 @@ export default function App() {
           background-color: #94a3b8;
         }
 
-        /* Light Mode Theme Overrides */
         .light-mode {
           background-color: #f8fafc !important;
           color: #0f172a !important;
@@ -334,7 +331,6 @@ export default function App() {
 
       <div className={`w-full min-h-screen ${effectiveTheme === 'light' ? 'bg-slate-50 text-slate-900' : 'bg-slate-950 text-slate-50'} flex flex-col relative overflow-x-hidden font-sans transition-colors duration-300 ${highContrast ? 'contrast-150 saturate-150 brightness-110' : ''}`}>
         
-        {/* Skip Link for Screen Readers */}
         <a 
           href="#main-content" 
           className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 z-50 bg-blue-600 text-white px-4 py-2 rounded-xl font-bold shadow-lg"
@@ -342,7 +338,6 @@ export default function App() {
           Skip to main content
         </a>
 
-        {/* Offline Notification Banner */}
         {!isOnline && (
           <div role="status" aria-live="polite" className="bg-amber-500 text-slate-950 px-4 py-2 font-bold text-xs sm:text-sm text-center flex items-center justify-center gap-2 sticky top-0 z-50 shadow-md">
             <WifiOff size={16} />
@@ -367,9 +362,9 @@ export default function App() {
             </Link>
 
             {/* Desktop Navigation Links */}
-            <nav role="navigation" aria-label="Main Navigation" className="hidden md:flex items-center gap-7 font-medium text-sm text-slate-300">
+            <nav role="navigation" aria-label="Main Navigation" className="hidden md:flex items-center gap-6 font-medium text-sm text-slate-300">
               <Link to="/application" className="hover:text-blue-500 transition">
-                {lang === 'en' ? 'Apply Now' : lang === 'hi' ? 'अभी आवेदन करें' : 'હવે અરજી કરો'}
+                {lang === 'en' ? 'Apply Now' : lang === 'hi' ? 'आवेदन करें' : 'અરજી કરો'}
               </Link>
               <Link to="/learn" className="hover:text-blue-500 transition">
                 {lang === 'en' ? 'Learn Signs' : lang === 'hi' ? 'संकेत सीखें' : 'સાઇન શીખો'}
@@ -380,12 +375,14 @@ export default function App() {
               <Link to="/mock-test" className="hover:text-blue-500 transition">
                 {lang === 'en' ? 'Mock Test' : lang === 'hi' ? 'मॉक टेस्ट' : 'મોક ટેસ્ટ'}
               </Link>
+              <Link to="/lost-licence" className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 font-bold hover:bg-red-500/20 transition text-xs">
+                <ShieldAlert size={14} />
+                <span>{lang === 'en' ? 'Lost DL?' : lang === 'hi' ? 'गुमशुदा DL?' : 'ખોવાયેલ DL?'}</span>
+              </Link>
             </nav>
 
-            {/* Top Bar Controls */}
             <div className="flex items-center gap-2">
-              
-              {/* COMPACT SQUARE THEME BUTTON (SUN / MOON ONLY ON PHONES) */}
+              {/* THEME TOGGLE BUTTON */}
               <div className="relative" ref={themeMenuRef}>
                 <button
                   onClick={() => setThemeMenuOpen(!themeMenuOpen)}
@@ -414,7 +411,6 @@ export default function App() {
                   <ChevronDown size={14} className={`hidden sm:inline text-slate-400 transition-transform ${themeMenuOpen ? 'rotate-180' : ''}`} />
                 </button>
 
-                {/* Popover Appearance Menu */}
                 <AnimatePresence>
                   {themeMenuOpen && (
                     <motion.div
@@ -485,7 +481,6 @@ export default function App() {
                 </AnimatePresence>
               </div>
 
-              {/* Mobile Drawer Toggle Button */}
               <button
                 onClick={() => setMobileMenuOpen(true)}
                 aria-label="Toggle Menu"
@@ -521,9 +516,9 @@ export default function App() {
                 </button>
               </div>
 
-              <nav role="navigation" aria-label="Mobile Navigation" className="flex flex-col items-center justify-center flex-1 gap-7 text-xl font-bold">
+              <nav role="navigation" aria-label="Mobile Navigation" className="flex flex-col items-center justify-center flex-1 gap-6 text-xl font-bold">
                 <Link to="/application" onClick={() => setMobileMenuOpen(false)} className="hover:text-blue-500 transition">
-                  {lang === 'en' ? 'Apply Now' : lang === 'hi' ? 'अभी आवेदन करें' : 'હવે અરજી કરો'}
+                  {lang === 'en' ? 'Apply Now' : lang === 'hi' ? 'आवेदन करें' : 'અરજી કરો'}
                 </Link>
                 <Link to="/learn" onClick={() => setMobileMenuOpen(false)} className="hover:text-blue-500 transition">
                   {lang === 'en' ? 'Learn Signs' : lang === 'hi' ? 'संकेत सीखें' : 'સાઇન શીખો'}
@@ -533,6 +528,10 @@ export default function App() {
                 </Link>
                 <Link to="/mock-test" onClick={() => setMobileMenuOpen(false)} className="hover:text-blue-500 transition">
                   {lang === 'en' ? 'Mock Test' : lang === 'hi' ? 'मॉक टेस्ट' : 'મોક ટેસ્ટ'}
+                </Link>
+                <Link to="/lost-licence" onClick={() => setMobileMenuOpen(false)} className="text-red-400 hover:text-red-300 transition flex items-center gap-2">
+                  <ShieldAlert size={20} />
+                  <span>{lang === 'en' ? 'Lost DL SOS' : lang === 'hi' ? 'गुमशुदा लाइसेंस सहायता' : 'ખોવાયેલ લાયસન્સ સહાય'}</span>
                 </Link>
                 <Link to="/settings" onClick={() => setMobileMenuOpen(false)} className="hover:text-blue-500 transition">
                   {lang === 'en' ? 'Settings' : lang === 'hi' ? 'सेटिंग्स' : 'સેટિંગ્સ'}
@@ -578,6 +577,7 @@ export default function App() {
               <Route path="/permanent-licence" element={<PermanentLicence />} />
               <Route path="/learn" element={<Learn />} />
               <Route path="/driving-test" element={<DrivingTest />} />
+              <Route path="/lost-licence" element={<LostLicence />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/privacy" element={<Privacy />} />
               <Route path="/terms" element={<Terms />} />
@@ -665,6 +665,10 @@ export default function App() {
             </div>
 
             <div className="flex items-center gap-4 sm:gap-6 text-xs text-slate-400 font-medium">
+              <Link to="/lost-licence" className="hover:text-red-400 transition-colors">
+                {lang === 'en' ? 'Lost Licence Help' : lang === 'hi' ? 'गुमशुदा लाइसेंस सहायता' : 'ખોવાયેલ લાયસન્સ'}
+              </Link>
+              <span className="text-slate-700">•</span>
               <Link to="/privacy" className="hover:text-blue-500 transition-colors">
                 {lang === 'en' ? 'Privacy Policy' : lang === 'hi' ? 'गोपनीयता नीति' : 'પ્રાઇવસી પોલિસી'}
               </Link>
