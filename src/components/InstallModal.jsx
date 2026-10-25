@@ -3,28 +3,35 @@ import { AppContext } from '../App';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   X, Download, Share, PlusSquare, 
-  CheckCircle2, Zap 
+  CheckCircle2, Zap, Compass, AlertCircle
 } from 'lucide-react';
 
 export default function InstallModal() {
   const { lang, isInstalled, deferredPrompt, triggerInstallPrompt } = useContext(AppContext);
   const [isOpen, setIsOpen] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
+  const [isInAppBrowser, setIsInAppBrowser] = useState(false);
 
   useEffect(() => {
     // 1. Never show if already running inside the installed standalone PWA
     if (isInstalled) return;
 
-    // 2. Check if user already dismissed or installed in this browser
+    // 2. Check if user already dismissed or installed in this browser session
     const hasSeenModal = localStorage.getItem('ls_pwa_modal_dismissed');
     if (hasSeenModal) return;
 
-    // 3. Detect iOS Safari
-    const userAgent = window.navigator.userAgent.toLowerCase();
-    const isIosDevice = /iphone|ipad|ipod/.test(userAgent);
+    // 3. Detect iOS device
+    const userAgent = window.navigator.userAgent || window.navigator.vendor || window.opera;
+    const uaLower = userAgent.toLowerCase();
+    const isIosDevice = /iphone|ipad|ipod/.test(uaLower) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
     setIsIOS(isIosDevice);
 
-    // 4. Trigger pop up after 2.5 seconds on the homepage
+    // 4. Detect in-app webview (WhatsApp, Instagram, FB, LinkedIn, Twitter/X)
+    const inApp = /fban|fbav|instagram|whatsapp|wv|line|micromessenger|crios/i.test(userAgent) || 
+                  (isIosDevice && !uaLower.includes('safari'));
+    setIsInAppBrowser(inApp);
+
+    // 5. Trigger pop up after 2.5 seconds on the homepage
     const timer = setTimeout(() => {
       setIsOpen(true);
     }, 2500);
@@ -83,50 +90,74 @@ export default function InstallModal() {
                 {lang === 'en' ? 'Install License Saathi' : lang === 'hi' ? 'लाइसेंस साथी ऐप इंस्टॉल करें' : 'લાયસન્સ સાથી એપ ઇન્સ્ટોલ કરો'}
               </h3>
               <p className="text-xs text-slate-400">
-                {lang === 'en' ? 'Universal Web App for Laptops & Mobile' : 'લેપટોપ અને મોબાઈલ માટે સત્તાવાર એપ'}
+                {lang === 'en' ? 'Universal Web App for iPhone & Laptops' : 'iPhone અને લેપટોપ માટે સત્તાવાર એપ'}
               </p>
             </div>
           </div>
 
           {/* Highlights */}
-          <div className="space-y-2 mb-6 bg-slate-950/60 border border-slate-800/80 p-3.5 rounded-2xl text-xs text-slate-300">
+          <div className="space-y-2 mb-5 bg-slate-950/60 border border-slate-800/80 p-3.5 rounded-2xl text-xs text-slate-300">
             <div className="flex items-center gap-2.5">
               <CheckCircle2 size={15} className="text-emerald-400 shrink-0" />
-              <span>Full offline access to RTO mock tests & sign flashcards</span>
+              <span>Full offline access to RTO mock tests & signs</span>
             </div>
             <div className="flex items-center gap-2.5">
               <CheckCircle2 size={15} className="text-emerald-400 shrink-0" />
-              <span>Zero-PII guarantee: 100% private with no tracking</span>
-            </div>
-            <div className="flex items-center gap-2.5">
-              <CheckCircle2 size={15} className="text-emerald-400 shrink-0" />
-              <span>Direct install on Laptops, Android & iPhones</span>
+              <span>Zero-PII: No App Store account or personal data required</span>
             </div>
           </div>
 
-          {/* Conditional Guidance: iOS Safari vs. Laptop / Android */}
+          {/* Conditional Guidance: iOS vs. Android / Laptop */}
           {isIOS ? (
             <div className="space-y-3 bg-blue-950/30 border border-blue-900/50 p-4 rounded-2xl">
-              <p className="text-xs font-bold text-blue-300 uppercase tracking-wider">
-                How to install on iPhone / iPad:
-              </p>
-              <div className="space-y-2 text-xs text-slate-200">
-                <div className="flex items-center gap-3">
-                  <div className="w-6 h-6 rounded-lg bg-slate-800 flex items-center justify-center text-blue-400 shrink-0">
-                    <Share size={14} />
+              
+              {/* Warning if opened inside WhatsApp / Social in-app browser */}
+              {isInAppBrowser && (
+                <div className="p-2.5 rounded-xl bg-amber-950/60 border border-amber-600/50 flex items-start gap-2.5 text-xs text-amber-200 mb-2">
+                  <Compass size={18} className="text-amber-400 shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-bold block">Must open in Safari:</span>
+                    <span>Tap the <strong>Safari icon (🧭)</strong> or <strong>"..."</strong> in the corner to switch to Safari first.</span>
                   </div>
-                  <span>1. Tap the <strong>Share</strong> button at bottom of Safari</span>
                 </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-6 h-6 rounded-lg bg-slate-800 flex items-center justify-center text-blue-400 shrink-0">
-                    <PlusSquare size={14} />
+              )}
+
+              <p className="text-xs font-bold text-blue-300 uppercase tracking-wider">
+                How to install in Safari:
+              </p>
+
+              <div className="space-y-2.5 text-xs text-slate-200">
+                <div className="flex items-start gap-3">
+                  <div className="w-6 h-6 rounded-lg bg-blue-600/30 border border-blue-500/50 flex items-center justify-center text-blue-300 shrink-0 mt-0.5">
+                    <Share size={13} />
                   </div>
-                  <span>2. Scroll down and tap <strong>Add to Home Screen</strong></span>
+                  <span>
+                    1. Tap the <strong>Share</strong> button (bottom bar on iPhone, top right on iPad).
+                  </span>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <div className="w-6 h-6 rounded-lg bg-blue-600/30 border border-blue-500/50 flex items-center justify-center text-blue-300 shrink-0 mt-0.5">
+                    <PlusSquare size={13} />
+                  </div>
+                  <span>
+                    2. Scroll down the menu and tap <strong>"Add to Home Screen"</strong>.
+                  </span>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <div className="w-6 h-6 rounded-lg bg-emerald-600/30 border border-emerald-500/50 flex items-center justify-center text-emerald-300 shrink-0 mt-0.5 font-bold text-[11px]">
+                    ✓
+                  </div>
+                  <span>
+                    3. Tap <strong>"Add"</strong> in the top-right corner to finish.
+                  </span>
                 </div>
               </div>
+
               <button
                 onClick={handleDismiss}
-                className="w-full mt-2 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold text-xs transition"
+                className="w-full mt-3 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold text-xs transition"
               >
                 Got It
               </button>
