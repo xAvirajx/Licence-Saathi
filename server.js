@@ -109,30 +109,16 @@ You are License Saathi AI, an expert assistant helping people get a driving lice
 
     contents.push({ role: 'user', parts: [{ text: message.trim() }] });
 
-    // Primary: gemini-2.5-flash | Fallback: gemini-2.0-flash
-    let response;
-    try {
-      response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents,
-        config: {
-          systemInstruction,
-          maxOutputTokens: 300,
-          temperature: 0.7
-        }
-      });
-    } catch (primaryError) {
-      console.warn('[MODEL RETRY] gemini-2.5-flash failed, trying gemini-2.0-flash:', primaryError.message);
-      response = await ai.models.generateContent({
-        model: 'gemini-2.0-flash',
-        contents,
-        config: {
-          systemInstruction,
-          maxOutputTokens: 300,
-          temperature: 0.7
-        }
-      });
-    }
+    // Using gemini-3.8-flash as required by Google API
+    const response = await ai.models.generateContent({
+      model: 'gemini-3.8-flash',
+      contents,
+      config: {
+        systemInstruction,
+        maxOutputTokens: 300,
+        temperature: 0.7
+      }
+    });
 
     return res.status(200).json({ reply: response.text });
   } catch (error) {
