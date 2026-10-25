@@ -102,7 +102,7 @@ export default function Settings() {
                     {isInstalled && lang === 'en' && 'App is installed on your device.'}
                     {isInstalled && lang === 'hi' && 'ऐप आपके डिवाइस पर इंस्टॉल है।'}
                     {isInstalled && lang === 'gu' && 'એપ તમારા ઉપકરણ પર ઇન્સ્ટોલ કરેલી છે.'}
-                    {!isInstalled && lang === 'en' && 'Install Licence Saathi for fast offline access.'}
+                    {!isInstalled && lang === 'en' && 'Install License Saathi for fast offline access.'}
                     {!isInstalled && lang === 'hi' && 'तेज़ ऑफ़लाइन एक्सेस के लिए लाइसेंस साथी इंस्टॉल करें।'}
                     {!isInstalled && lang === 'gu' && 'ઝડપી ઓફલાઇન ઉપયોગ માટે લાઇસન્સ સાથી ઇન્સ્ટોલ કરો.'}
                   </p>

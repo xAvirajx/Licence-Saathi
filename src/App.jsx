@@ -60,12 +60,10 @@ export default function App() {
 
   const location = useLocation();
 
-  // Track page views locally
   useEffect(() => {
     trackPageView(location.pathname);
   }, [location.pathname]);
 
-  // System Theme Detector & Listener
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     
@@ -90,7 +88,6 @@ export default function App() {
     return () => mediaQuery.removeEventListener('change', handleSystemThemeChange);
   }, [theme]);
 
-  // Close menus when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (themeMenuRef.current && !themeMenuRef.current.contains(e.target)) {
@@ -101,7 +98,6 @@ export default function App() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Online / Offline listener
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
@@ -116,7 +112,6 @@ export default function App() {
   const dictionaries = { en, hi, gu };
   const t = dictionaries[lang] || en;
 
-  // Sync settings & font scaling to root HTML document
   useEffect(() => {
     localStorage.setItem('ls_lang', lang);
     localStorage.setItem('ls_textSize', textSize);
@@ -140,10 +135,10 @@ export default function App() {
   // Global WhatsApp referral message for footer
   const footerShareText = 
     lang === 'gu'
-      ? `🚗 લાઇસન્સ સાથી - સરળ RTO ડ્રાઇવિંગ લાઇસન્સ માર્ગદર્શિકા! પાત્રતા તપાસો, મોક ટેસ્ટ આપો અને રોડ સાઇન શીખો: https://licence-saathi-v2.onrender.com/`
+      ? `🚗 લાયસન્સ સાથી - સરળ RTO ડ્રાઇવિંગ લાઇસન્સ માર્ગદર્શિકા! પાત્રતા તપાસો, મોક ટેસ્ટ આપો અને રોડ સાઇન શીખો: https://licence-saathi-v2.onrender.com/`
       : lang === 'hi'
       ? `🚗 लाइसेंस साथी - तनाव मुक्त एम-परिवहन सहायता और आरटीओ ड्राइविंग लाइसेंस गाइड! पात्रता जांचें, मॉक टेस्ट दें और रोड साइन्स सीखें: https://licence-saathi-v2.onrender.com/`
-      : `🚗 Licence Saathi - Stress-free mParivahan assistance and RTO driving licence guide for India! Check eligibility, practice mock tests, and learn road signs: https://licence-saathi-v2.onrender.com/`;
+      : `🚗 License Saathi - Stress-free mParivahan assistance and RTO driving licence guide for India! Check eligibility, practice mock tests, and learn road signs: https://licence-saathi-v2.onrender.com/`;
 
   const footerWhatsappUrl = `https://wa.me/?text=${encodeURIComponent(footerShareText)}`;
 
@@ -157,7 +152,6 @@ export default function App() {
       effectiveTheme,
       t 
     }}>
-      {/* High-Contrast, Crystal-Clear Light Mode CSS Rules */}
       {effectiveTheme === 'light' && (
         <style>{`
           .light-mode {
@@ -286,7 +280,6 @@ export default function App() {
 
       <div className={`w-full min-h-screen ${effectiveTheme === 'light' ? 'bg-slate-50 text-slate-900' : 'bg-slate-950 text-slate-50'} flex flex-col relative overflow-x-hidden font-sans transition-colors duration-300 ${highContrast ? 'contrast-150 saturate-150 brightness-110' : ''}`}>
         
-        {/* Skip Link for Screen Readers */}
         <a 
           href="#main-content" 
           className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 z-50 bg-blue-600 text-white px-4 py-2 rounded-xl font-bold shadow-lg"
@@ -294,7 +287,6 @@ export default function App() {
           Skip to main content
         </a>
 
-        {/* Offline Notification Banner */}
         {!isOnline && (
           <div role="status" aria-live="polite" className="bg-amber-500 text-slate-950 px-4 py-2 font-bold text-xs sm:text-sm text-center flex items-center justify-center gap-2 sticky top-0 z-50 shadow-md">
             <WifiOff size={16} />
@@ -309,16 +301,15 @@ export default function App() {
         {/* 1. GLOBAL HEADER */}
         <header role="banner" className={`relative z-30 w-full border-b ${effectiveTheme === 'light' ? 'border-slate-200 bg-white/90' : 'border-slate-800/80 bg-slate-950/80'} backdrop-blur-md`}>
           <div className="max-w-5xl mx-auto p-3.5 sm:px-6 flex items-center justify-between">
-            <Link to="/" aria-label="Licence Saathi Home" className="flex items-center gap-2.5 sm:gap-3">
+            <Link to="/" aria-label="License Saathi Home" className="flex items-center gap-2.5 sm:gap-3">
               <div className="w-9 h-9 sm:w-10 sm:h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20 shrink-0">
                 <Car size={22} className="text-white" />
               </div>
               <span className={`text-lg sm:text-xl font-bold tracking-tight ${effectiveTheme === 'light' ? 'text-slate-900' : 'text-white'}`}>
-                Licence Saathi
+                License Saathi
               </span>
             </Link>
 
-            {/* Desktop Navigation Links */}
             <nav role="navigation" aria-label="Main Navigation" className="hidden md:flex items-center gap-7 font-medium text-sm text-slate-300">
               <Link to="/application" className="hover:text-blue-500 transition">
                 {lang === 'en' ? 'Apply Now' : lang === 'hi' ? 'अभी आवेदन करें' : 'હવે અરજી કરો'}
@@ -334,10 +325,7 @@ export default function App() {
               </Link>
             </nav>
 
-            {/* Top Bar Controls */}
             <div className="flex items-center gap-2">
-              
-              {/* COMPACT SQUARE THEME BUTTON (SUN / MOON ONLY ON PHONES) */}
               <div className="relative" ref={themeMenuRef}>
                 <button
                   onClick={() => setThemeMenuOpen(!themeMenuOpen)}
@@ -349,14 +337,12 @@ export default function App() {
                       : 'bg-slate-900 hover:bg-slate-800 border-slate-700 text-slate-100'
                   }`}
                 >
-                  {/* Dynamic Sun or Moon Icon */}
                   {effectiveTheme === 'dark' ? (
                     <Moon size={18} className="text-indigo-400 shrink-0" />
                   ) : (
                     <Sun size={18} className="text-amber-500 shrink-0" />
                   )}
 
-                  {/* Text only on tablet/desktop (NEVER says 'Auto') */}
                   <span className="hidden sm:inline text-xs font-bold">
                     {theme === 'system'
                       ? (lang === 'en' ? 'System Default' : lang === 'hi' ? 'सिस्टम डिफ़ॉल्ट' : 'સિસ્ટમ ડિફોલ્ટ')
@@ -368,7 +354,6 @@ export default function App() {
                   <ChevronDown size={14} className={`hidden sm:inline text-slate-400 transition-transform ${themeMenuOpen ? 'rotate-180' : ''}`} />
                 </button>
 
-                {/* Popover Appearance Menu */}
                 <AnimatePresence>
                   {themeMenuOpen && (
                     <motion.div
@@ -439,7 +424,6 @@ export default function App() {
                 </AnimatePresence>
               </div>
 
-              {/* Mobile Drawer Toggle Button */}
               <button
                 onClick={() => setMobileMenuOpen(true)}
                 aria-label="Toggle Menu"
@@ -492,7 +476,6 @@ export default function App() {
                   {lang === 'en' ? 'Settings' : lang === 'hi' ? 'सेटिंग्स' : 'સેટિંગ્સ'}
                 </Link>
 
-                {/* Mobile Drawer Theme Quick Buttons */}
                 <div className={`flex items-center gap-2 p-1.5 rounded-2xl border ${effectiveTheme === 'light' ? 'border-slate-300 bg-slate-100' : 'border-slate-800 bg-slate-900/60'} mt-4`}>
                   <button
                     onClick={() => setTheme('system')}
@@ -518,7 +501,7 @@ export default function App() {
           )}
         </AnimatePresence>
 
-        {/* 2. MAIN REGION LANDMARK */}
+        {/* 2. MAIN REGION */}
         <main id="main-content" role="main" className="flex-1 w-full">
           <Suspense fallback={<PageLoader />}>
             <Routes>
@@ -540,12 +523,9 @@ export default function App() {
           </Suspense>
         </main>
         
-        {/* Floating Chat Helper (Bottom Right) */}
         <ChatHelper />
 
-        {/* 3. FLOATING ACTION BUTTONS (Bottom Left) */}
-        
-        {/* Floating Language Switcher (Stacked above Settings) */}
+        {/* 3. FLOATING ACTION BUTTONS */}
         <div className="fixed bottom-24 left-6 z-40">
           <AnimatePresence>
             {langMenuOpen && (
@@ -603,7 +583,6 @@ export default function App() {
           </button>
         </div>
 
-        {/* Floating Settings Button (Bottom Left) */}
         <Link 
           to="/settings" 
           aria-label="App Settings"
@@ -612,14 +591,14 @@ export default function App() {
           <SettingsIcon size={24} />
         </Link>
 
-        {/* 4. CONTENTINFO FOOTER WITH WHATSAPP REFERRAL BUTTON */}
+        {/* 4. FOOTER */}
         <footer role="contentinfo" className={`relative z-10 border-t w-full mt-auto py-8 px-6 transition-colors ${
           effectiveTheme === 'light' ? 'border-slate-200 bg-slate-100/90' : 'border-slate-800/80 bg-slate-950/60'
         }`}>
           <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-2">
               <Car size={20} className="text-blue-500" />
-              <span className={`font-bold tracking-tight ${effectiveTheme === 'light' ? 'text-slate-900' : 'text-white'}`}>Licence Saathi</span>
+              <span className={`font-bold tracking-tight ${effectiveTheme === 'light' ? 'text-slate-900' : 'text-white'}`}>License Saathi</span>
             </div>
 
             <div className="flex items-center gap-4 sm:gap-6 text-xs text-slate-400 font-medium">
@@ -632,7 +611,6 @@ export default function App() {
               </Link>
             </div>
 
-            {/* Global WhatsApp Referral Pill */}
             <div className="flex items-center gap-3">
               <a
                 href={footerWhatsappUrl}

@@ -11,13 +11,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const app = express();
 
-// Gzip/Brotli Compression
 app.use(compression());
-
-// Body parser with 100kb payload limit
 app.use(express.json({ limit: '100kb' }));
 
-// Privacy-Safe Request Logger
 app.use((req, res, next) => {
   const start = Date.now();
   const clientIp = req.headers['x-forwarded-for']?.split(',')[0] || req.socket.remoteAddress || 'unknown';
@@ -31,7 +27,6 @@ app.use((req, res, next) => {
   next();
 });
 
-// Sliding-Window Rate Limiter (25 requests per 15 min per IP)
 const rateLimitMap = new Map();
 const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
 const MAX_REQUESTS_PER_WINDOW = 25;
@@ -68,7 +63,6 @@ const chatRateLimiter = (req, res, next) => {
   next();
 };
 
-// AI Chat Endpoint
 app.post('/api/chat', chatRateLimiter, async (req, res) => {
   const { message, history, stage, configData, faqData, lang } = req.body;
 
@@ -84,14 +78,13 @@ app.post('/api/chat', chatRateLimiter, async (req, res) => {
     });
   }
 
-  // Strip leading/trailing quotes and whitespace
   const apiKey = rawKey.trim().replace(/^["']|["']$/g, '');
 
   try {
     const ai = new GoogleGenAI({ apiKey });
 
     const systemInstruction = `
-You are Licence Saathi AI, an expert assistant helping people get a driving licence in India.
+You are License Saathi AI, an expert assistant helping people get a driving licence in India.
 - Reply in the language the user writes in (English, Hindi, or Gujarati).
 - Use short, clear sentences a Class 8 student would understand.
 - If the answer depends on the state, ask which state they are in.
@@ -101,7 +94,6 @@ You are Licence Saathi AI, an expert assistant helping people get a driving lice
 - User journey stage progress index: ${stage || '1'}. Suggest their next step.
     `.trim();
 
-    // Ensure multiturn chat begins with a user turn
     let validHistory = [];
     if (Array.isArray(history)) {
       const firstUserIndex = history.findIndex((h) => h.type === 'user');
@@ -117,7 +109,6 @@ You are Licence Saathi AI, an expert assistant helping people get a driving lice
 
     contents.push({ role: 'user', parts: [{ text: message.trim() }] });
 
-    // Primary model: gemini-2.0-flash, fallback: gemini-1.5-flash
     let response;
     try {
       response = await ai.models.generateContent({
@@ -155,7 +146,6 @@ You are Licence Saathi AI, an expert assistant helping people get a driving lice
   }
 });
 
-// Serve frontend build with asset caching
 app.use(
   express.static(path.join(__dirname, 'dist'), {
     maxAge: '1y',
@@ -168,16 +158,14 @@ app.use(
   })
 );
 
-// Express 5 catch-all
 app.use((req, res) => {
   res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
-// Global error handler
 app.use((err, req, res, next) => {
   console.error('[UNCAUGHT ERROR]', err);
   res.status(500).json({ error: 'Internal server error occurred' });
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Licence Saathi server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`License Saathi server running on port ${PORT}`));

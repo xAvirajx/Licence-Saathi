@@ -9,8 +9,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'pwa-192x192.svg', 'pwa-512x512.svg'],
       manifest: {
-        name: 'Licence Saathi',
-        short_name: 'LicenceSaathi',
+        name: 'License Saathi',
+        short_name: 'LicenseSaathi',
         description: 'Stress-free mParivahan assistance and driving licence guide for India',
         theme_color: '#020617',
         background_color: '#020617',

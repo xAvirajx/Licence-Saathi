@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json.schemastore.org/ai-catalog.json",
+  "name": "License Saathi",
+  "description": "Stress-free mParivahan assistance and driving licence guide for India",
+  "version": "1.0.0",
+  "url": "https://licence-saathi-v2.onrender.com/",
+  "documentation": "https://licence-saathi-v2.onrender.com/llms.txt",
+  "capabilities": [
+    {
+      "name": "Licence Eligibility Verification",
+      "description": "Calculates applicant age and vehicle category qualification rules",
+      "type": "informational"
+    },
+    {
+      "name": "Mock Test Simulator",
+      "description": "Interactive learner licence practice tests and kiosk simulation",
+      "type": "interactive"
+    },
+    {
+      "name": "Saathi AI Assistant",
+      "description": "Real-time multilingual assistant for Indian driving licence guidance",
+      "type": "chat"
+    }
+  ]
+}

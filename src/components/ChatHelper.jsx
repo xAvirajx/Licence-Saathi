@@ -8,11 +8,11 @@ export default function ChatHelper() {
   const { lang } = useContext(AppContext);
   const [isOpen, setIsOpen] = useState(false);
 
-  let initialGreeting = 'Hi! I am Licence Saathi AI. How can I help you today?';
+  let initialGreeting = 'Hi! I am License Saathi AI. How can I help you today?';
   if (lang === 'hi') {
     initialGreeting = 'नमस्ते! मैं लाइसेंस साथी एआई हूँ। मैं आज आपकी कैसे मदद कर सकता हूँ?';
   } else if (lang === 'gu') {
-    initialGreeting = 'નમસ્તે! હું લાઇસન્સ સાથી AI છું. હું તમને કેવી રીતે મદદ કરી શકું?';
+    initialGreeting = 'નમસ્તે! હું લાયસન્સ સાથી AI છું. હું તમને કેવી રીતે મદદ કરી શકું?';
   }
 
   const [messages, setMessages] = useState([
@@ -84,7 +84,6 @@ export default function ChatHelper() {
     } catch (error) {
       console.warn("API call failed, falling back to offline keyword matcher:", error.message);
 
-      // Offline Fallback logic
       const lowerInput = userMessage.toLowerCase();
       let foundAnswer = null;
 
@@ -147,7 +146,7 @@ export default function ChatHelper() {
                   <Bot size={18} className="text-white" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-white text-sm">Licence Saathi AI</h3>
+                  <h3 className="font-bold text-white text-sm">License Saathi AI</h3>
                   <p className="text-[10px] text-emerald-400 font-medium">● Online Assistant</p>
                 </div>
               </div>
