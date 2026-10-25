@@ -4,7 +4,8 @@ import {
   Languages, Type, SunMoon, Volume2, 
   Trash2, ShieldCheck, CheckCircle2, Check, ArrowLeft,
   Smartphone, HardDrive, Sun, Moon, Monitor,
-  Play, BookOpen, Database, MapPin
+  Play, BookOpen, Database, MapPin, Share, PlusSquare,
+  Compass, AlertCircle, Laptop, ChevronRight
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -24,8 +25,13 @@ export default function Settings() {
   const [storageSize, setStorageSize] = useState('0 KB');
   const [testVoicePlaying, setTestVoicePlaying] = useState(false);
 
-  // Calculate local storage footprint in KB
+  // Device & OS Detection
+  const [detectedOS, setDetectedOS] = useState('android'); // 'ios' | 'android' | 'desktop'
+  const [selectedDeviceTab, setSelectedDeviceTab] = useState('ios');
+  const [isInAppBrowser, setIsInAppBrowser] = useState(false);
+
   useEffect(() => {
+    // 1. Calculate local storage footprint in KB
     let totalBytes = 0;
     for (let key in localStorage) {
       if (localStorage.hasOwnProperty(key)) {
@@ -33,6 +39,27 @@ export default function Settings() {
       }
     }
     setStorageSize((totalBytes / 1024).toFixed(1) + ' KB');
+
+    // 2. Detect OS and Webview
+    const userAgent = window.navigator.userAgent || window.navigator.vendor || window.opera;
+    const uaLower = userAgent.toLowerCase();
+    const isIos = /iphone|ipad|ipod/.test(uaLower) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const isAndroid = /android/.test(uaLower);
+
+    if (isIos) {
+      setDetectedOS('ios');
+      setSelectedDeviceTab('ios');
+    } else if (isAndroid) {
+      setDetectedOS('android');
+      setSelectedDeviceTab('android');
+    } else {
+      setDetectedOS('desktop');
+      setSelectedDeviceTab('android'); // desktop follows chromium install flow
+    }
+
+    const inApp = /fban|fbav|instagram|whatsapp|wv|line|micromessenger|crios/i.test(userAgent) || 
+                  (isIos && !uaLower.includes('safari'));
+    setIsInAppBrowser(inApp);
   }, []);
 
   // Voice Test Function
@@ -71,6 +98,7 @@ export default function Settings() {
     )) {
       localStorage.removeItem('licenceJourneyStage');
       localStorage.removeItem('mockTestHistory');
+      localStorage.removeItem('ls_testday_packed_docs');
       window.location.reload();
     }
   };
@@ -310,8 +338,9 @@ export default function Settings() {
           </div>
         </div>
 
-        {/* 5. SMART PWA INSTALLATION STATUS */}
+        {/* 5. SMART PWA INSTALLATION STATUS & DEDICATED iOS/ANDROID GUIDE */}
         {isInstalled ? (
+          /* INSIDE INSTALLED APP: Verified Standalone Status Badge */
           <div className="p-5 sm:p-6 rounded-3xl bg-emerald-950/20 border border-emerald-900/50 flex items-center justify-between shadow-xl">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
@@ -331,34 +360,127 @@ export default function Settings() {
             </div>
           </div>
         ) : (
-          <div className="p-5 sm:p-6 rounded-3xl bg-slate-900/50 border border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xl">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-blue-500/10 text-blue-400 flex items-center justify-center shrink-0">
-                <Smartphone size={20} />
+          /* IN BROWSER WEB: Adaptive Device-Aware Installation Hub */
+          <div className="p-5 sm:p-6 rounded-3xl bg-slate-900/50 border border-slate-800 space-y-4 shadow-xl">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-blue-500/10 text-blue-400 flex items-center justify-center shrink-0">
+                  <Smartphone size={20} />
+                </div>
+                <div>
+                  <h2 className="text-base font-bold text-white">
+                    {lang === 'en' ? 'Install License Saathi' : lang === 'hi' ? 'ऐप इंस्टॉल करें' : 'એપ ઇન્સ્ટોલ કરો'}
+                  </h2>
+                  <p className="text-xs text-slate-400">
+                    {lang === 'en' 
+                      ? 'Add to home screen for 100% offline tests & instant launch' 
+                      : 'ઝડપી ઑફલાઇન એક્સેસ માટે હોમ સ્ક્રીન પર ઉમેરો'}
+                  </p>
+                </div>
               </div>
-              <div>
-                <h2 className="text-base font-bold text-white">
-                  {lang === 'en' ? 'Install App on Device' : lang === 'hi' ? 'डिवाइस पर ऐप इंस्टॉल करें' : 'ડિવાઇસ પર એપ ઇન્સ્ટોલ કરો'}
-                </h2>
-                <p className="text-xs text-slate-400">
-                  {lang === 'en' 
-                    ? 'Add to home screen for instant offline access and kiosk test practice.' 
-                    : 'ઝડપી ઑફલાઇન એક્સેસ માટે હોમ સ્ક્રીન પર ઉમેરો.'}
-                </p>
+
+              {/* Device Selector Switcher */}
+              <div className="flex bg-slate-950 p-1 rounded-xl border border-slate-800 text-[11px] font-bold">
+                <button
+                  onClick={() => setSelectedDeviceTab('ios')}
+                  className={`px-2.5 py-1 rounded-lg transition-all ${
+                    selectedDeviceTab === 'ios'
+                      ? 'bg-blue-600 text-white shadow'
+                      : 'text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  iPhone / iPad
+                </button>
+                <button
+                  onClick={() => setSelectedDeviceTab('android')}
+                  className={`px-2.5 py-1 rounded-lg transition-all ${
+                    selectedDeviceTab === 'android'
+                      ? 'bg-blue-600 text-white shadow'
+                      : 'text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  Android / PC
+                </button>
               </div>
             </div>
 
-            {deferredPrompt ? (
-              <button
-                onClick={triggerInstallPrompt}
-                className="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold text-xs sm:text-sm transition shadow-lg shadow-blue-600/30 shrink-0"
-              >
-                {lang === 'en' ? 'Install App' : lang === 'hi' ? 'ऐप इंस्टॉल करें' : 'ઇન્સ્ટોલ કરો'}
-              </button>
-            ) : (
-              <span className="text-[11px] text-slate-400 bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800">
-                {lang === 'en' ? 'Chrome: Menu (⋮) → Add to Home' : 'Chrome: મેનૂ (⋮) → Add to Home'}
-              </span>
+            {/* TAB CONTENT: iOS (iPhone / iPad) Guide */}
+            {selectedDeviceTab === 'ios' && (
+              <div className="space-y-3 pt-1">
+                {/* Warning if inside WhatsApp/Social webview */}
+                {isInAppBrowser && (
+                  <div className="p-3 rounded-2xl bg-amber-950/40 border border-amber-600/50 flex items-start gap-2.5 text-xs text-amber-200">
+                    <Compass size={17} className="text-amber-400 shrink-0 mt-0.5" />
+                    <div>
+                      <span className="font-bold block">Open in Safari First:</span>
+                      <span>
+                        You are viewing this inside an in-app browser. Tap the <strong>Safari icon (🧭)</strong> or <strong>"..."</strong> in the corner to switch to Safari.
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                <div className="space-y-2.5 text-xs text-slate-300">
+                  <div className="p-3 bg-slate-950 rounded-2xl border border-slate-800/80 flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-xl bg-blue-600/20 border border-blue-500/40 text-blue-400 flex items-center justify-center shrink-0">
+                      <Share size={15} />
+                    </div>
+                    <div>
+                      <span className="font-bold text-white block">Step 1: Tap the Share Button</span>
+                      <span className="text-slate-400">Located in the bottom navigation bar of Safari (or top right on iPad).</span>
+                    </div>
+                  </div>
+
+                  <div className="p-3 bg-slate-950 rounded-2xl border border-slate-800/80 flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-xl bg-blue-600/20 border border-blue-500/40 text-blue-400 flex items-center justify-center shrink-0">
+                      <PlusSquare size={15} />
+                    </div>
+                    <div>
+                      <span className="font-bold text-white block">Step 2: Tap "Add to Home Screen"</span>
+                      <span className="text-slate-400">Scroll down the share menu list and select <strong>Add to Home Screen</strong>.</span>
+                    </div>
+                  </div>
+
+                  <div className="p-3 bg-slate-950 rounded-2xl border border-slate-800/80 flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-xl bg-emerald-600/20 border border-emerald-500/40 text-emerald-400 flex items-center justify-center shrink-0 font-bold text-xs">
+                      ✓
+                    </div>
+                    <div>
+                      <span className="font-bold text-white block">Step 3: Tap "Add" in Top-Right</span>
+                      <span className="text-slate-400">Confirm by tapping <strong>Add</strong> at the top right. The app will appear on your iOS home screen!</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* TAB CONTENT: Android / PC Guide & Direct Action */}
+            {selectedDeviceTab === 'android' && (
+              <div className="space-y-3 pt-1">
+                {deferredPrompt ? (
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3 bg-slate-950 rounded-2xl border border-slate-800">
+                    <div className="text-xs">
+                      <p className="font-bold text-white">Direct Installation Ready</p>
+                      <p className="text-slate-400">One-tap automated install available for this browser.</p>
+                    </div>
+                    <button
+                      onClick={triggerInstallPrompt}
+                      className="w-full sm:w-auto px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold text-xs sm:text-sm transition shadow-lg shadow-blue-600/30"
+                    >
+                      {lang === 'en' ? 'Install App Now' : lang === 'hi' ? 'ऐप इंस्टॉल करें' : 'ઇન્સ્ટોલ કરો'}
+                    </button>
+                  </div>
+                ) : (
+                  <div className="p-3.5 bg-slate-950 rounded-2xl border border-slate-800 text-xs text-slate-300 space-y-2">
+                    <p className="font-bold text-white">How to Install in Chrome / Edge / Brave:</p>
+                    <div className="space-y-1.5 text-slate-400">
+                      <p>1. Tap the three dots menu (<strong>⋮</strong>) in the top-right corner of Chrome.</p>
+                      <p>2. Select <strong>"Install License Saathi"</strong> or <strong>"Add to Home screen"</strong>.</p>
+                      <p>3. Tap <strong>Install</strong> to add the offline icon to your launcher.</p>
+                    </div>
+                  </div>
+                )}
+              </div>
             )}
           </div>
         )}
