@@ -1,12 +1,11 @@
-import { useState, useContext, useEffect, useRef } from 'react';
+import { useState, useContext, useRef } from 'react';
 import { AppContext } from '../App';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import { 
-  Car, CheckCircle2, ArrowRight, Clock, ShieldAlert, 
-  FileText, BookOpen, Sparkles, Compass, Check, ExternalLink,
-  Laptop, ShieldCheck, HelpCircle
+  CheckCircle2, ArrowRight, Clock, ShieldAlert, 
+  FileText, BookOpen, Check, Laptop
 } from 'lucide-react';
+import InstallModal from '../components/InstallModal';
 
 export default function Home() {
   const { lang } = useContext(AppContext);
@@ -126,6 +125,10 @@ export default function Home() {
 
   return (
     <div className="relative min-h-screen py-12 px-4 sm:px-6 flex flex-col font-sans">
+      
+      {/* 🚀 Universal One-Time Install Pop-Up (Laptops, Android, & iOS) */}
+      <InstallModal />
+
       <div className="max-w-4xl mx-auto w-full relative z-10 space-y-16">
 
         {/* 1. HERO SECTION */}
@@ -221,7 +224,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* 3. YOUR JOURNEY MAP (INTERACTIVE STEPPER) */}
+        {/* 3. YOUR JOURNEY MAP (INTERACTIVE 6-STEP STEPPER) */}
         <section ref={journeyRef} className="bg-slate-900/50 backdrop-blur-xl border border-slate-800 rounded-3xl p-6 sm:p-10 shadow-2xl">
           <div className="mb-8">
             <h2 className="text-2xl sm:text-3xl font-extrabold text-white">
@@ -312,7 +315,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* 5. ESSENTIAL TOOLS & PREPARATION GRID */}
+        {/* 5. PRACTICE & PREPARATION TOOLS GRID */}
         <section className="space-y-6">
           <div className="text-center">
             <h2 className="text-2xl sm:text-3xl font-extrabold text-white">

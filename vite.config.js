@@ -10,22 +10,30 @@ export default defineConfig({
       includeAssets: ['favicon.svg', 'pwa-192x192.svg', 'pwa-512x512.svg'],
       manifest: {
         name: 'License Saathi',
-        short_name: 'LicenseSaathi',
-        description: 'Stress-free mParivahan assistance and driving licence guide for India',
+        short_name: 'License Saathi',
+        description: 'Stress-free mParivahan assistance and RTO driving licence guide for India',
         theme_color: '#020617',
         background_color: '#020617',
         display: 'standalone',
+        orientation: 'portrait',
         icons: [
           {
             src: 'pwa-192x192.svg',
             sizes: '192x192',
-            type: 'image/svg+xml'
+            type: 'image/svg+xml',
+            purpose: 'any'
           },
           {
             src: 'pwa-512x512.svg',
             sizes: '512x512',
             type: 'image/svg+xml',
-            purpose: 'any maskable'
+            purpose: 'any'
+          },
+          {
+            src: 'pwa-512x512.svg',
+            sizes: '512x512',
+            type: 'image/svg+xml',
+            purpose: 'maskable'
           }
         ]
       },
