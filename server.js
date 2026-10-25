@@ -1,5 +1,4 @@
 import express from 'express';
-import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -12,7 +11,15 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-app.use(cors());
+// Native CORS headers without external dependency
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  if (req.method === 'OPTIONS') return res.sendStatus(200);
+  next();
+});
+
 app.use(express.json());
 
 // ==========================================
@@ -121,7 +128,6 @@ Primary Mission:
 5. Tone: Helpful peer, authentic, concise, and structured with bold highlights and bullet points when explaining procedures.
 `;
 
-  // Construct conversation contents for Gemini REST API
   const formattedContents = [
     {
       role: 'user',
@@ -137,7 +143,6 @@ Primary Mission:
     }
   ];
 
-  // Dynamic fallback order: 3.8-flash -> 2.5-flash -> 1.5-flash
   const modelsToTry = [
     'gemini-2.5-flash',
     'gemini-1.5-flash'
