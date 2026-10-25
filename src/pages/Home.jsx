@@ -3,7 +3,7 @@ import { AppContext } from '../App';
 import { Link } from 'react-router-dom';
 import { 
   CheckCircle2, ArrowRight, Clock, ShieldAlert, 
-  FileText, BookOpen, Laptop, Sparkles
+  FileText, BookOpen, Laptop
 } from 'lucide-react';
 import InstallModal from '../components/InstallModal';
 
@@ -13,7 +13,7 @@ export default function Home() {
 
   // Active Journey Stage (1 to 6)
   const [currentStage, setCurrentStage] = useState(() => {
-    return parseInt(localStorage.getItem('licenceJourneyStage') || '1', 10);
+    return parseInt(localStorage.getItem('licenceJourneyStage') || '6', 10);
   });
 
   const handleSelectJourney = (stageNum) => {
@@ -126,21 +126,12 @@ export default function Home() {
   return (
     <div className="relative min-h-screen py-10 px-4 sm:px-6 flex flex-col font-sans overflow-hidden">
       
-      {/* 🌿 Desired Ambient Green / Teal / Blue Glow Orbs from Image 2 */}
-      {effectiveTheme !== 'light' && (
-        <>
-          <div className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 w-[650px] h-[340px] bg-gradient-to-b from-emerald-500/15 via-teal-500/10 to-transparent blur-3xl rounded-full" />
-          <div className="pointer-events-none absolute top-[420px] -left-32 w-80 h-80 bg-emerald-600/10 blur-[100px] rounded-full" />
-          <div className="pointer-events-none absolute top-[680px] -right-32 w-80 h-80 bg-blue-600/10 blur-[100px] rounded-full" />
-        </>
-      )}
-
       {/* 🚀 Universal One-Time Install Pop-Up (Laptops, Android, & iOS) */}
       <InstallModal />
 
-      <div className="max-w-4xl mx-auto w-full relative z-10 space-y-14">
+      <div className="max-w-4xl mx-auto w-full relative z-10 space-y-12">
 
-        {/* 1. HERO SECTION (With Image 2's Green Pill & Gradient Typography) */}
+        {/* 1. HERO SECTION (Image 2 Headline & Gradient Text) */}
         <section className="text-center pt-4 sm:pt-6 space-y-5">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-950/40 border border-emerald-500/30 text-emerald-400 font-medium text-xs sm:text-sm tracking-wide shadow-sm">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
@@ -180,7 +171,7 @@ export default function Home() {
             {lang === 'gu' && 'ભારતીય RTO પ્રક્રિયા સરળતાથી સમજો. પાત્રતા ચકાસો, દસ્તાવેજ તૈયાર કરો, મોક ટેસ્ટ આપો અને સ્ટેટસ ટ્રેક કરો.'}
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-3.5 justify-center items-center pt-2">
+          <div className="flex flex-col sm:flex-row gap-3.5 justify-center items-center pt-1">
             <button
               onClick={scrollToJourney}
               className="w-full sm:w-auto px-7 py-3.5 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl font-bold flex items-center justify-center gap-2 transition shadow-lg shadow-blue-600/30 text-sm sm:text-base"
@@ -198,15 +189,21 @@ export default function Home() {
           </div>
         </section>
 
-        {/* 2. WHERE ARE YOU IN YOUR LICENCE JOURNEY? (Restored Exact Image 2 Style) */}
-        <section className="space-y-4">
-          <div className="text-center sm:text-left">
-            <h2 className="text-xl sm:text-2xl font-extrabold text-white">
+        {/* 2. WHERE ARE YOU IN YOUR LICENCE JOURNEY? (With Ambient Green/Teal Backlight) */}
+        <section className="space-y-4 relative">
+          
+          {/* 🌿 Exact Emerald/Teal Ambient Gradient positioned directly behind the Options & Journey Map */}
+          {effectiveTheme !== 'light' && (
+            <div className="pointer-events-none absolute -top-8 -bottom-16 left-1/2 -translate-x-1/2 w-[120%] max-w-3xl bg-[radial-gradient(ellipse_at_center,_rgba(16,185,129,0.18)_0%,_rgba(6,182,212,0.12)_35%,_transparent_70%)] blur-3xl -z-10" />
+          )}
+
+          <div className="text-left">
+            <h2 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight">
               {lang === 'en' ? 'Where are you in your licence journey?' : lang === 'hi' ? 'आप अपनी लाइसेंस यात्रा में कहाँ हैं?' : 'તમે તમારી લાયસન્સ યાત્રામાં ક્યાં છો?'}
             </h2>
           </div>
 
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-3 relative z-10">
             {[
               {
                 stage: 1,
@@ -260,31 +257,41 @@ export default function Home() {
                   gu: 'હું મારા DL નું સ્ટેટસ ટ્રેક કરવા માંગુ છું' 
                 }
               }
-            ].map((choice) => (
-              <button
-                key={choice.stage}
-                onClick={() => handleSelectJourney(choice.stage)}
-                className={`w-full p-4 sm:p-5 rounded-2xl border text-left transition-all ${
-                  currentStage === choice.stage
-                    ? 'bg-blue-950/20 border-blue-500 shadow-md shadow-blue-950/40'
-                    : 'bg-slate-900/40 border-slate-800/80 hover:border-slate-700 hover:bg-slate-900/70'
-                }`}
-              >
-                <p className="text-base sm:text-lg font-bold text-white mb-0.5 leading-snug">
-                  {choice.title[lang] || choice.title.en}
-                </p>
-                <p className="text-xs sm:text-sm text-slate-400">
-                  {choice.sub[lang] || choice.sub.en}
-                </p>
-              </button>
-            ))}
+            ].map((choice) => {
+              const isSelected = currentStage === choice.stage;
+
+              return (
+                <button
+                  key={choice.stage}
+                  onClick={() => handleSelectJourney(choice.stage)}
+                  className={`w-full p-4 sm:p-5 rounded-2xl border text-left transition-all duration-200 active:scale-[0.99] ${
+                    isSelected
+                      ? 'bg-[#0c192f]/85 border-blue-500 shadow-[0_0_22px_rgba(59,130,246,0.25)] ring-1 ring-blue-500/50'
+                      : 'bg-slate-900/50 border-slate-800/80 hover:border-slate-700 hover:bg-slate-900/70'
+                  } backdrop-blur-md`}
+                >
+                  <p className="text-base sm:text-lg font-bold text-white mb-0.5 leading-snug tracking-tight">
+                    {choice.title[lang] || choice.title.en}
+                  </p>
+                  <p className="text-xs sm:text-sm text-slate-400 font-normal">
+                    {choice.sub[lang] || choice.sub.en}
+                  </p>
+                </button>
+              );
+            })}
           </div>
         </section>
 
-        {/* 3. YOUR JOURNEY MAP (6-Step Stepper with Image 2 Emerald Sheen) */}
-        <section ref={journeyRef} className="bg-slate-900/50 backdrop-blur-xl border border-slate-800/80 rounded-3xl p-6 sm:p-10 shadow-2xl relative">
-          <div className="mb-8">
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-white">
+        {/* 3. YOUR JOURNEY MAP (6-Step Stepper with Emerald Accent) */}
+        <section ref={journeyRef} className="bg-slate-900/60 backdrop-blur-xl border border-slate-800/80 rounded-3xl p-6 sm:p-10 shadow-2xl relative overflow-hidden">
+          
+          {/* Subtle green ambient reflection on Journey Map top rim */}
+          {effectiveTheme !== 'light' && (
+            <div className="pointer-events-none absolute -top-16 left-1/4 w-96 h-32 bg-emerald-500/10 blur-3xl rounded-full" />
+          )}
+
+          <div className="mb-8 relative z-10">
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
               {lang === 'en' ? 'Your Journey Map' : lang === 'hi' ? 'आपका यात्रा मानचित्र' : 'તમારો પ્રવાસ નકશો'}
             </h2>
             <p className="text-xs sm:text-sm text-slate-400 mt-1">
@@ -294,7 +301,7 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="space-y-6 relative before:absolute before:inset-0 before:left-5 before:top-4 before:bottom-4 before:w-0.5 before:bg-gradient-to-b before:from-blue-600 before:via-slate-700 before:to-transparent">
+          <div className="space-y-6 relative z-10 before:absolute before:inset-0 before:left-5 before:top-4 before:bottom-4 before:w-0.5 before:bg-gradient-to-b before:from-blue-600 before:via-slate-700 before:to-transparent">
             {journeySteps.map((step) => {
               const isPast = step.num < currentStage;
               const isCurrent = step.num === currentStage;
@@ -304,7 +311,7 @@ export default function Home() {
                   {/* Step Marker Circle */}
                   <div className={`relative z-10 w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center shrink-0 border-2 transition-all ${
                     isPast
-                      ? 'bg-emerald-950 border-emerald-500 text-emerald-400 shadow-md shadow-emerald-950/40'
+                      ? 'bg-emerald-950/80 border-emerald-500 text-emerald-400 shadow-md shadow-emerald-950/50'
                       : isCurrent
                       ? 'bg-blue-600 border-blue-400 text-white shadow-lg shadow-blue-600/40 ring-4 ring-blue-500/20'
                       : 'bg-slate-950 border-slate-700 text-slate-500'
